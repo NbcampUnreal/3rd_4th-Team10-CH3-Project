@@ -1,0 +1,53 @@
+#pragma once
+
+#include "CoreMinimal.h"
+
+UENUM(BlueprintType)
+enum class EItemType : uint8
+{
+	Weapon UMETA(DisplayName = "Weapon"),
+	Buff UMETA(DisplayName = "Buff")
+};
+
+UENUM(BlueprintType)
+enum class EWeaponType : uint8
+{
+	Melee UMETA(DisplayName = "Melee"),
+	Range UMETA(DisplayName = "Range"),
+	Throw UMETA(DisplayName = "Throw")
+};
+
+UENUM(BlueprintType)
+enum class ERangeLeverType : uint8
+{
+	Single UMETA(DisplayName = "Weapon"),
+	Point UMETA(DisplayName = "Point"),
+	Repeatedly UMETA(DisplayName = "Repeatedly")
+};
+
+UENUM(BlueprintType)
+enum class ERangeFireType : uint8
+{
+	SingleShot UMETA(DisplayName = "Weapon"),
+	PointFire UMETA(DisplayName = "Point"),
+	Repeatedly UMETA(DisplayName = "Repeatedly")
+};
+
+UENUM(BlueprintType)
+enum class EThrowAttackType : uint8
+{
+	Bomb UMETA(DisplayName = "Bomb"),
+	Shot UMETA(DisplayName = "Shot")
+};
+
+UENUM(BlueprintType)
+enum class EBuffType : uint8
+{
+	Heal UMETA(DisplayName = "Heal"),
+	Speed UMETA(DisplayName = "Speed")
+};
+
+class TEAM10_PROJECT_API ItemTypes
+{
+
+};
