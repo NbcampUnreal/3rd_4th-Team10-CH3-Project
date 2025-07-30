@@ -1,0 +1,24 @@
+#pragma once
+
+#include "CoreMinimal.h"
+#include "UObject/Interface.h"
+#include "WeaponInterface.generated.h"
+
+enum class EWeaponType;
+
+UINTERFACE(MinimalAPI)
+class UWeaponInterface : public UInterface
+{
+	GENERATED_BODY()
+};
+
+class TEAM10_PROJECT_API IWeaponInterface
+{
+	GENERATED_BODY()
+
+public:
+	virtual void UseWeapon(EWeaponType& WeaponType) = 0;
+	virtual void EquipmentWeapon(AActor* Player) = 0;
+	virtual void UnEquipmentWeapon(AActor* Player) = 0;
+	virtual void Attack() = 0;
+};
