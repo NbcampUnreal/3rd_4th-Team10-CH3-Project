@@ -30,6 +30,7 @@ AMyCharacter::AMyCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
 	MaxHealth = 100;
+	Stamina = 100;
 	Health = MaxHealth;
 	Defence = 10;
 }
@@ -66,6 +67,14 @@ void AMyCharacter::Tick(float DeltaTime)
 		Pivot->SetRelativeRotation(FRotator(AimPitch, 0.f, 0.f));
 	}
 
+	if (CurrentState == ECharacterState::Sprinting)
+	{
+		if (LastInputVector.X <= 0.f)
+		{
+			StopSprint();
+		}
+	}
+	
 	if (CurrentState == ECharacterState::Idle || CurrentState == ECharacterState::Walking)
 	{
 		if (FMath::IsNearlyZero(GetVelocity().Size()))
@@ -90,6 +99,7 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	LastInputVector = MovementVector;
 
 	if (Controller)
 	{
@@ -153,7 +163,13 @@ void AMyCharacter::ToggleCrouch()
 
 void AMyCharacter::StartSprint()
 {
+	if (LastInputVector.X <= 0.f)
+	{
+		return;
+	}
+	
 	bWantsToSprint = true;
+	
 	if (CurrentState == ECharacterState::Jumping || bIsZoomed || bIsCrouching)
 	{
 		return;
