@@ -1,6 +1,7 @@
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
 #include "EnhancedInputComponent.h"
+#include "ParticleHelper.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
@@ -22,15 +23,35 @@ AMyCharacter::AMyCharacter()
 	CharacterArms->bCastCapsuleDirectShadow = false;
 	CharacterArms->CastShadow = false;
 
+	SprintFOVTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SprintFOVTimeline"));
+	CrouchTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CrouchTimeline"));
+
 	GetMesh()->SetOwnerNoSee(true);
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+
+	MaxHealth = 100;
+	Health = MaxHealth;
+	Defence = 10;
 }
 
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SetCharacterState(ECharacterState::Idle);
-	
+
+	if (SprintFOVCurve && SprintFOVTimeline)
+	{
+		FOnTimelineFloat FOVInterpFunction;
+		FOVInterpFunction.BindUFunction(this, FName("UpdateSprintFOV"));
+		SprintFOVTimeline->AddInterpFloat(SprintFOVCurve, FOVInterpFunction, FName("FOV"));
+	}
+
+	if (CrouchCurve && CrouchTimeline)
+	{
+		FOnTimelineFloat CrouchInterpFunction;
+		CrouchInterpFunction.BindUFunction(this, FName("UpdateCrouch"));
+        CrouchTimeline->AddInterpFloat(CrouchCurve, CrouchInterpFunction);
+	}
 }
 
 void AMyCharacter::Tick(float DeltaTime)
@@ -53,6 +74,7 @@ void AMyCharacter::Tick(float DeltaTime)
 		}
 		else
 		{
+			StopSprintFOV();
 			SetCharacterState(ECharacterState::Walking);
 		}
 	}
@@ -90,20 +112,36 @@ void AMyCharacter::Look(const FInputActionValue& Value)
 
 void AMyCharacter::StartCrouch()
 {
-	Crouch();
+	StopSprint();
+	
+	if (CrouchTimeline)
+	{
+		CrouchTimeline->PlayFromStart();
+	}
 	bWantsToSprint = false;
-	SetCharacterState(ECharacterState::Crouching);
+	bIsCrouching = true;
+	ApplyMovementSpeedByState();
 }
 
 void AMyCharacter::EndCrouch()
 {
-	UnCrouch();
-	UpdateGroundState();
+	if (CrouchTimeline)
+	{
+		CrouchTimeline->Reverse();
+	}
+	bIsCrouching = false;
+	ApplyMovementSpeedByState();
+}
+
+void AMyCharacter::UpdateCrouch(float Value)
+{
+	const float NewHalfHeight = FMath::Lerp(StandingCapsuleHalfHeight, CrouchingCapsuleHalfHeight, Value);
+	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
 }
 
 void AMyCharacter::ToggleCrouch()
 {
-	if (bIsCrouched)
+	if (bIsCrouching)
 	{
 		EndCrouch();
 	}
@@ -113,51 +151,48 @@ void AMyCharacter::ToggleCrouch()
 	}
 }
 
-
 void AMyCharacter::StartSprint()
 {
-	if (CurrentState == ECharacterState::Crouching || CurrentState == ECharacterState::Jumping)
+	bWantsToSprint = true;
+	if (CurrentState == ECharacterState::Jumping || bIsZoomed || bIsCrouching)
 	{
 		return;
 	}
 	
 	if (GetCharacterMovement())
 	{
-		if (GetCharacterMovement()->IsFalling() || GetCharacterMovement()->IsCrouching() || bIsZoomed)
+		if (GetCharacterMovement()->IsFalling())
 		{
 			return;
 		}
 
-		bWantsToSprint = true;
 		SetCharacterState(ECharacterState::Sprinting);
-		GetCharacterMovement()->MaxWalkSpeed = SprintSpeed;
+		SprintFOVTimeline->PlayFromStart();
 	}
 }
 
 void AMyCharacter::StopSprint()
 {
-	if (CurrentState == ECharacterState::Crouching || CurrentState == ECharacterState::Jumping)
+	bWantsToSprint = false;
+	if (CurrentState != ECharacterState::Sprinting)
 	{
 		return;
 	}
 	
-	if (GetCharacterMovement())
-	{
-		bWantsToSprint = false;
-		GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
-		UpdateGroundState();
-	}
+	SprintFOVTimeline->Reverse();
+	UpdateGroundState();
 }
 
 void AMyCharacter::StartJump()
 {
-	if (CurrentState == ECharacterState::Crouching)
+	if (bIsCrouching)
 	{
 		return;
 	}
 	Jump();
 	SetCharacterState(ECharacterState::Jumping);
 }
+
 void AMyCharacter::StopJump()
 {
 	StopJumping();
@@ -180,13 +215,13 @@ void AMyCharacter::StartZoom()
 	}
 
 	bIsZoomed = true;
-	GetCharacterMovement()->MaxWalkSpeed = ZoomSpeed;
-
+	ApplyMovementSpeedByState();
 }
+
 void AMyCharacter::StopZoom()
 {
 	bIsZoomed = false;
-	GetCharacterMovement()->MaxWalkSpeed = NormalSpeed;
+	ApplyMovementSpeedByState();
 }
 
 void AMyCharacter::Reload()
@@ -219,8 +254,10 @@ void AMyCharacter::SetCharacterState(ECharacterState NewState)
 	}
 
 	CurrentState = NewState;
+	ApplyMovementSpeedByState();
 	UE_LOG(LogTemp, Warning, TEXT("Character State Changed: %s"), *UEnum::GetValueAsString(CurrentState));
 }
+
 void AMyCharacter::UpdateGroundState()
 {
 	if (bWantsToSprint)
@@ -236,6 +273,57 @@ void AMyCharacter::UpdateGroundState()
 	else
 	{
 		SetCharacterState(ECharacterState::Walking);
+	}
+}
+
+float AMyCharacter::ApplyMovementSpeedByState()
+{
+	float BaseSpeed = NormalSpeed;
+	
+	switch (CurrentState)
+	{
+	case ECharacterState::Sprinting:
+		BaseSpeed = SprintSpeed;
+		break;
+	case ECharacterState::Walking:
+	case ECharacterState::Idle:
+		BaseSpeed = NormalSpeed;
+		break;
+	}
+
+	if (bIsZoomed)
+	{
+		BaseSpeed = ZoomSpeed;
+	}
+	if (bIsCrouching)
+	{
+		BaseSpeed = CrouchSpeed;
+	}
+
+	return BaseSpeed;
+}
+
+void AMyCharacter::UpdateSprintFOV(float Value)
+{
+	if (FirstPersonCamera)
+	{
+		FirstPersonCamera->FieldOfView = Value;	
+	}
+}
+
+void AMyCharacter::StartSprintFOV()
+{
+	if (SprintFOVTimeline)
+	{
+		SprintFOVTimeline->PlayFromStart();
+	}
+}
+
+void AMyCharacter::StopSprintFOV()
+{
+	if (SprintFOVTimeline)
+	{
+		SprintFOVTimeline->Reverse();
 	}
 }
 
