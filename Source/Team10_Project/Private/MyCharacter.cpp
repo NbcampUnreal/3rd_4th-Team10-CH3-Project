@@ -229,7 +229,6 @@ void AMyCharacter::StartZoom()
 	{
 		return;
 	}
-
 	bIsZoomed = true;
 	ApplyMovementSpeedByState();
 }
@@ -292,7 +291,7 @@ void AMyCharacter::UpdateGroundState()
 	}
 }
 
-float AMyCharacter::ApplyMovementSpeedByState()
+void AMyCharacter::ApplyMovementSpeedByState()
 {
 	float BaseSpeed = NormalSpeed;
 	
@@ -309,14 +308,17 @@ float AMyCharacter::ApplyMovementSpeedByState()
 
 	if (bIsZoomed)
 	{
-		BaseSpeed = ZoomSpeed;
+		BaseSpeed *= ZoomSpeedMultiplier;
 	}
 	if (bIsCrouching)
 	{
-		BaseSpeed = CrouchSpeed;
+		BaseSpeed *= CrouchSpeedMultiplier;
 	}
 
-	return BaseSpeed;
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseSpeed;	
+	}
 }
 
 void AMyCharacter::UpdateSprintFOV(float Value)

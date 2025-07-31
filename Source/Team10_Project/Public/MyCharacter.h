@@ -60,13 +60,16 @@ protected:
 	float CrouchSpeed = 300.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float SprintSpeedMultiplier = 1.5f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float ZoomSpeed = 300.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float SprintSpeedMultiplier = 1.5f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float ZoomSpeedMultiplier = 0.5f;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
+	float CrouchSpeedMultiplier = 0.5f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gun")
 	float DefaultFOV = 100.f;
@@ -107,7 +110,7 @@ protected:
 	
 	void SetCharacterState(ECharacterState NewState);
 	void UpdateGroundState();
-	float ApplyMovementSpeedByState();
+	void ApplyMovementSpeedByState();
 	
 	UFUNCTION()
 	void UpdateSprintFOV(float Value);
