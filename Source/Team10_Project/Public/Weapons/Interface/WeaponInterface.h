@@ -4,8 +4,6 @@
 #include "UObject/Interface.h"
 #include "WeaponInterface.generated.h"
 
-enum class EWeaponType;
-
 UINTERFACE(MinimalAPI)
 class UWeaponInterface : public UInterface
 {
@@ -17,8 +15,9 @@ class TEAM10_PROJECT_API IWeaponInterface
 	GENERATED_BODY()
 
 public:
-	virtual void UseWeapon(EWeaponType& WeaponType) = 0;
+	virtual void UseWeapon() = 0;
 	virtual void EquipmentWeapon(AActor* Player) = 0;
 	virtual void UnEquipmentWeapon(AActor* Player) = 0;
-	virtual void Attack() = 0;
+	virtual void Attack(AActor* Activator) = 0;
+	virtual void OnHit(AActor* CollisionActor) = 0;
 };
