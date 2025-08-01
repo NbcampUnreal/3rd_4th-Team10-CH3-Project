@@ -14,6 +14,7 @@ enum class EWeaponType : uint8
 {
 	Melee UMETA(DisplayName = "Melee"),
 	Range UMETA(DisplayName = "Range"),
+	Projectile UMETA(DisplayName = "Projectile"),
 	Throw UMETA(DisplayName = "Throw")
 };
 
@@ -31,6 +32,13 @@ enum class ERangeFireType : uint8
 	SingleShot UMETA(DisplayName = "Weapon"),
 	PointFire UMETA(DisplayName = "Point"),
 	Repeatedly UMETA(DisplayName = "Repeatedly")
+};
+
+UENUM(BlueprintType)
+enum class ERangeFireState : uint8
+{
+	Idle UMETA(DisplayName = "Idle"),
+	Fire UMETA(DisplayName = "Fire")
 };
 
 UENUM(BlueprintType)
