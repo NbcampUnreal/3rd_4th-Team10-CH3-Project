@@ -107,10 +107,8 @@ protected:
 	void FinishReload();
 	
 	// ---------------------------
-	
-	void SetCharacterState(ECharacterState NewState);
-	void UpdateGroundState();
-	void ApplyMovementSpeedByState();
+
+	// ----- Timeline 함수 -----
 	
 	UFUNCTION()
 	void UpdateSprintFOV(float Value);
@@ -123,8 +121,10 @@ protected:
 	
 	UFUNCTION()
 	void UpdateCrouch(float Value);
+
+	// --------------------------
 	
-	// ----- 캐릭터 상태 -----
+	// ----- 캐릭터 상태 관리 -----
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	bool bEquipped;
@@ -140,6 +140,12 @@ protected:
 
 	bool bWantsToSprint;
 
+	void SetCharacterState(ECharacterState NewState);
+	
+	void UpdateGroundState();
+	
+	void ApplyMovementSpeedByState();
+	
 	UPROPERTY(VisibleAnywhere, Category = "State")
 	ECharacterState CurrentState;
 
@@ -173,7 +179,11 @@ protected:
 
 	// -------------------
 	
-public:	
+public:
+	// ----- Input 바인딩 -----
+	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+	// -----------------------
 
 };
