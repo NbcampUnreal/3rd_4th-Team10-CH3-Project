@@ -30,15 +30,19 @@ AMyCharacter::AMyCharacter()
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
 	MaxHealth = 100;
-	Stamina = 100;
+	MaxStamina = 100;
 	Health = MaxHealth;
 	Defence = 10;
+
+	bCanStaminaRegen = true;
 }
 
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SetCharacterState(ECharacterState::Idle);
+
+	CurrentStamina = MaxStamina;
 
 	if (SprintFOVCurve && SprintFOVTimeline)
 	{
@@ -59,6 +63,8 @@ void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// ----- 회전 로직 -----
+	
 	if (Controller && Pivot)
 	{
 		const FRotator ControlRotation = Controller->GetControlRotation();
@@ -67,13 +73,33 @@ void AMyCharacter::Tick(float DeltaTime)
 		Pivot->SetRelativeRotation(FRotator(AimPitch, 0.f, 0.f));
 	}
 
+	// ---------------------
+	
+	// ----- 스태미나 로직 -----
+	
 	if (CurrentState == ECharacterState::Sprinting)
 	{
-		if (LastInputVector.X <= 0.f)
+		CurrentStamina -= DeltaTime * StaminaComsumRate;
+		
+		if (CurrentStamina <= 0 || LastInputVector.X <= 0.f)
 		{
 			StopSprint();
 		}
 	}
+	else
+	{
+		if (bCanStaminaRegen)
+		{
+			CurrentStamina += DeltaTime * StaminaRegenRate;
+		}
+	}
+	
+    CurrentStamina = FMath::Clamp(CurrentStamina, 0.f, MaxStamina);
+	UE_LOG(LogTemp, Warning, TEXT("Current Stamina: %f"), CurrentStamina);
+
+	// -------------------------
+
+	// ----- 캐릭터 상태 로직 -----
 	
 	if (CurrentState == ECharacterState::Idle || CurrentState == ECharacterState::Walking)
 	{
@@ -87,6 +113,8 @@ void AMyCharacter::Tick(float DeltaTime)
 			SetCharacterState(ECharacterState::Walking);
 		}
 	}
+
+	// -------------------------
 }
 
 void AMyCharacter::Landed(const FHitResult& Hit)
@@ -94,6 +122,11 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 	Super::Landed(Hit);
 
 	UpdateGroundState();
+}
+
+void AMyCharacter::StartStaminaRegen()
+{
+    bCanStaminaRegen = true;
 }
 
 void AMyCharacter::Move(const FInputActionValue& Value)
@@ -163,11 +196,11 @@ void AMyCharacter::ToggleCrouch()
 
 void AMyCharacter::StartSprint()
 {
-	if (LastInputVector.X <= 0.f)
+	if (CurrentStamina < MinStamina || LastInputVector.X <= 0.f)
 	{
 		return;
 	}
-	
+
 	bWantsToSprint = true;
 	
 	if (CurrentState == ECharacterState::Jumping || bIsZoomed || bIsCrouching)
@@ -181,6 +214,9 @@ void AMyCharacter::StartSprint()
 		{
 			return;
 		}
+		
+		bCanStaminaRegen = false;
+		GetWorld()->GetTimerManager().ClearTimer(StaminaRegenTimerHandle);
 
 		SetCharacterState(ECharacterState::Sprinting);
 		SprintFOVTimeline->PlayFromStart();
@@ -194,7 +230,7 @@ void AMyCharacter::StopSprint()
 	{
 		return;
 	}
-	
+	GetWorld()->GetTimerManager().SetTimer(StaminaRegenTimerHandle, this, &AMyCharacter::StartStaminaRegen, StaminaRegenTimer, false);
 	SprintFOVTimeline->Reverse();
 	UpdateGroundState();
 }
