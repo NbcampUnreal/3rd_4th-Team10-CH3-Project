@@ -38,6 +38,8 @@ UENUM(BlueprintType)
 enum class ERangeFireState : uint8
 {
 	Idle UMETA(DisplayName = "Idle"),
+	Load UMETA(DisplayName = "Load"),
+	Reload UMETA(DisplayName = "Reload"),
 	Fire UMETA(DisplayName = "Fire")
 };
 
