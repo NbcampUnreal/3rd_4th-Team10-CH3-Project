@@ -2,6 +2,11 @@
 
 APistol::APistol()
 {
+	WeaponSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
+	WeaponSkeletalMesh->SetupAttachment(Scene);
+
+	ProjectilePoint = WeaponSkeletalMesh->GetSocketLocation(TEXT("MuzzleSocket"));
+
 	FireType = ERangeFireType::SingleShot;
 	WeaponName = "Pistol";
 	Power = 5;
