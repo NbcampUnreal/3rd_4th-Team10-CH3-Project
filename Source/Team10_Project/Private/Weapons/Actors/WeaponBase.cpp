@@ -14,9 +14,6 @@ AWeaponBase::AWeaponBase()
 	Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	Collision->SetupAttachment(Scene);
 
-	WeaponMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	WeaponMesh->SetupAttachment(Collision);
-
 	Collision->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnItemOverlap);
 }
 

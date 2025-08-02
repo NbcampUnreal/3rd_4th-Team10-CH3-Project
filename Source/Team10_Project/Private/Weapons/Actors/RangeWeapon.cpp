@@ -6,8 +6,6 @@ ARangeWeapon::ARangeWeapon()
 	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true)
 {
 	WeaponType = EWeaponType::Range;
-
-	ProjectilePoint = WeaponMesh->GetSocketLocation(TEXT("MuzzleSocket"));
 }
 
 void ARangeWeapon::BeginPlay()

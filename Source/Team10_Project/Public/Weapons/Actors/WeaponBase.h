@@ -47,9 +47,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
 	UBoxComponent* Collision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
-	UStaticMeshComponent* WeaponMesh;
-
-	FVector ProjectilePoint;
+	UStaticMeshComponent* WeaponStaticMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
+	USkeletalMeshComponent* WeaponSkeletalMesh;
 
 	virtual void OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,

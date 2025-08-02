@@ -26,6 +26,8 @@ protected:
 	int32 CurBulletAmount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	bool bIsFire;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
+	FVector ProjectilePoint;
 
 	ERangeLeverType GetRangeLeverType();
 	ERangeFireType GetAttackType();
