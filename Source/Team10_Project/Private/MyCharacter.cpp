@@ -26,23 +26,16 @@ AMyCharacter::AMyCharacter()
 	SprintFOVTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SprintFOVTimeline"));
 	CrouchTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CrouchTimeline"));
 
+	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
+
 	GetMesh()->SetOwnerNoSee(true);
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
-
-	MaxHealth = 100;
-	MaxStamina = 100;
-	Health = MaxHealth;
-	Defence = 10;
-
-	bCanStaminaRegen = true;
 }
 
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SetCharacterState(ECharacterState::Idle);
-
-	CurrentStamina = MaxStamina;
 
 	if (SprintFOVCurve && SprintFOVTimeline)
 	{
@@ -79,23 +72,13 @@ void AMyCharacter::Tick(float DeltaTime)
 	
 	if (CurrentState == ECharacterState::Sprinting)
 	{
-		CurrentStamina -= DeltaTime * StaminaComsumRate;
-		
-		if (CurrentStamina <= 0 || LastInputVector.X <= 0.f)
+		AttributeComponent->ConsumeStamina(DeltaTime);
+
+		if (AttributeComponent->GetStamina() <= 0.f || LastInputVector.X <= 0.f)
 		{
 			StopSprint();
 		}
 	}
-	else
-	{
-		if (bCanStaminaRegen)
-		{
-			CurrentStamina += DeltaTime * StaminaRegenRate;
-		}
-	}
-	
-    CurrentStamina = FMath::Clamp(CurrentStamina, 0.f, MaxStamina);
-	UE_LOG(LogTemp, Warning, TEXT("Current Stamina: %f"), CurrentStamina);
 
 	// -------------------------
 
@@ -122,11 +105,6 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 	Super::Landed(Hit);
 
 	UpdateGroundState();
-}
-
-void AMyCharacter::StartStaminaRegen()
-{
-    bCanStaminaRegen = true;
 }
 
 void AMyCharacter::Move(const FInputActionValue& Value)
@@ -178,7 +156,10 @@ void AMyCharacter::EndCrouch()
 
 void AMyCharacter::UpdateCrouch(float Value)
 {
-	const float NewHalfHeight = FMath::Lerp(StandingCapsuleHalfHeight, CrouchingCapsuleHalfHeight, Value);
+	const float NewHalfHeight = FMath::Lerp(
+		AttributeComponent->StandingCapsuleHalfHeight,
+		AttributeComponent->CrouchingCapsuleHalfHeight,
+		Value);
 	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
 }
 
@@ -196,7 +177,7 @@ void AMyCharacter::ToggleCrouch()
 
 void AMyCharacter::StartSprint()
 {
-	if (CurrentStamina < MinStamina || LastInputVector.X <= 0.f)
+	if (!AttributeComponent->CanSprint() || LastInputVector.X <= 0.f)
 	{
 		return;
 	}
@@ -214,10 +195,9 @@ void AMyCharacter::StartSprint()
 		{
 			return;
 		}
-		
-		bCanStaminaRegen = false;
-		GetWorld()->GetTimerManager().ClearTimer(StaminaRegenTimerHandle);
 
+		AttributeComponent->StartSprintStaminaLogic();
+		
 		SetCharacterState(ECharacterState::Sprinting);
 		SprintFOVTimeline->PlayFromStart();
 	}
@@ -230,7 +210,8 @@ void AMyCharacter::StopSprint()
 	{
 		return;
 	}
-	GetWorld()->GetTimerManager().SetTimer(StaminaRegenTimerHandle, this, &AMyCharacter::StartStaminaRegen, StaminaRegenTimer, false);
+	AttributeComponent->StopSprintStaminaLogic();
+	
 	SprintFOVTimeline->Reverse();
 	UpdateGroundState();
 }
@@ -329,26 +310,26 @@ void AMyCharacter::UpdateGroundState()
 
 void AMyCharacter::ApplyMovementSpeedByState()
 {
-	float BaseSpeed = NormalSpeed;
+	float BaseSpeed = AttributeComponent->NormalSpeed;
 	
 	switch (CurrentState)
 	{
 	case ECharacterState::Sprinting:
-		BaseSpeed = SprintSpeed;
+		BaseSpeed = AttributeComponent->SprintSpeed;
 		break;
 	case ECharacterState::Walking:
 	case ECharacterState::Idle:
-		BaseSpeed = NormalSpeed;
+		BaseSpeed = AttributeComponent->NormalSpeed;
 		break;
 	}
 
 	if (bIsZoomed)
 	{
-		BaseSpeed *= ZoomSpeedMultiplier;
+		BaseSpeed *= AttributeComponent->ZoomSpeedMultiplier;
 	}
 	if (bIsCrouching)
 	{
-		BaseSpeed *= CrouchSpeedMultiplier;
+		BaseSpeed *= AttributeComponent->CrouchSpeedMultiplier;
 	}
 
 	if (GetCharacterMovement())

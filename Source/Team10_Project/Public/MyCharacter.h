@@ -1,6 +1,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AttributeComponent.h"
 #include "GameFramework/Character.h"
 #include "Components/TimelineComponent.h"
 #include "Curves/CurveFloat.h"
@@ -31,87 +32,6 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void Landed(const FHitResult& Hit) override;
-	
-	// ----- 캐릭터 속성 -----
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float Health;
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float MaxHealth;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float Defence;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float MaxStamina; // 최대 스태미나
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float CurrentStamina; // 현재 스태미나
-
-	// ---------------------
-
-	// ----- 스태미나 -----
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float StaminaRegenRate = 20.f; // 스태미나 회복량
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float StaminaComsumRate = 30.f; // 스태미나 소모량
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float StaminaRegenTimer = 3.f; // 스태미나 회복 딜레이
-	
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float MinStamina = 10.f; // 최소 스태미나
-
-	FTimerHandle StaminaRegenTimerHandle; // 스태미나 회복 딜레이 핸들
-
-	bool bCanStaminaRegen;
-
-	void StartStaminaRegen();
-	
-	// --------------------
-
-	// ----- 속도 및 기타 속성 -----
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float NormalSpeed = 600.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float SprintSpeed = 900.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float CrouchSpeed = 300.f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float ZoomSpeed = 300.f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float SprintSpeedMultiplier = 1.5f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float ZoomSpeedMultiplier = 0.5f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float CrouchSpeedMultiplier = 0.5f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gun")
-	float DefaultFOV = 100.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gun")
-	float ZoomedFOV = 60.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gun")
-	float ZoomInterpSpeed = 10.f;
-
-	// (캡슐 컴포넌트) 서있는 상태 88, 앉아있는 상태 44
-	float StandingCapsuleHalfHeight = 88.f;
-	float CrouchingCapsuleHalfHeight = 44.f;
-
-	FVector2D LastInputVector;
-
-	// --------------------------
 	
 	// ----- 동작 바인딩 함수 -----
 	
@@ -151,6 +71,8 @@ protected:
 	
 	// ----- 캐릭터 상태 관리 -----
 	
+	FVector2D LastInputVector;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	bool bEquipped;
 	
@@ -181,6 +103,9 @@ protected:
 
 	// ----- 컴포넌트 -------
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attribute")
+	TObjectPtr<UAttributeComponent> AttributeComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USceneComponent> Pivot;
 
@@ -210,5 +135,12 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// -----------------------
+
+	// ----- 속성 접근 함수 -----
+	
+	UFUNCTION(BlueprintCallable, Category = "Attribute")
+	UAttributeComponent* GetAttributeComponent() const { return AttributeComponent.Get(); }
+	
+	// --------------------------
 
 };
