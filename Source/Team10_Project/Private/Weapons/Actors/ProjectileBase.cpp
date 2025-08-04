@@ -4,7 +4,7 @@
 #include "Systems/ObjectPoolComponent.h"
 
 AProjectileBase::AProjectileBase()
-	:ProjectileSpeed(0), ProjectileRange(0), bIsActive(true)
+	:ProjectileSpeed(0), ProjectileRange(0)
 {
 }
 
@@ -21,9 +21,13 @@ void AProjectileBase::OnHit(AActor* CollisionActor)
 {
 	Super::OnHit(CollisionActor);
 
+	if (CollisionActor->ActorHasTag("Enemy"))
+	{
+
+	}
+
 	UObjectPoolComponent* Pool = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("UObjectPoolComponent"));
 	Pool->ReturnObject(this);
-	//비활성화 기능 추가
 }
 
 void AProjectileBase::SetDamage(int32 WPower)

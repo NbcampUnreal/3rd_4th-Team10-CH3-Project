@@ -15,6 +15,8 @@ class TEAM10_PROJECT_API IPoolObjectInterface
 	GENERATED_BODY()
 
 public:
+	bool bIsActive;
+
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PoolObject")
 	bool GetIsActive();
 	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PoolObject")

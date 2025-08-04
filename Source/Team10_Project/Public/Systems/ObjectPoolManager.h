@@ -35,6 +35,7 @@ public:
 				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				AActor* NewActor = GetWorld()->SpawnActor<AActor>(PoolObjectData[i], 
 					FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+				Cast<IPoolObjectInterface>(NewActor)->bIsActive = true;
 				if (NewActor->GetClass()->ImplementsInterface(UPoolObjectInterface::StaticClass()))
 				{
 					IPoolObjectInterface::Execute_DeActiveObject(NewActor);

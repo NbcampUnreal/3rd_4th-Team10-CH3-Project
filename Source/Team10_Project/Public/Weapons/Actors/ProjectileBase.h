@@ -15,7 +15,6 @@ public:
 	AProjectileBase();
 
 private:
-	bool bIsActive;
 	FTimerHandle ProjectileTimerHandle;
 
 protected:
