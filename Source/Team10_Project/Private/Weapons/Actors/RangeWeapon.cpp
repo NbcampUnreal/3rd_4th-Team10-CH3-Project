@@ -1,5 +1,6 @@
 #include "Weapons/Actors/RangeWeapon.h"
 #include "Weapons/Actors/ProjectileBase.h"
+#include "Systems/ObjectPoolComponent.h"
 
 ARangeWeapon::ARangeWeapon()
 	:LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
@@ -31,8 +32,8 @@ void ARangeWeapon::Attack(AActor* Activator)
 	if (bIsFire && FireState == ERangeFireState::Load)
 	{
 		FireState = ERangeFireState::Fire;
-
-		AProjectileBase* Projectile = CreateDefaultSubobject<AProjectileBase>(TEXT("AProjectileBase")); //ObjectPool된 총알로 초기화 시키기
+		UObjectPoolComponent* Pool = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("UObjectPoolComponent")); //ObjectPool된 총알로 초기화 시키기
+		AProjectileBase* Projectile = Pool->GetObject<AProjectileBase>();
 		Projectile->Activate(this, ProjectilePoint);
 		GetWorld()->GetTimerManager().SetTimer(
 			FireTimerHandle,

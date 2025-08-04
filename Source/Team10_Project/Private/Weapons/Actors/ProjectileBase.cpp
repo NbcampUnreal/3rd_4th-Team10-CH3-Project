@@ -1,9 +1,10 @@
 #include "Weapons/Actors/ProjectileBase.h"
 #include "Weapons/Actors/RangeWeapon.h"
 #include "MyComponents/ObjectMovementComponent.h"
+#include "Systems/ObjectPoolComponent.h"
 
 AProjectileBase::AProjectileBase()
-	:ProjectileSpeed(0), ProjectileRange(0)
+	:ProjectileSpeed(0), ProjectileRange(0), bIsActive(true)
 {
 }
 
@@ -19,6 +20,9 @@ void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint)
 void AProjectileBase::OnHit(AActor* CollisionActor)
 {
 	Super::OnHit(CollisionActor);
+
+	UObjectPoolComponent* Pool = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("UObjectPoolComponent"));
+	Pool->ReturnObject(this);
 	//비활성화 기능 추가
 }
 
@@ -35,17 +39,35 @@ void AProjectileBase::ProjectileLifeTime(ARangeWeapon* ActiveWeapon)
 	GetWorld()->GetTimerManager().SetTimer(
 		ProjectileTimerHandle,
 		this,
-		&AProjectileBase::ProjectileDeActive,
+		&AProjectileBase::DeActiveObject,
 		LifeTime,
 		false
 	);
 }
 
-void AProjectileBase::ProjectileDeActive()
+bool AProjectileBase::GetIsActive_Implementation()
+{
+	return bIsActive;
+}
+
+void AProjectileBase::ActiveObject_Implementation()
+{
+	bIsActive = true;
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	SetActorTickEnabled(true);
+}
+
+void AProjectileBase::DeActiveObject_Implementation()
 {
 	if (!bIsActive) return;
 
 	if (bIsActive)
-		return;//비활성화 기능 및 위치 초기화
+	{
+		bIsActive = false;
+		SetActorHiddenInGame(true);
+		SetActorEnableCollision(false);
+		SetActorTickEnabled(false);
+	}
 }
 
