@@ -41,6 +41,6 @@ public:
 	template <typename T>
 	void ReturnObject(T* Object)
 	{
-		Object->DeActivate();
+		Object->DeActiveObject();
 	}
 };
