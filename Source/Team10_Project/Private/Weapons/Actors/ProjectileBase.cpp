@@ -6,6 +6,7 @@
 AProjectileBase::AProjectileBase()
 	:ProjectileSpeed(0), ProjectileRange(0)
 {
+	WeaponType = EWeaponType::Projectile;
 }
 
 void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint)
@@ -13,7 +14,7 @@ void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint)
 	UObjectMovementComponent* ObjMoveComponent = CreateDefaultSubobject<UObjectMovementComponent>(TEXT("UObjectMovementComponent"));
 	SetDamage(ActiveWeapon->GetPower());
 	this->SetActorLocation(BulletPoint);
-	ObjMoveComponent->AddFrontMovement(this, ProjectileSpeed);
+	ObjMoveComponent->AddFrontMovementComponent(this, ProjectileSpeed);
 	ProjectileLifeTime(ActiveWeapon);
 }
 
