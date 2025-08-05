@@ -71,16 +71,16 @@ public:
 	// ----- 속도 및 기타 속성 -----
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float NormalSpeed = 400.f;
+	float NormalSpeed = 300.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float SprintSpeed = 600.f;
+	float SprintSpeed = 550.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float CrouchSpeed = 200.f;
+	float CrouchSpeed = 150.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float ZoomSpeed = 200.f;
+	float ZoomSpeed = 150.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeedMultiplier = 1.5f;

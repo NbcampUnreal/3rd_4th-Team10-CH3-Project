@@ -7,6 +7,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Components/TimelineComponent.h"
 #include "Components/SpotLightComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "MyCharacter.generated.h"
 
 class UCameraComponent;
@@ -140,6 +141,38 @@ protected:
 	TObjectPtr<USpotLightComponent> Flashlight;
 
 	// -------------------
+
+	// ----- 애니메이션 몽타주 -----
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> ReloadMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> FireMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> EquipMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> HolsterMontage;
+	
+	// ---------------------------
+
+	// ----- 사운드 -----
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Sound")
+	TObjectPtr<USoundBase> CrouchingSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Sound")
+	TObjectPtr<USoundBase> UnCrouchingSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Sound")
+	TObjectPtr<USoundBase> FlashlightOnSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Sound")
+	TObjectPtr<USoundBase> FlashlightOffSound;
+	
+	// -----------------
 	
 public:
 	// ----- Input 바인딩 -----

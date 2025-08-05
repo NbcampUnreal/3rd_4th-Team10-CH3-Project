@@ -43,6 +43,8 @@ AMyCharacter::AMyCharacter()
 
 	GetMesh()->SetOwnerNoSee(true);
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
+	GetCharacterMovement()->MaxAcceleration = 512;
+	GetCharacterMovement()->BrakingDecelerationWalking = 512;
 }
 
 void AMyCharacter::BeginPlay()
@@ -152,6 +154,12 @@ void AMyCharacter::StartCrouch()
 	{
 		CrouchTimeline->PlayFromStart();
 	}
+	
+	if (CrouchingSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, CrouchingSound, GetActorLocation());   
+	}
+	
 	bWantsToSprint = false;
 	bIsCrouching = true;
 	ApplyMovementSpeedByState();
@@ -163,6 +171,12 @@ void AMyCharacter::EndCrouch()
 	{
 		CrouchTimeline->Reverse();
 	}
+	
+	if (UnCrouchingSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, UnCrouchingSound, GetActorLocation());  
+	}
+	
 	bIsCrouching = false;
 	ApplyMovementSpeedByState();
 }
@@ -273,13 +287,23 @@ void AMyCharacter::Reload()
 {
 	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Reload is not allowed!"));
+		return;
+	}
+	if (!ReloadMontage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Reload Montage is not set!"));
 		return;
 	}
 
-	StopZoom();
+	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(ReloadMontage, 1.f);
+	}
 	
+	StopZoom();
 	bIsReloading = true;
-	UE_LOG(LogTemp, Log, TEXT("Reloading..."));
 	
 	FTimerHandle ReloadTimer;
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &AMyCharacter::FinishReload, 2.0f, false);
@@ -298,6 +322,21 @@ void AMyCharacter::ToggleFlashlight()
 	if (Flashlight)
 	{
 		Flashlight->ToggleVisibility();
+		
+		if (Flashlight->IsVisible())
+		{
+			if (FlashlightOnSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, FlashlightOnSound, GetActorLocation());
+			}
+		}
+		else
+		{
+			if (FlashlightOffSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, FlashlightOffSound, GetActorLocation());
+			}
+		}
 	}
 }
 
@@ -483,7 +522,7 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 			
 			EnhancedInputComponent->BindAction(
 				PlayerController->ReloadAction,
-				ETriggerEvent::Triggered,
+				ETriggerEvent::Started,
 				this,
 				&AMyCharacter::Reload
 				);
