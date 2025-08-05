@@ -52,6 +52,9 @@ void AMyCharacter::BeginPlay()
 	Super::BeginPlay();
 	SetCharacterState(ECharacterState::Idle);
 
+	bEquipped = false;
+	CharacterArms->SetVisibility(false);
+
 	if (SprintFOVCurve && SprintFOVTimeline)
 	{
 		FOnTimelineFloat FOVInterpFunction;
@@ -340,6 +343,42 @@ void AMyCharacter::ToggleFlashlight()
 	}
 }
 
+void AMyCharacter::EquipWeapon()
+{
+	if (bEquipped)
+	{
+	}
+
+	if (!EquipMontage)
+	{
+		return;
+	}
+
+	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(EquipMontage, 1.f);
+	}
+	bEquipped = true;
+	CharacterArms->SetVisibility(true);
+}
+
+void AMyCharacter::UnEquipWeapon()
+{
+	if (!bEquipped)
+	{
+		return;
+	}
+	
+	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(UnEquipMontage, 1.f);
+	}
+	bEquipped = false;
+	CharacterArms->SetVisibility(false);
+}
+
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
 {
 	if (CurrentState == NewState)
@@ -532,6 +571,20 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 				ETriggerEvent::Started,
 				this,
 				&AMyCharacter::ToggleFlashlight
+				);
+			
+			EnhancedInputComponent->BindAction(
+				PlayerController->Key1Action,
+				ETriggerEvent::Started,
+				this,
+				&AMyCharacter::EquipWeapon
+				);
+			
+			EnhancedInputComponent->BindAction(
+				PlayerController->KeyQAction,
+				ETriggerEvent::Started,
+				this,
+				&AMyCharacter::UnEquipWeapon
 				);
 		}
 	}

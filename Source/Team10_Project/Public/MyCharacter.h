@@ -54,6 +54,9 @@ protected:
 	void Reload();
 	void FinishReload();
     void ToggleFlashlight();
+
+	void EquipWeapon();
+	void UnEquipWeapon();
 	
 	// ---------------------------
 
@@ -152,6 +155,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> EquipMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> UnEquipMontage;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> HolsterMontage;

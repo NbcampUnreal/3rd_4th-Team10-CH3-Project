@@ -80,13 +80,13 @@ public:
 	float CrouchSpeed = 150.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float ZoomSpeed = 150.f;
+	float ZoomSpeed = 200.f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float SprintSpeedMultiplier = 1.5f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float ZoomSpeedMultiplier = 0.5f;
+	float ZoomSpeedMultiplier = 0.7f;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
 	float CrouchSpeedMultiplier = 0.5f;
