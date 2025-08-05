@@ -92,6 +92,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	bool bIsCrouching;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	bool bIsCloseToWall;
+	
 	bool bWantsToSprint;
 
 	void SetCharacterState(ECharacterState NewState);

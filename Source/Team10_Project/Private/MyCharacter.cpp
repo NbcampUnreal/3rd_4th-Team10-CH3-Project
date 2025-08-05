@@ -92,7 +92,7 @@ void AMyCharacter::Tick(float DeltaTime)
 	{
 		AttributeComponent->ConsumeStamina(DeltaTime);
 
-		if (AttributeComponent->GetStamina() <= 0.f || LastInputVector.X <= 0.f)
+		if (AttributeComponent->GetStamina() <= 0.f || LastInputVector.X <= 0.f || bIsCloseToWall)
 		{
 			StopSprint();
 		}
@@ -116,6 +116,20 @@ void AMyCharacter::Tick(float DeltaTime)
 	}
 
 	// -------------------------
+
+	// ----- 벽 체크 로직 -----
+	
+	FVector Start = FirstPersonCamera->GetComponentLocation();
+	FVector End = Start + (FirstPersonCamera->GetForwardVector() * 100.f);
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+
+	bIsCloseToWall = bHit;
+	
+	// ----------------------
 }
 
 void AMyCharacter::Landed(const FHitResult& Hit)
@@ -207,7 +221,7 @@ void AMyCharacter::ToggleCrouch()
 
 void AMyCharacter::StartSprint()
 {
-	if (!AttributeComponent->CanSprint() || LastInputVector.X <= 0.f)
+	if (!AttributeComponent->CanSprint() || LastInputVector.X <= 0.f || bIsCloseToWall)
 	{
 		return;
 	}
