@@ -3,12 +3,14 @@
 #include "CoreMinimal.h"
 #include "AttributeComponent.h"
 #include "GameFramework/Character.h"
-#include "Components/TimelineComponent.h"
 #include "Curves/CurveFloat.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Components/TimelineComponent.h"
+#include "Components/SpotLightComponent.h"
 #include "MyCharacter.generated.h"
 
 class UCameraComponent;
+class UAudioComponent;
 struct FInputActionValue;
 
 UENUM(BlueprintType)
@@ -50,6 +52,7 @@ protected:
 	void StopJump();
 	void Reload();
 	void FinishReload();
+    void ToggleFlashlight();
 	
 	// ---------------------------
 
@@ -115,6 +118,12 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UCameraComponent> FirstPersonCamera;
 	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Sounnds")
+	TObjectPtr<USceneComponent> Sounds;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Sounnds")
+	TObjectPtr<UAudioComponent> FootStepSounds;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 	TObjectPtr<UCurveFloat> SprintFOVCurve;
 
@@ -126,6 +135,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	TObjectPtr<UTimelineComponent> CrouchTimeline;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Flashlight")
+	TObjectPtr<USpotLightComponent> Flashlight;
 
 	// -------------------
 	

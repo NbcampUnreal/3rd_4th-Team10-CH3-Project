@@ -1,10 +1,10 @@
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
 #include "EnhancedInputComponent.h"
-#include "ParticleHelper.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/AudioComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 AMyCharacter::AMyCharacter()
@@ -23,10 +23,23 @@ AMyCharacter::AMyCharacter()
 	CharacterArms->bCastCapsuleDirectShadow = false;
 	CharacterArms->CastShadow = false;
 
+	Sounds = CreateDefaultSubobject<USceneComponent>(TEXT("Sounds"));
+	Sounds->SetupAttachment(GetCapsuleComponent());
+
+	FootStepSounds = CreateDefaultSubobject<UAudioComponent>(TEXT("FootStepSounds"));
+	FootStepSounds->SetupAttachment(Sounds);
+
 	SprintFOVTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SprintFOVTimeline"));
 	CrouchTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CrouchTimeline"));
 
 	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
+
+	Flashlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Flashlight"));
+	Flashlight->SetupAttachment(FirstPersonCamera);
+	Flashlight->SetVisibility(false);
+	Flashlight->Intensity = 5000.f;
+	Flashlight->InnerConeAngle = 25.f;
+	Flashlight->OuterConeAngle = 30.f;
 
 	GetMesh()->SetOwnerNoSee(true);
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
@@ -278,6 +291,16 @@ void AMyCharacter::FinishReload()
 	UE_LOG(LogTemp, Log, TEXT("Reload Finished"));
 }
 
+void AMyCharacter::ToggleFlashlight()
+{
+    UE_LOG(LogTemp, Warning, TEXT("ToggleFlashlight function called!")); // 디버깅 로그
+
+	if (Flashlight)
+	{
+		Flashlight->ToggleVisibility();
+	}
+}
+
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
 {
 	if (CurrentState == NewState)
@@ -463,6 +486,13 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 				ETriggerEvent::Triggered,
 				this,
 				&AMyCharacter::Reload
+				);
+			
+			EnhancedInputComponent->BindAction(
+				PlayerController->ToggleFlashlightAction,
+				ETriggerEvent::Started,
+				this,
+				&AMyCharacter::ToggleFlashlight
 				);
 		}
 	}
