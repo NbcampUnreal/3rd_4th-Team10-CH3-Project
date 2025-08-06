@@ -7,7 +7,7 @@ void ASpartaGameState::AddScore(int32 Amount)
 
 void ASpartaGameState::DecreaseRemainingEnemies()
 {
-    DisplayEnemiesRemaining = FMath::Max(0, DisplayEnemiesRemaining - 1);
+    DisplayEnemiesRemaining = FMath::Max(DisplayEnemiesRemaining - 1, 0);
 }
 
 void ASpartaGameState::SetDisplayWave(int32 Wave)
@@ -18,4 +18,9 @@ void ASpartaGameState::SetDisplayWave(int32 Wave)
 void ASpartaGameState::SetDisplayEnemiesRemaining(int32 Count)
 {
     DisplayEnemiesRemaining = Count;
+}
+
+void ASpartaGameState::SetInterWaveCountdown(int32 Time)
+{
+    InterWaveCountdown = Time;
 }
