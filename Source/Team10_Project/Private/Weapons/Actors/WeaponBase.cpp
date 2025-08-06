@@ -80,6 +80,11 @@ EWeaponType AWeaponBase::GetWeaponType() const
 	return WeaponType;
 }
 
+FName AWeaponBase::GetWeaponName() const
+{
+	return WeaponName;
+}
+
 int32 AWeaponBase::GetPower() const
 {
 	return Power;

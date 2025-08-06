@@ -22,7 +22,16 @@ protected:
 public:	
 	virtual void Tick(float DeltaTime) override;
 
+	bool bIsEquip;
 	bool bIsAttack;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
+	UStaticMeshComponent* WeaponStaticMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
+	USkeletalMeshComponent* WeaponSkeletalMesh;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangeState")
+	ERangeFireState FireState;
+
 protected:
 	TSet<AActor*> CollisionObject;
 
@@ -46,10 +55,6 @@ protected:
 	USceneComponent* Scene;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
 	UBoxComponent* Collision;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
-	UStaticMeshComponent* WeaponStaticMesh;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
-	USkeletalMeshComponent* WeaponSkeletalMesh;
 
 	virtual void OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
@@ -63,11 +68,7 @@ protected:
 	virtual void OnHit(AActor* CollisionActor) override;
 
 public:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangeState")
-	ERangeFireState FireState;
-
-	bool bIsEquip;
-
 	EWeaponType GetWeaponType() const;
+	FName GetWeaponName() const;
 	int32 GetPower() const;
 };
