@@ -2,6 +2,7 @@
 #include "Weapons/Actors/RangeWeapon.h"
 #include "MyComponents/ObjectMovementComponent.h"
 #include "Systems/ObjectPoolComponent.h"
+#include "Systems/HitboxObject.h"
 
 AProjectileBase::AProjectileBase()
 	:ProjectileSpeed(0), ProjectileRange(0)
@@ -9,12 +10,18 @@ AProjectileBase::AProjectileBase()
 	WeaponType = EWeaponType::Projectile;
 }
 
-void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint)
+void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint, FRotator BulletRotation)
 {
-	UObjectMovementComponent* ObjMoveComponent = CreateDefaultSubobject<UObjectMovementComponent>(TEXT("UObjectMovementComponent"));
-	SetDamage(ActiveWeapon->GetPower());
 	this->SetActorLocation(BulletPoint);
-	ObjMoveComponent->AddFrontMovementComponent(this, ProjectileSpeed);
+	this->SetActorRotation(BulletRotation);
+
+	UObjectPoolComponent* Pool = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("UObjectPoolComponent"));
+	AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
+	HitBox->HitBoxComp(this, Height, Width, Vertical);
+	SetDamage(ActiveWeapon->GetPower());
+
+	UObjectMovementComponent* ObjMoveComponent = CreateDefaultSubobject<UObjectMovementComponent>(TEXT("UObjectMovementComponent"));
+	ObjMoveComponent->AddFrontMovementComp(this, ProjectileSpeed);
 	ProjectileLifeTime(ActiveWeapon);
 }
 
@@ -24,7 +31,7 @@ void AProjectileBase::OnHit(AActor* CollisionActor)
 
 	if (CollisionActor->ActorHasTag("Enemy"))
 	{
-
+		//Cast<ACharacter_Monster>(CollisionActor)->TakeDamage(TotalDamage);
 	}
 
 	UObjectPoolComponent* Pool = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("UObjectPoolComponent"));

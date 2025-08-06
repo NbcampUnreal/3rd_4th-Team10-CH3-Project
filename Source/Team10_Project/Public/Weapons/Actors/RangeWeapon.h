@@ -28,6 +28,8 @@ protected:
 	bool bIsFire;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	FVector ProjectilePoint;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
+	FRotator ProjectileRotate;
 
 	ERangeLeverType GetRangeLeverType();
 	ERangeFireType GetAttackType();

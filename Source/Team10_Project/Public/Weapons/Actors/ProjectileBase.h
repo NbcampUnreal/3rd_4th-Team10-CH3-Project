@@ -29,10 +29,9 @@ protected:
 public:
 	int32 WeaponPower;
 
-protected:
-	void OnHit(AActor* OtherActor);
 public:
-	void Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint);
+	void OnHit(AActor* OtherActor);
+	void Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint, FRotator BulletRotation);
 	void SetDamage(int32 WPower);
 	void ProjectileLifeTime(ARangeWeapon* ActiveWeapon);
 
