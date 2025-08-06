@@ -1,14 +1,12 @@
 #include "Systems/ObjectPoolManager.h"
 
-AObjectPoolManager::AObjectPoolManager()
+UObjectPoolManager::UObjectPoolManager()
 {
-	PrimaryActorTick.bCanEverTick = true;
-
 	PoolSize = 10;
 }
 
-void AObjectPoolManager::BeginPlay()
+void UObjectPoolManager::Initialize(FSubsystemCollectionBase& Collection)
 {
-	Super::BeginPlay();
+	Super::Initialize(Collection);
 	InitPool();
 }

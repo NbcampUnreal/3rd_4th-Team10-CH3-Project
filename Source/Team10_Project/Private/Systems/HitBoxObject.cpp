@@ -2,7 +2,7 @@
 #include "Components/BoxComponent.h"
 #include "Weapons/Actors/ProjectileBase.h"
 #include "Weapons/Actors/WeaponBase.h"
-#include "Systems/ObjectPoolComponent.h"
+#include "Systems/ObjectPoolManager.h"
 
 AHitBoxObject::AHitBoxObject()
 {
@@ -43,7 +43,7 @@ void AHitBoxObject::Hit(UPrimitiveComponent* OverlappedComp,
 	Cast<AProjectileBase>(RootActor)->OnHit(OtherActor);
 
 	HitBoxCollision->SetupAttachment(Scene);
-	UObjectPoolComponent* Pool = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("UObjectPoolComponent"));
+	UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
 	Pool->ReturnObject(this);
 }
 

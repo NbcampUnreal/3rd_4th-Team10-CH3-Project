@@ -1,7 +1,7 @@
 #include "Weapons/Actors/ProjectileBase.h"
 #include "Weapons/Actors/RangeWeapon.h"
 #include "MyComponents/ObjectMovementComponent.h"
-#include "Systems/ObjectPoolComponent.h"
+#include "Systems/ObjectPoolManager.h"
 #include "Systems/HitboxObject.h"
 
 AProjectileBase::AProjectileBase()
@@ -15,7 +15,7 @@ void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint, 
 	this->SetActorLocation(BulletPoint);
 	this->SetActorRotation(BulletRotation);
 
-	UObjectPoolComponent* Pool = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("UObjectPoolComponent"));
+	UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
 	AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
 	HitBox->HitBoxComp(this, Height, Width, Vertical);
 	SetDamage(ActiveWeapon->GetPower());
@@ -34,7 +34,7 @@ void AProjectileBase::OnHit(AActor* CollisionActor)
 		//Cast<ACharacter_Monster>(CollisionActor)->TakeDamage(TotalDamage);
 	}
 
-	UObjectPoolComponent* Pool = CreateDefaultSubobject<UObjectPoolComponent>(TEXT("UObjectPoolComponent"));
+	UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
 	Pool->ReturnObject(this);
 }
 

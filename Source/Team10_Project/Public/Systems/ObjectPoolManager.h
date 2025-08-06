@@ -3,19 +3,19 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Weapons/Actors/Bullet.h"
+#include "Systems/SingletonSubsystem.h"
 #include "ObjectPoolManager.generated.h"
 
 UCLASS()
-class TEAM10_PROJECT_API AObjectPoolManager : public AActor
+class TEAM10_PROJECT_API UObjectPoolManager : public USingletonSubsystem
 {
 	GENERATED_BODY()
 
 public:	
-	AObjectPoolManager();
+	UObjectPoolManager();
 
 protected:
-	virtual void BeginPlay() override;
-
+	void Initialize(FSubsystemCollectionBase& Collection) override;
 private:
 	UPROPERTY(EditAnywhere, Category = "PoolData")
 	int32 PoolSize;
@@ -43,5 +43,28 @@ public:
 				ObjectPool.Add(NewActor);
 			}
 		}
+	}
+
+	template <typename T>
+	T* GetObject()
+	{
+		UClass* ObjectClass = T::StaticClass();
+		for (AActor* Object : ObjectPool)
+		{
+			if (!Cast<T>(Object)->GetIsActive())
+			{
+				Cast<T>(Object)->ActiveObject();
+				return Cast<T>(Object);
+			}
+		}
+
+		T* NewObject = GetWorld()->SpawnActor<T>(ObjectClass);
+		ObjectPool.Add(NewObject);
+		return NewObject;
+	}
+	template <typename T>
+	void ReturnObject(T* Object)
+	{
+		Object->DeActiveObject();
 	}
 };
