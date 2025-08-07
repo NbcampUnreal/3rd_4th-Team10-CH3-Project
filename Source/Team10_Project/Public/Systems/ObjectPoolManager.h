@@ -35,10 +35,11 @@ public:
 				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 				AActor* NewActor = GetWorld()->SpawnActor<AActor>(PoolObjectData[i], 
 					FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-				Cast<IPoolObjectInterface>(NewActor)->bIsActive = true;
+
+				Cast<IPoolObjectInterface>(NewActor)->SetActive_Implementation(true);
 				if (NewActor->GetClass()->ImplementsInterface(UPoolObjectInterface::StaticClass()))
 				{
-					IPoolObjectInterface::Execute_DeActiveObject(NewActor);
+					Cast<IPoolObjectInterface>(NewActor)->DeActiveObject_Implementation();
 				}
 				ObjectPool.Add(NewActor);
 			}
@@ -51,10 +52,13 @@ public:
 		UClass* ObjectClass = T::StaticClass();
 		for (AActor* Object : ObjectPool)
 		{
-			if (!Cast<T>(Object)->GetIsActive())
+			if (Object->GetClass()->IsChildOf(ObjectClass))
 			{
-				Cast<T>(Object)->ActiveObject();
-				return Cast<T>(Object);
+				if (!Cast<IPoolObjectInterface>(Object)->GetIsActive_Implementation())
+				{
+					Cast<IPoolObjectInterface>(Object)->ActiveObject_Implementation();
+					return Cast<T>(Object);
+				}
 			}
 		}
 

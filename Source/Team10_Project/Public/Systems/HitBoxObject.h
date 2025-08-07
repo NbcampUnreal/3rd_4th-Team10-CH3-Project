@@ -17,7 +17,11 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void Tick(float Time)override;
 
+private:
+	FTimerHandle HitBoxTimerHandle;
+	float LifeTime;
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
 	AActor* RootActor;
@@ -25,13 +29,17 @@ public:
 	USceneComponent* Scene;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
 	UBoxComponent* HitBoxCollision;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
+	bool bIsActive;
 
-	void HitBoxComp(AActor* Activator, float Height, float Width, float Vertical);
+	void HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time);
 	void Hit(UPrimitiveComponent* OverlappedComp,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
 		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void HitBoxLifeTime(float Time);
 
+	virtual void SetActive_Implementation(bool Active) override;
 	virtual bool GetIsActive_Implementation() override;
 	virtual void ActiveObject_Implementation() override;
 	virtual void DeActiveObject_Implementation() override;

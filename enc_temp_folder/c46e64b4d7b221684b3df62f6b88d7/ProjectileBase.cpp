@@ -20,7 +20,7 @@ void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint, 
 
 	UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
 	AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
-	HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime);
+	HitBox->HitBoxComp(this, Height, Width, Vertical);
 	SetDamage(ActiveWeapon->GetPower());
 
 	ProjectileMovement();
@@ -36,7 +36,6 @@ void AProjectileBase::OnHit(AActor* CollisionActor)
 
 	if (CollisionActor->ActorHasTag("Enemy"))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
 		//Cast<ACharacter_Monster>(CollisionActor)->TakeDamage(TotalDamage);
 	}
 

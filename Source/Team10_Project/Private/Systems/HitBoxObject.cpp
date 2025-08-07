@@ -24,15 +24,56 @@ void AHitBoxObject::BeginPlay()
 	
 }
 
-void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, float Vertical)
+void AHitBoxObject::Tick(float Time)
+{
+	Super::Tick(Time);
+	FVector Center = HitBoxCollision->GetComponentLocation();
+	FVector Extent = HitBoxCollision->GetScaledBoxExtent(); // Scale 반영된 실제 크기
+	FRotator Rotation = HitBoxCollision->GetComponentRotation();
+
+	DrawDebugBox(
+		GetWorld(),
+		Center,
+		Extent,
+		Rotation.Quaternion(),
+		FColor::Red,
+		true,     // 지속 여부
+		2.f,       // 지속 시간 (0이면 한 프레임만)
+		0,         // Depth Priority
+		2.f        // 선 굵기
+	);
+}
+
+void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time)
 {
 	HitBoxCollision->SetBoxExtent(FVector(Width, Vertical, Height));
 
-	if (Cast<AWeaponBase>(Activator)->GetWeaponType() == EWeaponType::Projectile)
+	AWeaponBase* Weapon  = Cast<AWeaponBase>(Activator);
+	if (Weapon->GetWeaponType() == EWeaponType::Projectile)
 	{
 		RootActor = Activator;
-		HitBoxCollision->SetupAttachment(Cast<AWeaponBase>(Activator)->WeaponStaticMesh);
+
+		HitBoxCollision->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
+		HitBoxCollision->AttachToComponent(Weapon->WeaponStaticMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+		HitBoxCollision->SetRelativeLocation(FVector::ZeroVector);
+		HitBoxCollision->SetRelativeRotation(FRotator::ZeroRotator);
+
+		HitBoxLifeTime(Time);
 	}
+}
+
+void AHitBoxObject::HitBoxLifeTime(float Time)
+{
+	LifeTime = Time;
+
+	GetWorld()->GetTimerManager().SetTimer(
+		HitBoxTimerHandle,
+		this,
+		&AHitBoxObject::DeActiveObject_Implementation,
+		LifeTime,
+		false
+	);
 }
 
 void AHitBoxObject::Hit(UPrimitiveComponent* OverlappedComp,
@@ -40,11 +81,19 @@ void AHitBoxObject::Hit(UPrimitiveComponent* OverlappedComp,
 	UPrimitiveComponent* OtherComp,
 	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Hit Object"));
+
 	Cast<AProjectileBase>(RootActor)->OnHit(OtherActor);
 
+	HitBoxCollision->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
 	HitBoxCollision->SetupAttachment(Scene);
 	UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
 	Pool->ReturnObject(this);
+}
+
+void AHitBoxObject::SetActive_Implementation(bool Active)
+{
+	bIsActive = Active;
 }
 
 bool AHitBoxObject::GetIsActive_Implementation()
