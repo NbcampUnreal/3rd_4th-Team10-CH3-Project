@@ -19,6 +19,7 @@ public:
 	virtual void EquipmentWeapon(AActor* Player) = 0;
 	virtual void UnEquipmentWeapon(AActor* Player) = 0;
 	virtual void Attack(AActor* Activator) = 0;
+	UFUNCTION()
 	virtual void OnHit(UPrimitiveComponent* HitComp,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,
