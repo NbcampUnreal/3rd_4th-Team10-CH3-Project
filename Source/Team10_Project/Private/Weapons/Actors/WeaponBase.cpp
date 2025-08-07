@@ -10,11 +10,11 @@ AWeaponBase::AWeaponBase()
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	SetRootComponent(Scene);
 
-	Collision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
-	Collision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-	Collision->SetupAttachment(Scene);
+	/*GetCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
+	GetCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	GetCollision->SetupAttachment(Scene);
 
-	Collision->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnItemOverlap);
+	GetCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnItemOverlap);*/
 }
 
 void AWeaponBase::BeginPlay()
@@ -32,10 +32,11 @@ void AWeaponBase::Tick(float DeltaTime)
 void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+	UE_LOG(LogTemp, Warning, TEXT("Overlap Object"));
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
 		//F키를 누르면 획득 또는 교환
-		Collision->SetCollisionEnabled(ECollisionEnabled ::NoCollision);
+		GetCollision->SetCollisionEnabled(ECollisionEnabled ::NoCollision);
 	}
 }
 
@@ -61,13 +62,17 @@ void AWeaponBase::Attack(AActor* Activator)
 	if (!Activator) return;
 }
 
-void AWeaponBase::OnHit(AActor* CollisionActor)
+void AWeaponBase::OnHit(UPrimitiveComponent* HitComp,
+	AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,
+	FVector NormalImpulse,
+	const FHitResult& Hit)
 {
-	if (!CollisionActor) return;
+	//if (!OtherActor) return;
 
-	if (CollisionActor->ActorHasTag("Enemy"))
+	if (OtherActor->ActorHasTag("Enemy"))
 	{
-		CollisionObject.Add(CollisionActor);
+		CollisionObject.Add(OtherActor);
 	}
 	else
 	{

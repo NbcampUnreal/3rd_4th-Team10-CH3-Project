@@ -34,7 +34,12 @@ public:
 
 protected:
 	TSet<AActor*> CollisionObject;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
+	FVector Origin;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
+	FVector BoxExtent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
+	FVector MeshSize;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	EWeaponType WeaponType;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
@@ -54,18 +59,22 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
 	USceneComponent* Scene;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
-	UBoxComponent* Collision;
+	UBoxComponent* GetCollision;
 
 	virtual void OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult) override;
 	virtual void GetItem() override;
-
 	virtual void UseWeapon() override;
 	virtual void EquipmentWeapon(AActor* Player) override;
 	virtual void UnEquipmentWeapon(AActor* Player) override;
 	virtual void Attack(AActor* Activator) override;
-	virtual void OnHit(AActor* CollisionActor) override;
+	UFUNCTION()
+	virtual void OnHit(UPrimitiveComponent* HitComp,
+		AActor* OtherActor,
+		UPrimitiveComponent* OtherComp,
+		FVector NormalImpulse,
+		const FHitResult& Hit) override;
 
 public:
 	EWeaponType GetWeaponType() const;
