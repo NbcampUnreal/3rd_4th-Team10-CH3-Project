@@ -10,4 +10,6 @@ class TEAM10_PROJECT_API APistol : public ARangeWeapon
 	GENERATED_BODY()
 public:
 	APistol();
+
+	virtual void BeginPlay() override;
 };

@@ -2,11 +2,6 @@
 
 APistol::APistol()
 {
-	WeaponSkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("SkeletalMesh"));
-	WeaponSkeletalMesh->SetupAttachment(Scene);
-
-	ProjectilePoint = WeaponSkeletalMesh->GetSocketLocation(TEXT("MuzzleSocket"));
-
 	FireType = ERangeFireType::SingleShot;
 	WeaponName = "Pistol";
 	Power = 5;
@@ -17,4 +12,11 @@ APistol::APistol()
 	MaxBulletAmount = 10;
 	CurBulletAmount = MaxBulletAmount;
 	bIsFire = true;
+}
+
+void APistol::BeginPlay()
+{
+	Super::BeginPlay();
+	SetFireState();
+	Attack(this);
 }
