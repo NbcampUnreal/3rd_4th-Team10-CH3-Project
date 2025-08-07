@@ -27,9 +27,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	bool bIsFire;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
-	FVector ProjectilePoint;
+	FVector MuzzleLocation;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
-	FRotator ProjectileRotate;
+	FRotator MuzzleRotate;
 
 	ERangeLeverType GetRangeLeverType();
 	ERangeFireType GetAttackType();

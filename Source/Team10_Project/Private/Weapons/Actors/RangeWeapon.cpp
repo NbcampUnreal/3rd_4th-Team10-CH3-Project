@@ -4,14 +4,18 @@
 
 ARangeWeapon::ARangeWeapon()
 	:LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
-	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true), ProjectilePoint(FVector::ZeroVector), ProjectileRotate(FRotator::ZeroRotator)
+	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
 {
 	WeaponType = EWeaponType::Range;
+
+	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+	WeaponStaticMesh->SetupAttachment(Scene);
 }
 
 void ARangeWeapon::BeginPlay()
 {
 	Super::BeginPlay();
+
 	if (LeverType == ERangeLeverType::Single)
 	{
 		FireType = ERangeFireType::SingleShot;
@@ -32,10 +36,17 @@ void ARangeWeapon::Attack(AActor* Activator)
 	if (bIsFire && FireState == ERangeFireState::Load)
 	{
 		UE_LOG(LogTemp, Warning, (TEXT("Fire")));
+
+		FTransform SocketWorldTransform = WeaponStaticMesh->GetSocketTransform(TEXT("MuzzleSocket"), RTS_World);
+
+		MuzzleLocation = SocketWorldTransform.GetLocation();
+		FVector FireDirection = SocketWorldTransform.GetRotation().GetForwardVector();
+		MuzzleRotate = FireDirection.Rotation();
+
 		FireState = ERangeFireState::Fire;
 		UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
 		AProjectileBase* Projectile = Pool->GetObject<AProjectileBase>();
-		Projectile->Activate(this, ProjectilePoint, ProjectileRotate);
+		Projectile->Activate(this, MuzzleLocation, MuzzleRotate, FireDirection);
 		GetWorld()->GetTimerManager().SetTimer(
 			FireTimerHandle,
 			this,
