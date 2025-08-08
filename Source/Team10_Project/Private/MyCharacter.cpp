@@ -1,15 +1,15 @@
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
+
 #include "EnhancedInputComponent.h"
-#include "ParticleHelper.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/AudioComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-// --- [AI ±â´É Ãß°¡] ---
+
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
-// --------------------
 
 AMyCharacter::AMyCharacter()
 {
@@ -27,21 +27,32 @@ AMyCharacter::AMyCharacter()
 	CharacterArms->bCastCapsuleDirectShadow = false;
 	CharacterArms->CastShadow = false;
 
+	Sounds = CreateDefaultSubobject<USceneComponent>(TEXT("Sounds"));
+	Sounds->SetupAttachment(GetCapsuleComponent());
+
+	FootStepSounds = CreateDefaultSubobject<UAudioComponent>(TEXT("FootStepSounds"));
+	FootStepSounds->SetupAttachment(Sounds);
+
 	SprintFOVTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SprintFOVTimeline"));
 	CrouchTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CrouchTimeline"));
+
+	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
+
+	Flashlight = CreateDefaultSubobject<USpotLightComponent>(TEXT("Flashlight"));
+	Flashlight->SetupAttachment(FirstPersonCamera);
+	Flashlight->SetVisibility(false);
+	Flashlight->Intensity = 5000.f;
+	Flashlight->InnerConeAngle = 25.f;
+	Flashlight->OuterConeAngle = 30.f;
 
 	GetMesh()->SetOwnerNoSee(true);
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
 
-	MaxHealth = 100;
-	Health = MaxHealth;
-	Defence = 10;
+	GetCharacterMovement()->MaxAcceleration = 512;
+	GetCharacterMovement()->BrakingDecelerationWalking = 512;
 
-	// --- [AI ±â´É Ãß°¡] ---
-	// ÆÀ ID¸¦ 0¹øÀ¸·Î ¼³Á¤
 	TeamId = FGenericTeamId(0);
 
-	// AI ÀÎÁö ÀÚ±Ø ¼Ò½º ÄÄÆ÷³ÍÆ® »ý¼º ¹× ¼³Á¤
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
 	if (StimuliSource)
 	{
@@ -55,6 +66,9 @@ void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SetCharacterState(ECharacterState::Idle);
+
+	bEquipped = false;
+	CharacterArms->SetVisibility(false);
 
 	if (SprintFOVCurve && SprintFOVTimeline)
 	{
@@ -75,6 +89,8 @@ void AMyCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// ----- íšŒì „ ë¡œì§ -----
+	
 	if (Controller && Pivot)
 	{
 		const FRotator ControlRotation = Controller->GetControlRotation();
@@ -83,6 +99,24 @@ void AMyCharacter::Tick(float DeltaTime)
 		Pivot->SetRelativeRotation(FRotator(AimPitch, 0.f, 0.f));
 	}
 
+	// ---------------------
+	
+	// ----- ìŠ¤íƒœë¯¸ë‚˜ ë¡œì§ -----
+	
+	if (CurrentState == ECharacterState::Sprinting)
+	{
+		AttributeComponent->ConsumeStamina(DeltaTime);
+
+		if (AttributeComponent->GetStamina() <= 0.f || LastInputVector.X <= 0.f || bIsCloseToWall)
+		{
+			StopSprint();
+		}
+	}
+
+	// -------------------------
+
+	// ----- ìºë¦­í„° ìƒíƒœ ë¡œì§ -----
+	
 	if (CurrentState == ECharacterState::Idle || CurrentState == ECharacterState::Walking)
 	{
 		if (FMath::IsNearlyZero(GetVelocity().Size()))
@@ -95,6 +129,22 @@ void AMyCharacter::Tick(float DeltaTime)
 			SetCharacterState(ECharacterState::Walking);
 		}
 	}
+
+	// -------------------------
+
+	// ----- ë²½ ì²´í¬ ë¡œì§ -----
+	
+	FVector Start = FirstPersonCamera->GetComponentLocation();
+	FVector End = Start + (FirstPersonCamera->GetForwardVector() * 100.f);
+	FHitResult HitResult;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	
+	bool bHit = GetWorld()->LineTraceSingleByChannel(HitResult, Start, End, ECC_Visibility, Params);
+
+	bIsCloseToWall = bHit;
+	
+	// ----------------------
 }
 
 void AMyCharacter::Landed(const FHitResult& Hit)
@@ -107,6 +157,7 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
+	LastInputVector = MovementVector;
 
 	if (Controller)
 	{
@@ -135,6 +186,12 @@ void AMyCharacter::StartCrouch()
 	{
 		CrouchTimeline->PlayFromStart();
 	}
+	
+	if (CrouchingSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, CrouchingSound, GetActorLocation());   
+	}
+	
 	bWantsToSprint = false;
 	bIsCrouching = true;
 	ApplyMovementSpeedByState();
@@ -146,13 +203,22 @@ void AMyCharacter::EndCrouch()
 	{
 		CrouchTimeline->Reverse();
 	}
+	
+	if (UnCrouchingSound)
+	{
+		UGameplayStatics::PlaySoundAtLocation(this, UnCrouchingSound, GetActorLocation());  
+	}
+	
 	bIsCrouching = false;
 	ApplyMovementSpeedByState();
 }
 
 void AMyCharacter::UpdateCrouch(float Value)
 {
-	const float NewHalfHeight = FMath::Lerp(StandingCapsuleHalfHeight, CrouchingCapsuleHalfHeight, Value);
+	const float NewHalfHeight = FMath::Lerp(
+		AttributeComponent->StandingCapsuleHalfHeight,
+		AttributeComponent->CrouchingCapsuleHalfHeight,
+		Value);
 	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
 }
 
@@ -170,7 +236,13 @@ void AMyCharacter::ToggleCrouch()
 
 void AMyCharacter::StartSprint()
 {
+	if (!AttributeComponent->CanSprint() || LastInputVector.X <= 0.f || bIsCloseToWall)
+	{
+		return;
+	}
+
 	bWantsToSprint = true;
+	
 	if (CurrentState == ECharacterState::Jumping || bIsZoomed || bIsCrouching)
 	{
 		return;
@@ -183,6 +255,8 @@ void AMyCharacter::StartSprint()
 			return;
 		}
 
+		AttributeComponent->StartSprintStaminaLogic();
+		
 		SetCharacterState(ECharacterState::Sprinting);
 		SprintFOVTimeline->PlayFromStart();
 	}
@@ -195,6 +269,7 @@ void AMyCharacter::StopSprint()
 	{
 		return;
 	}
+	AttributeComponent->StopSprintStaminaLogic();
 
 	SprintFOVTimeline->Reverse();
 	UpdateGroundState();
@@ -230,7 +305,6 @@ void AMyCharacter::StartZoom()
 	{
 		return;
 	}
-
 	bIsZoomed = true;
 	ApplyMovementSpeedByState();
 }
@@ -245,13 +319,23 @@ void AMyCharacter::Reload()
 {
 	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped)
 	{
+		UE_LOG(LogTemp, Warning, TEXT("Reload is not allowed!"));
+		return;
+	}
+	if (!ReloadMontage)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Reload Montage is not set!"));
 		return;
 	}
 
+	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(ReloadMontage, 1.f);
+	}
+	
 	StopZoom();
-
 	bIsReloading = true;
-	UE_LOG(LogTemp, Log, TEXT("Reloading..."));
 
 	FTimerHandle ReloadTimer;
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &AMyCharacter::FinishReload, 2.0f, false);
@@ -261,6 +345,67 @@ void AMyCharacter::FinishReload()
 {
 	bIsReloading = false;
 	UE_LOG(LogTemp, Log, TEXT("Reload Finished"));
+}
+
+void AMyCharacter::ToggleFlashlight()
+{
+    UE_LOG(LogTemp, Warning, TEXT("ToggleFlashlight function called!")); // ë””ë²„ê¹… ë¡œê·¸
+
+	if (Flashlight)
+	{
+		Flashlight->ToggleVisibility();
+		
+		if (Flashlight->IsVisible())
+		{
+			if (FlashlightOnSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, FlashlightOnSound, GetActorLocation());
+			}
+		}
+		else
+		{
+			if (FlashlightOffSound)
+			{
+				UGameplayStatics::PlaySoundAtLocation(this, FlashlightOffSound, GetActorLocation());
+			}
+		}
+	}
+}
+
+void AMyCharacter::EquipWeapon()
+{
+	if (bEquipped)
+	{
+	}
+
+	if (!EquipMontage)
+	{
+		return;
+	}
+
+	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(EquipMontage, 1.f);
+	}
+	bEquipped = true;
+	CharacterArms->SetVisibility(true);
+}
+
+void AMyCharacter::UnEquipWeapon()
+{
+	if (!bEquipped)
+	{
+		return;
+	}
+	
+	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+	if (AnimInstance)
+	{
+		AnimInstance->Montage_Play(UnEquipMontage, 1.f);
+	}
+	bEquipped = false;
+	CharacterArms->SetVisibility(false);
 }
 
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
@@ -293,31 +438,34 @@ void AMyCharacter::UpdateGroundState()
 	}
 }
 
-float AMyCharacter::ApplyMovementSpeedByState()
+void AMyCharacter::ApplyMovementSpeedByState()
 {
-	float BaseSpeed = NormalSpeed;
-
+	float BaseSpeed = AttributeComponent->NormalSpeed;
+	
 	switch (CurrentState)
 	{
 	case ECharacterState::Sprinting:
-		BaseSpeed = SprintSpeed;
+		BaseSpeed = AttributeComponent->SprintSpeed;
 		break;
 	case ECharacterState::Walking:
 	case ECharacterState::Idle:
-		BaseSpeed = NormalSpeed;
+		BaseSpeed = AttributeComponent->NormalSpeed;
 		break;
 	}
 
 	if (bIsZoomed)
 	{
-		BaseSpeed = ZoomSpeed;
+		BaseSpeed *= AttributeComponent->ZoomSpeedMultiplier;
 	}
 	if (bIsCrouching)
 	{
-		BaseSpeed = CrouchSpeed;
+		BaseSpeed *= AttributeComponent->CrouchSpeedMultiplier;
 	}
 
-	return BaseSpeed;
+	if (GetCharacterMovement())
+	{
+		GetCharacterMovement()->MaxWalkSpeed = BaseSpeed;	
+	}
 }
 
 void AMyCharacter::UpdateSprintFOV(float Value)
@@ -442,16 +590,35 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 			EnhancedInputComponent->BindAction(
 				PlayerController->ReloadAction,
-				ETriggerEvent::Triggered,
+				ETriggerEvent::Started,
 				this,
 				&AMyCharacter::Reload
+			);
+			
+			EnhancedInputComponent->BindAction(
+				PlayerController->ToggleFlashlightAction,
+				ETriggerEvent::Started,
+				this,
+				&AMyCharacter::ToggleFlashlight
+			);
+			
+			EnhancedInputComponent->BindAction(
+				PlayerController->Key1Action,
+				ETriggerEvent::Started,
+				this,
+				&AMyCharacter::EquipWeapon
+			);
+			
+			EnhancedInputComponent->BindAction(
+				PlayerController->KeyQAction,
+				ETriggerEvent::Started,
+				this,
+				&AMyCharacter::UnEquipWeapon
 			);
 		}
 	}
 }
 
-// --- [AI ±â´É Ãß°¡] ---
-// ÆÀ ID ¹ÝÈ¯ ÇÔ¼ö ±¸Çö
 FGenericTeamId AMyCharacter::GetGenericTeamId() const
 {
 	return TeamId;
