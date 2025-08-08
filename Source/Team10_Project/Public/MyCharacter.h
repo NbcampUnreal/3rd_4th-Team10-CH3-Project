@@ -1,14 +1,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "AttributeComponent.h"
 #include "GameFramework/Character.h"
-#include "Components/TimelineComponent.h"
 #include "Curves/CurveFloat.h"
 #include "Camera/PlayerCameraManager.h"
+#include "Components/TimelineComponent.h"
+#include "Components/SpotLightComponent.h"
+#include "Kismet/GameplayStatics.h"
 #include "GenericTeamAgentInterface.h" // <--- [AI 기능 추가] 1. 헤더 추가
 #include "MyCharacter.generated.h"
 
 class UCameraComponent;
+class UAudioComponent;
 struct FInputActionValue;
 
 UENUM(BlueprintType)
@@ -19,7 +23,6 @@ enum class ECharacterState : uint8
 	Sprinting UMETA(DisplayName = "Sprinting"),
 	Jumping UMETA(DisplayName = "Jumping")
 };
-//                                              👇 [AI 기능 추가] 2. 인터페이스 상속
 UCLASS()
 class TEAM10_PROJECT_API AMyCharacter : public ACharacter, public IGenericTeamAgentInterface
 {
@@ -27,9 +30,18 @@ class TEAM10_PROJECT_API AMyCharacter : public ACharacter, public IGenericTeamAg
 
 public:
 	AMyCharacter();
+	
+	// ----- 속성 접근 함수 -----
+	
+	UFUNCTION(BlueprintCallable, Category = "Attribute")
+	UAttributeComponent* GetAttributeComponent() const { return AttributeComponent.Get(); }
+	
+	// --------------------------
 
 	// ----- [AI 기능 추가] 3. 팀 ID 함수 선언 -----
+	
 	virtual FGenericTeamId GetGenericTeamId() const override;
+	
 	// ------------------------------------------
 
 protected:
@@ -37,53 +49,7 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void Landed(const FHitResult& Hit) override;
-
-	// ----- 캐릭터 속성 -----
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float Health;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float MaxHealth;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float Defence;
-
-	// --------------------
-
-	// ----- 속도 및 기타 속성 -----
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float NormalSpeed = 600.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float SprintSpeed = 900.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float CrouchSpeed = 300.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float SprintSpeedMultiplier = 1.5f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float ZoomSpeed = 300.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Movement")
-	float ZoomSpeedMultiplier = 0.5f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gun")
-	float DefaultFOV = 100.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gun")
-	float ZoomedFOV = 60.f;
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Gun")
-	float ZoomInterpSpeed = 10.f;
-
-	// (캡슐 컴포넌트) 서있는 상태 88, 앉아있는 상태 44
-	float StandingCapsuleHalfHeight = 88.f;
-	float CrouchingCapsuleHalfHeight = 44.f;
-
-	// --------------------------
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	// ----- 동작 바인딩 함수 -----
 
@@ -102,13 +68,15 @@ protected:
 	void StopJump();
 	void Reload();
 	void FinishReload();
+    void ToggleFlashlight();
 
+	void EquipWeapon();
+	void UnEquipWeapon();
+	
 	// ---------------------------
 
-	void SetCharacterState(ECharacterState NewState);
-	void UpdateGroundState();
-	float ApplyMovementSpeedByState();
-
+	// ----- Timeline 함수 -----
+	
 	UFUNCTION()
 	void UpdateSprintFOV(float Value);
 
@@ -121,6 +89,12 @@ protected:
 	UFUNCTION()
 	void UpdateCrouch(float Value);
 
+	// --------------------------
+	
+	// ----- 캐릭터 상태 관리 -----
+	
+	FVector2D LastInputVector;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	bool bEquipped;
 
@@ -133,17 +107,30 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	bool bIsCrouching;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+	bool bIsCloseToWall;
+	
 	bool bWantsToSprint;
 
+	void SetCharacterState(ECharacterState NewState);
+	
+	void UpdateGroundState();
+	
+	void ApplyMovementSpeedByState();
+	
 	UPROPERTY(VisibleAnywhere, Category = "State")
 	ECharacterState CurrentState;
 
 	UFUNCTION(BlueprintCallable, Category = "State")
 	ECharacterState GetCurrentState() const;
+	
+	// ---------------------
 
-
-	// ----- 컴포넌트 -----
-
+	// ----- 컴포넌트 -------
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Attribute")
+	TObjectPtr<UAttributeComponent> AttributeComponent;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<USceneComponent> Pivot;
 
@@ -152,7 +139,13 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components")
 	TObjectPtr<UCameraComponent> FirstPersonCamera;
-
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Sounnds")
+	TObjectPtr<USceneComponent> Sounds;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Sounnds")
+	TObjectPtr<UAudioComponent> FootStepSounds;
+	
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
 	TObjectPtr<UCurveFloat> SprintFOVCurve;
 
@@ -164,12 +157,47 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
 	TObjectPtr<UTimelineComponent> CrouchTimeline;
+	
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Flashlight")
+	TObjectPtr<USpotLightComponent> Flashlight;
 
 	// -------------------
 
-public:
-	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+	// ----- 애니메이션 몽타주 -----
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> ReloadMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> FireMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> EquipMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> UnEquipMontage;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Animation")
+	TObjectPtr<UAnimMontage> HolsterMontage;
+	
+	// ---------------------------
 
+	// ----- 사운드 -----
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Sound")
+	TObjectPtr<USoundBase> CrouchingSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Sound")
+	TObjectPtr<USoundBase> UnCrouchingSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Sound")
+	TObjectPtr<USoundBase> FlashlightOnSound;
+	
+	UPROPERTY(EditDefaultsOnly, Category = "Effects|Sound")
+	TObjectPtr<USoundBase> FlashlightOffSound;
+	
+	// -----------------
+	
 private: // <--- [AI 기능 추가] 4. AI 관련 변수
 	FGenericTeamId TeamId;
 
