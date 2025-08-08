@@ -10,4 +10,6 @@ class TEAM10_PROJECT_API ABullet : public AProjectileBase
 	GENERATED_BODY()
 	
 	ABullet();
+
+	virtual void ProjectileMovement() override;
 };

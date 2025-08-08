@@ -44,20 +44,15 @@ void AHitBoxObject::Tick(float Time)
 	);
 }
 
-void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time)
+void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time, bool OnlyOne)
 {
 	HitBoxCollision->SetBoxExtent(FVector(Width, Vertical, Height));
 
 	AWeaponBase* Weapon  = Cast<AWeaponBase>(Activator);
 	if (Weapon->GetWeaponType() == EWeaponType::Projectile)
 	{
-		RootActor = Activator;
-
-		HitBoxCollision->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-		HitBoxCollision->AttachToComponent(Weapon->WeaponStaticMesh, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-
-		HitBoxCollision->SetRelativeLocation(FVector::ZeroVector);
-		HitBoxCollision->SetRelativeRotation(FRotator::ZeroRotator);
+		HitBoxCollision->SetRelativeLocation(Activator->GetActorLocation());
+		HitBoxCollision->SetRelativeRotation(Activator->GetActorRotation());
 
 		HitBoxLifeTime(Time);
 	}
@@ -76,17 +71,12 @@ void AHitBoxObject::HitBoxLifeTime(float Time)
 	);
 }
 
-void AHitBoxObject::Hit(UPrimitiveComponent* OverlappedComp,
-	AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,
-	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AHitBoxObject::Hit(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,
+	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Hit Object"));
+	UE_LOG(LogTemp, Warning, TEXT("Hit HitBox"));
 
-	Cast<AProjectileBase>(RootActor)->OnHit(OtherActor);
-
-	HitBoxCollision->DetachFromComponent(FDetachmentTransformRules::KeepWorldTransform);
-	HitBoxCollision->SetupAttachment(Scene);
+	//HitObjectSet
 	UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
 	Pool->ReturnObject(this);
 }

@@ -24,15 +24,18 @@ private:
 	float LifeTime;
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
-	AActor* RootActor;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
 	USceneComponent* Scene;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
 	UBoxComponent* HitBoxCollision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
+	TSet<AActor*> HitObjectSet;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
 	bool bIsActive;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
+	bool Only;
 
-	void HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time);
+	void HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time, bool Only);
+	UFUNCTION()
 	void Hit(UPrimitiveComponent* OverlappedComp,
 		AActor* OtherActor,
 		UPrimitiveComponent* OtherComp,

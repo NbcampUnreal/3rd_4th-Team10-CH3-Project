@@ -1,16 +1,30 @@
 #include "Weapons/Actors/Bullet.h"
+#include "Components/BoxComponent.h"
+#include "GameFramework/ProjectileMovementComponent.h"
 
 ABullet::ABullet()
 {
-	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
-	WeaponStaticMesh->SetupAttachment(Scene);
-
 	WeaponName = "Bullet";
-	ProjectileSpeed = 850.0f;
-	ProjectileRange = 800.0f;
+	ProjectileSpeed = 50.0f;
+	ProjectileRange = 8000.0f;
 	Power = 10;
 
-	Height = 1.0f;
-	Width = 1.0f;
-	Vertical = 1.0f;
+	WeaponStaticMesh->GetLocalBounds(Origin, BoxExtent);
+	MeshSize = BoxExtent * 2.f;
+	Height = MeshSize.Z;
+	Width = MeshSize.X;
+	Vertical = MeshSize.Y;
+}
+
+void ABullet::ProjectileMovement()
+{
+	Super::ProjectileMovement();
+
+	UE_LOG(LogTemp, Warning, TEXT("Move"));
+
+	ProjectileMovementComp->Velocity = ProjectileDir * ProjectileSpeed;
+	ProjectileCollision->Activate();
+	ProjectileMovementComp->Activate(true);
+
+	ProjectileLifeTime();
 }

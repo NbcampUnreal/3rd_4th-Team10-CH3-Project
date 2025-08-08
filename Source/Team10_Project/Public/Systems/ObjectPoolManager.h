@@ -33,14 +33,16 @@ public:
 			{
 				FActorSpawnParameters SpawnParams;
 				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+
 				AActor* NewActor = GetWorld()->SpawnActor<AActor>(PoolObjectData[i], 
 					FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
 
-				Cast<IPoolObjectInterface>(NewActor)->SetActive_Implementation(true);
 				if (NewActor->GetClass()->ImplementsInterface(UPoolObjectInterface::StaticClass()))
 				{
-					Cast<IPoolObjectInterface>(NewActor)->DeActiveObject_Implementation();
+					IPoolObjectInterface::Execute_SetActive(NewActor, true);
+					IPoolObjectInterface::Execute_DeActiveObject(NewActor);
 				}
+
 				ObjectPool.Add(NewActor);
 			}
 		}
@@ -50,25 +52,37 @@ public:
 	T* GetObject()
 	{
 		UClass* ObjectClass = T::StaticClass();
+
 		for (AActor* Object : ObjectPool)
 		{
-			if (Object->GetClass()->IsChildOf(ObjectClass))
+			if (Object && Object->GetClass()->IsChildOf(ObjectClass))
 			{
-				if (!Cast<IPoolObjectInterface>(Object)->GetIsActive_Implementation())
+				if (Object->GetClass()->ImplementsInterface(UPoolObjectInterface::StaticClass()))
 				{
-					Cast<IPoolObjectInterface>(Object)->ActiveObject_Implementation();
-					return Cast<T>(Object);
+					if (!IPoolObjectInterface::Execute_GetIsActive(Object))
+					{
+						IPoolObjectInterface::Execute_ActiveObject(Object);
+						return Cast<T>(Object);
+					}
 				}
 			}
 		}
 
 		T* NewObject = GetWorld()->SpawnActor<T>(ObjectClass);
+		if (NewObject->GetClass()->ImplementsInterface(UPoolObjectInterface::StaticClass()))
+		{
+			IPoolObjectInterface::Execute_ActiveObject(NewObject);
+		}
 		ObjectPool.Add(NewObject);
+
 		return NewObject;
 	}
 	template <typename T>
 	void ReturnObject(T* Object)
 	{
-		Object->DeActiveObject();
+		if (Object && Object->GetClass()->ImplementsInterface(UPoolObjectInterface::StaticClass()))
+		{
+			IPoolObjectInterface::Execute_DeActiveObject(Object);
+		}
 	}
 };

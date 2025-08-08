@@ -36,17 +36,17 @@ void AProjectileBase::Tick(float Time)
 	FVector Center = ProjectileCollision->GetComponentLocation();
 	FVector Extent = ProjectileCollision->GetScaledBoxExtent(); // Scale 반영된 실제 크기
 	FRotator Rotation = ProjectileCollision->GetComponentRotation();
-	DrawDebugBox(
-		GetWorld(),
-		Center,
-		Extent,
-		Rotation.Quaternion(),
-		FColor::Green,
-		true,     // 지속 여부
-		2.f,       // 지속 시간 (0이면 한 프레임만)
-		0,         // Depth Priority
-		2.f        // 선 굵기
-	);
+	//DrawDebugBox(
+	//	GetWorld(),
+	//	Center,
+	//	Extent,
+	//	Rotation.Quaternion(),
+	//	FColor::Green,
+	//	true,     // 지속 여부
+	//	2.f,       // 지속 시간 (0이면 한 프레임만)
+	//	0,         // Depth Priority
+	//	2.f        // 선 굵기
+	//);
 }
 
 void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector ProjectileLoc, FRotator ProjectileRotate, FVector FireDir)
@@ -87,7 +87,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
 		//Cast<ACharacter_Monster>(CollisionActor)->TakeDamage(TotalDamage);
 	}
 
-	//Pool->ReturnObject(this);
+	Pool->ReturnObject(this);
 }
 
 void AProjectileBase::SetDamage(int32 WPower)
