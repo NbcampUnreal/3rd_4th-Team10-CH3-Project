@@ -6,6 +6,10 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
+// --- [AI 기능 추가] ---
+#include "Perception/AIPerceptionStimuliSourceComponent.h"
+#include "Perception/AISense_Sight.h"
+// --------------------
 
 AMyCharacter::AMyCharacter()
 {
@@ -32,6 +36,19 @@ AMyCharacter::AMyCharacter()
 	MaxHealth = 100;
 	Health = MaxHealth;
 	Defence = 10;
+
+	// --- [AI 기능 추가] ---
+	// 팀 ID를 0번으로 설정
+	TeamId = FGenericTeamId(0);
+
+	// AI 인지 자극 소스 컴포넌트 생성 및 설정
+	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
+	if (StimuliSource)
+	{
+		StimuliSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
+		StimuliSource->RegisterWithPerceptionSystem();
+	}
+	// --------------------
 }
 
 void AMyCharacter::BeginPlay()
@@ -50,7 +67,7 @@ void AMyCharacter::BeginPlay()
 	{
 		FOnTimelineFloat CrouchInterpFunction;
 		CrouchInterpFunction.BindUFunction(this, FName("UpdateCrouch"));
-        CrouchTimeline->AddInterpFloat(CrouchCurve, CrouchInterpFunction);
+		CrouchTimeline->AddInterpFloat(CrouchCurve, CrouchInterpFunction);
 	}
 }
 
@@ -113,7 +130,7 @@ void AMyCharacter::Look(const FInputActionValue& Value)
 void AMyCharacter::StartCrouch()
 {
 	StopSprint();
-	
+
 	if (CrouchTimeline)
 	{
 		CrouchTimeline->PlayFromStart();
@@ -158,7 +175,7 @@ void AMyCharacter::StartSprint()
 	{
 		return;
 	}
-	
+
 	if (GetCharacterMovement())
 	{
 		if (GetCharacterMovement()->IsFalling())
@@ -178,7 +195,7 @@ void AMyCharacter::StopSprint()
 	{
 		return;
 	}
-	
+
 	SprintFOVTimeline->Reverse();
 	UpdateGroundState();
 }
@@ -232,10 +249,10 @@ void AMyCharacter::Reload()
 	}
 
 	StopZoom();
-	
+
 	bIsReloading = true;
 	UE_LOG(LogTemp, Log, TEXT("Reloading..."));
-	
+
 	FTimerHandle ReloadTimer;
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &AMyCharacter::FinishReload, 2.0f, false);
 }
@@ -265,7 +282,7 @@ void AMyCharacter::UpdateGroundState()
 		SetCharacterState(ECharacterState::Sprinting);
 		return;
 	}
-	
+
 	if (FMath::IsNearlyZero(GetVelocity().Size()))
 	{
 		SetCharacterState(ECharacterState::Idle);
@@ -279,7 +296,7 @@ void AMyCharacter::UpdateGroundState()
 float AMyCharacter::ApplyMovementSpeedByState()
 {
 	float BaseSpeed = NormalSpeed;
-	
+
 	switch (CurrentState)
 	{
 	case ECharacterState::Sprinting:
@@ -307,7 +324,7 @@ void AMyCharacter::UpdateSprintFOV(float Value)
 {
 	if (FirstPersonCamera)
 	{
-		FirstPersonCamera->FieldOfView = Value;	
+		FirstPersonCamera->FieldOfView = Value;
 	}
 }
 
@@ -341,95 +358,101 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 		if (AMyPlayerController* PlayerController = Cast<AMyPlayerController>(GetController()))
 		{
 			EnhancedInputComponent->BindAction(
-				PlayerController->MoveAction, 
-				ETriggerEvent::Triggered, 
-				this, 
+				PlayerController->MoveAction,
+				ETriggerEvent::Triggered,
+				this,
 				&AMyCharacter::Move
-				);
-            
-			EnhancedInputComponent->BindAction(
-				PlayerController->LookAction, 
-				ETriggerEvent::Triggered, 
-				this, 
-				&AMyCharacter::Look
-				);
-		
-			EnhancedInputComponent->BindAction(
-				PlayerController->SprintAction, 
-				ETriggerEvent::Started, 
-				this, 
-				&AMyCharacter::StartSprint
-				);
-			
-			EnhancedInputComponent->BindAction(
-				PlayerController->SprintAction, 
-				ETriggerEvent::Completed, 
-				this, 
-				&AMyCharacter::StopSprint
-				);
-			
-			EnhancedInputComponent->BindAction(
-				PlayerController->CrouchAction, 
-				ETriggerEvent::Started, 
-				this, 
-				&AMyCharacter::StartCrouch
-				);
-			
-			EnhancedInputComponent->BindAction(
-				PlayerController->CrouchAction, 
-				ETriggerEvent::Completed, 
-				this, 
-				&AMyCharacter::EndCrouch
-				);
+			);
 
 			EnhancedInputComponent->BindAction(
-				PlayerController->ToggleCrouchAction,  
-				ETriggerEvent::Started, 
-				this, 
+				PlayerController->LookAction,
+				ETriggerEvent::Triggered,
+				this,
+				&AMyCharacter::Look
+			);
+
+			EnhancedInputComponent->BindAction(
+				PlayerController->SprintAction,
+				ETriggerEvent::Started,
+				this,
+				&AMyCharacter::StartSprint
+			);
+
+			EnhancedInputComponent->BindAction(
+				PlayerController->SprintAction,
+				ETriggerEvent::Completed,
+				this,
+				&AMyCharacter::StopSprint
+			);
+
+			EnhancedInputComponent->BindAction(
+				PlayerController->CrouchAction,
+				ETriggerEvent::Started,
+				this,
+				&AMyCharacter::StartCrouch
+			);
+
+			EnhancedInputComponent->BindAction(
+				PlayerController->CrouchAction,
+				ETriggerEvent::Completed,
+				this,
+				&AMyCharacter::EndCrouch
+			);
+
+			EnhancedInputComponent->BindAction(
+				PlayerController->ToggleCrouchAction,
+				ETriggerEvent::Started,
+				this,
 				&AMyCharacter::ToggleCrouch
-				);
-			
+			);
+
 			EnhancedInputComponent->BindAction(
 				PlayerController->JumpAction,
 				ETriggerEvent::Started,
 				this,
 				&AMyCharacter::StartJump
-				);
-			
+			);
+
 			EnhancedInputComponent->BindAction(
 				PlayerController->JumpAction,
 				ETriggerEvent::Completed,
 				this,
 				&AMyCharacter::StopJump
-				);
-			
+			);
+
 			EnhancedInputComponent->BindAction(
 				PlayerController->ShootAction,
 				ETriggerEvent::Triggered,
 				this,
 				&AMyCharacter::Shoot
-				);
-			
+			);
+
 			EnhancedInputComponent->BindAction(
 				PlayerController->ZoomAction,
 				ETriggerEvent::Triggered,
 				this,
 				&AMyCharacter::StartZoom
-				);
+			);
 			EnhancedInputComponent->BindAction(
 				PlayerController->ZoomAction,
 				ETriggerEvent::Completed,
 				this,
 				&AMyCharacter::StopZoom
-				);
-			
+			);
+
 			EnhancedInputComponent->BindAction(
 				PlayerController->ReloadAction,
 				ETriggerEvent::Triggered,
 				this,
 				&AMyCharacter::Reload
-				);
+			);
 		}
 	}
 }
 
+// --- [AI 기능 추가] ---
+// 팀 ID 반환 함수 구현
+FGenericTeamId AMyCharacter::GetGenericTeamId() const
+{
+	return TeamId;
+}
