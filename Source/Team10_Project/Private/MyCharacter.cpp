@@ -1,15 +1,15 @@
 #include "MyCharacter.h"
 #include "MyPlayerController.h"
+
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/AudioComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
-// --- [AI 기능 추가] ---
+
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
-// --------------------
 
 AMyCharacter::AMyCharacter()
 {
@@ -47,20 +47,12 @@ AMyCharacter::AMyCharacter()
 
 	GetMesh()->SetOwnerNoSee(true);
 	GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
-<<<<<<< HEAD
+
 	GetCharacterMovement()->MaxAcceleration = 512;
 	GetCharacterMovement()->BrakingDecelerationWalking = 512;
-=======
 
-	MaxHealth = 100;
-	Health = MaxHealth;
-	Defence = 10;
-
-	// --- [AI 기능 추가] ---
-	// 팀 ID를 0번으로 설정
 	TeamId = FGenericTeamId(0);
 
-	// AI 인지 자극 소스 컴포넌트 생성 및 설정
 	StimuliSource = CreateDefaultSubobject<UAIPerceptionStimuliSourceComponent>(TEXT("StimuliSource"));
 	if (StimuliSource)
 	{
@@ -68,7 +60,6 @@ AMyCharacter::AMyCharacter()
 		StimuliSource->RegisterWithPerceptionSystem();
 	}
 	// --------------------
->>>>>>> 6f0121d91b923657b5fec199631b3d8a051d944b
 }
 
 void AMyCharacter::BeginPlay()
@@ -278,12 +269,8 @@ void AMyCharacter::StopSprint()
 	{
 		return;
 	}
-<<<<<<< HEAD
 	AttributeComponent->StopSprintStaminaLogic();
-	
-=======
 
->>>>>>> 6f0121d91b923657b5fec199631b3d8a051d944b
 	SprintFOVTimeline->Reverse();
 	UpdateGroundState();
 }
@@ -341,7 +328,6 @@ void AMyCharacter::Reload()
 		return;
 	}
 
-<<<<<<< HEAD
 	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
 	if (AnimInstance)
 	{
@@ -350,14 +336,7 @@ void AMyCharacter::Reload()
 	
 	StopZoom();
 	bIsReloading = true;
-	
-=======
-	StopZoom();
 
-	bIsReloading = true;
-	UE_LOG(LogTemp, Log, TEXT("Reloading..."));
-
->>>>>>> 6f0121d91b923657b5fec199631b3d8a051d944b
 	FTimerHandle ReloadTimer;
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &AMyCharacter::FinishReload, 2.0f, false);
 }
@@ -461,13 +440,8 @@ void AMyCharacter::UpdateGroundState()
 
 void AMyCharacter::ApplyMovementSpeedByState()
 {
-<<<<<<< HEAD
 	float BaseSpeed = AttributeComponent->NormalSpeed;
 	
-=======
-	float BaseSpeed = NormalSpeed;
-
->>>>>>> 6f0121d91b923657b5fec199631b3d8a051d944b
 	switch (CurrentState)
 	{
 	case ECharacterState::Sprinting:
@@ -619,38 +593,32 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 				ETriggerEvent::Started,
 				this,
 				&AMyCharacter::Reload
-<<<<<<< HEAD
-				);
+			);
 			
 			EnhancedInputComponent->BindAction(
 				PlayerController->ToggleFlashlightAction,
 				ETriggerEvent::Started,
 				this,
 				&AMyCharacter::ToggleFlashlight
-				);
+			);
 			
 			EnhancedInputComponent->BindAction(
 				PlayerController->Key1Action,
 				ETriggerEvent::Started,
 				this,
 				&AMyCharacter::EquipWeapon
-				);
+			);
 			
 			EnhancedInputComponent->BindAction(
 				PlayerController->KeyQAction,
 				ETriggerEvent::Started,
 				this,
 				&AMyCharacter::UnEquipWeapon
-				);
-=======
 			);
->>>>>>> 6f0121d91b923657b5fec199631b3d8a051d944b
 		}
 	}
 }
 
-// --- [AI 기능 추가] ---
-// 팀 ID 반환 함수 구현
 FGenericTeamId AMyCharacter::GetGenericTeamId() const
 {
 	return TeamId;
