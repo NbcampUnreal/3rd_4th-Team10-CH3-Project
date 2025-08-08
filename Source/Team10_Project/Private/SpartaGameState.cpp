@@ -1,26 +1,16 @@
 ﻿#include "SpartaGameState.h"
 
-void ASpartaGameState::AddScore(int32 Amount)
+void ASpartaGameState::SetDisplayWave(int32 NewWave)
 {
-    DisplayScore += Amount;
+    DisplayWave = NewWave;
 }
 
-void ASpartaGameState::DecreaseRemainingEnemies()
+void ASpartaGameState::SetDisplayEnemiesRemaining(int32 NewCount)
 {
-    DisplayEnemiesRemaining = FMath::Max(DisplayEnemiesRemaining - 1, 0);
+    DisplayEnemiesRemaining = NewCount;
 }
 
-void ASpartaGameState::SetDisplayWave(int32 Wave)
+void ASpartaGameState::SetDisplayCountdown(float TimeLeft)
 {
-    DisplayWave = Wave;
-}
-
-void ASpartaGameState::SetDisplayEnemiesRemaining(int32 Count)
-{
-    DisplayEnemiesRemaining = Count;
-}
-
-void ASpartaGameState::SetInterWaveCountdown(int32 Time)
-{
-    InterWaveCountdown = Time;
+    DisplayCountdown = TimeLeft;
 }
