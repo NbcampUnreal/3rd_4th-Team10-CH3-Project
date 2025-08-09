@@ -25,27 +25,30 @@ public:
 	bool bIsEquip;
 	bool bIsAttack;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
-	UStaticMeshComponent* WeaponStaticMesh;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
-	USkeletalMeshComponent* WeaponSkeletalMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangeState")
 	ERangeFireState FireState;
 
 protected:
 	TSet<AActor*> CollisionObject;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
-	FVector Origin;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
+	UStaticMeshComponent* WeaponStaticMesh;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	FVector BoxExtent;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
-	FVector MeshSize;
+	FVector CollisionSize;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	EWeaponType WeaponType;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	FName WeaponName;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	int32 Power;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	float RateOfFire;
 
@@ -58,6 +61,7 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
 	USceneComponent* Scene;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
 	UBoxComponent* GetCollision;
 

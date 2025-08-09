@@ -16,7 +16,6 @@ public:
 	AHitBoxObject();
 
 protected:
-	virtual void BeginPlay() override;
 	virtual void Tick(float Time)override;
 
 private:
@@ -36,10 +35,8 @@ public:
 
 	void HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time, bool Only);
 	UFUNCTION()
-	void Hit(UPrimitiveComponent* OverlappedComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	void Hit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	void HitBoxLifeTime(float Time);
 
 	virtual void SetActive_Implementation(bool Active) override;

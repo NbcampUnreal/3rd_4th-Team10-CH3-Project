@@ -22,11 +22,11 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|FireData")
 	bool bIsActive;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile|FireData")
+	UBoxComponent* ProjectileCollision;
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|FireData")
 	UProjectileMovementComponent* ProjectileMovementComp;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile|FireData")
-	UBoxComponent* ProjectileCollision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|FireData")
 	FVector ProjectileLocation;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|FireData")
