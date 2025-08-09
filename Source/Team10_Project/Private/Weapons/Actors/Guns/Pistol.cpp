@@ -17,6 +17,17 @@ APistol::APistol()
 void APistol::BeginPlay()
 {
 	Super::BeginPlay();
-	SetFireState();
-	Attack(this);
+    SetFireState();
+    StartFire();
+}
+
+void APistol::StartFire()
+{
+    Super::StartFire();
+    Attack(this);
+}
+
+void APistol::StopFire()
+{
+    Super::StopFire();
 }

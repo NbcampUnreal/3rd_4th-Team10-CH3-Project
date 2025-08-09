@@ -70,7 +70,13 @@ void ARangeWeapon::Attack(AActor* Activator)
 		}
 	}
 }
+void ARangeWeapon::StartFire()
+{
+}
 
+void ARangeWeapon::StopFire()
+{
+}
 
 //class AIneventory;
 
