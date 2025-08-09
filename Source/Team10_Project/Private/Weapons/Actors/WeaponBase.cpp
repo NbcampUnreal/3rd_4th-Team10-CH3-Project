@@ -65,6 +65,11 @@ void AWeaponBase::Attack(AActor* Activator)
 	if (!Activator) return;
 }
 
+FVector AWeaponBase::SetHitScale()
+{
+	return FVector::ZeroVector;
+}
+
 void AWeaponBase::OnHit(UPrimitiveComponent* HitComp,
 	AActor* OtherActor,
 	UPrimitiveComponent* OtherComp,

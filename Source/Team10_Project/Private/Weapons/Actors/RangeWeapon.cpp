@@ -29,6 +29,7 @@ void ARangeWeapon::BeginPlay()
 		FireType = ERangeFireType::Repeatedly;
 	}
 }
+
 void ARangeWeapon::Attack(AActor* Activator)
 {
 	Super::Attack(Activator);

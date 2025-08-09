@@ -18,12 +18,14 @@ public:
 private:
 	FTimerHandle ProjectileTimerHandle;
 	int32 WeaponPower;
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|FireData")
 	bool bIsActive;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Projectile|FireData")
 	UBoxComponent* ProjectileCollision;
+
 protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|FireData")
 	UProjectileMovementComponent* ProjectileMovementComp;
@@ -43,16 +45,23 @@ protected:
 	float LifeTime;
 	bool Only;
 
-public:
-	virtual void OnHit(UPrimitiveComponent* HitComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		FVector NormalImpulse,
-		const FHitResult& Hit) override;
-	void Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint, FRotator BulletRotation, FVector FireDir);
+
+    virtual void OnHit(UPrimitiveComponent* HitComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        FVector NormalImpulse,
+        const FHitResult& Hit) override;
+
+    virtual FVector SetHitScale() override;
+	virtual void ProjectileMovement();
+
 	void SetDamage(int32 WPower);
 	void ProjectileLifeTime();
-	virtual void ProjectileMovement();
+
+
+public:
+	void Activate(ARangeWeapon* ActiveWeapon, FVector BulletPoint, FRotator BulletRotation, FVector FireDir);
+
 
 	virtual void SetActive_Implementation(bool Active) override;
 	virtual bool GetIsActive_Implementation() override;

@@ -36,6 +36,7 @@ protected:
 
 	FTimerHandle FireTimerHandle;
 	FTimerDelegate TimerDel;
+
 public:
 	virtual void Attack(AActor* Activator) override;
 

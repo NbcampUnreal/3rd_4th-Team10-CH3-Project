@@ -84,6 +84,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 
 	UE_LOG(LogTemp, Warning, TEXT("OnHit"));
+    SetHitScale();
     AObjectPoolManager* Pool = nullptr;
     for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
     {
@@ -109,7 +110,7 @@ void AProjectileBase::SetDamage(int32 WPower)
 
 void AProjectileBase::ProjectileLifeTime()
 {
-	//LifeTime = ProjectileRange / ProjectileSpeed;
+	LifeTime = ProjectileRange / ProjectileSpeed;
 
 	GetWorld()->GetTimerManager().SetTimer(
 		ProjectileTimerHandle,
@@ -118,6 +119,18 @@ void AProjectileBase::ProjectileLifeTime()
 		LifeTime,
 		false
 	);
+}
+
+FVector AProjectileBase::SetHitScale()
+{
+    BoxExtent = ProjectileCollision->GetScaledBoxExtent();
+    CollisionSize = BoxExtent;
+    Height = CollisionSize.Z;
+    Width = CollisionSize.X;
+    Vertical = CollisionSize.Y;
+
+    FVector HitScale = { Height, Width, Vertical };
+    return HitScale;
 }
 
 void AProjectileBase::SetActive_Implementation(bool Active)

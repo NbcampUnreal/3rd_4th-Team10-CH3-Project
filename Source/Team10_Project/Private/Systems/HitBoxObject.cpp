@@ -17,7 +17,7 @@ AHitBoxObject::AHitBoxObject()
 	HitBoxCollision->SetupAttachment(Scene);
 
 	HitBoxCollision->SetGenerateOverlapEvents(true);
-	HitBoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AHitBoxObject::Hit);
+	HitBoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AHitBoxObject::OnOverlapHit);
 }
 
 void AHitBoxObject::Tick(float Time)
@@ -42,7 +42,7 @@ void AHitBoxObject::Tick(float Time)
 
 void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time, bool OnlyOne)
 {
-	HitBoxCollision->SetBoxExtent(FVector(Width * 2, Vertical * 2, Height * 2));
+	HitBoxCollision->SetBoxExtent(FVector(Width, Vertical, Height));
 
 	AWeaponBase* Weapon  = Cast<AWeaponBase>(Activator);
 	if (Weapon->GetWeaponType() == EWeaponType::Projectile)
@@ -68,7 +68,7 @@ void AHitBoxObject::HitBoxLifeTime(float Time)
 	);
 }
 
-void AHitBoxObject::Hit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Hit HitBox"));
