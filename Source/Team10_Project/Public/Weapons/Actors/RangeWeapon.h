@@ -36,11 +36,14 @@ protected:
 
 	FTimerHandle FireTimerHandle;
 	FTimerDelegate TimerDel;
+
 public:
 	virtual void Attack(AActor* Activator) override;
-
+    virtual void StartFire();
+    virtual void StopFire();
 	void Reload(AActor* Activator);
 	float GetFireSpeed();
 	void SetFireState();
 	void SwitchFireType();
+
 };

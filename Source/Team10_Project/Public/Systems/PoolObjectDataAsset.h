@@ -10,6 +10,6 @@ class TEAM10_PROJECT_API UPoolObjectDataAsset : public UDataAsset
 	GENERATED_BODY()
 	
 public:
-	UPROPERTY(EditAnywhere)
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Pool")
 	TArray<TSubclassOf<AActor>> PoolClasses;
 };
