@@ -18,7 +18,6 @@ void APistol::BeginPlay()
 {
 	Super::BeginPlay();
     SetFireState();
-    StartFire();
 }
 
 void APistol::StartFire()

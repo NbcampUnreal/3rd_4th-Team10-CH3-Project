@@ -77,12 +77,14 @@ protected:
 
 	virtual void GetItem() override;
 	virtual void UseWeapon() override;
-	virtual void EquipmentWeapon(AActor* Player) override;
-	virtual void UnEquipmentWeapon(AActor* Player) override;
-	virtual void Attack(AActor* Activator) override;
     virtual FVector SetHitScale() override;
 
 public:
+	virtual void EquipmentWeapon(AActor* Player) override;
+	virtual void UnEquipmentWeapon(AActor* Player) override;
+	virtual void Attack(AActor* Activator) override;
+    virtual void StartFire() override;
+    virtual void StopFire() override;
 	EWeaponType GetWeaponType() const;
 	FName GetWeaponName() const;
 	int32 GetPower() const;
