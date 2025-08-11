@@ -8,6 +8,8 @@
 #include "Components/TimelineComponent.h"
 #include "Components/SpotLightComponent.h"
 #include "Weapons/Actors/WeaponBase.h"
+#include "Weapons/WeaponData.h"
+#include "Items/ItemTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "GenericTeamAgentInterface.h" // <--- [AI 기능 추가] 1. 헤더 추가
 #include "MyCharacter.generated.h"
@@ -66,14 +68,17 @@ protected:
 
     // ----- 무기 -----
 
-    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
-    TSubclassOf<AWeaponBase> DefaultWeaponClass;
-
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
     TObjectPtr<AWeaponBase> CurrentWeapon;
 
     UPROPERTY(EditDefaultsOnly, Category = "Weapon")
     FName WeaponSocketName = TEXT("WeaponSocket");
+
+    UPROPERTY(VisibleAnywhere, Category = "Weapon")
+    TMap<EWeaponDataType, FWeaponData> WeaponInventory;
+    
+    UPROPERTY(EditDefaultsOnly, Category = "Data")
+    TObjectPtr<UDataTable> WeaponDataTable;
 
     // -----------------
 
@@ -95,9 +100,14 @@ protected:
 	void Reload();
 	void FinishReload();
     void ToggleFlashlight();
+    
+    void EquipPistol();
+    void EquipRifle();
+    void EquipShotgun();
 
-	void EquipWeapon();
+	void EquipWeapon(EWeaponDataType WeaponToEquip);
 	void UnEquipWeapon();
+    void FinishUnEquip();
 	
 	// ---------------------------
 

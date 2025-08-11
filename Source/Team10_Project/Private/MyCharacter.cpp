@@ -69,6 +69,25 @@ void AMyCharacter::BeginPlay()
 
 	bEquipped = false;
 	CharacterArms->SetVisibility(false);
+    
+    if (WeaponDataTable)
+    {
+        TArray<FName> RowNames = WeaponDataTable->GetRowNames();
+        for (const FName& RowName : RowNames)
+        {
+            FWeaponData* Data = WeaponDataTable->FindRow<FWeaponData>(RowName, TEXT(""));
+            if (Data)
+            {
+                EWeaponDataType WeaponType;
+                if (RowName == "Pistol") WeaponType = EWeaponDataType::Pistol;
+                else if (RowName == "Rifle") WeaponType = EWeaponDataType::Rifle;
+                else if (RowName == "Shotgun") WeaponType = EWeaponDataType::Shotgun;
+                else continue;
+
+                WeaponInventory.Add(WeaponType, *Data);
+            }
+        }
+    }
 
 	if (SprintFOVCurve && SprintFOVTimeline)
 	{
@@ -83,16 +102,6 @@ void AMyCharacter::BeginPlay()
 		CrouchInterpFunction.BindUFunction(this, FName("UpdateCrouch"));
 		CrouchTimeline->AddInterpFloat(CrouchCurve, CrouchInterpFunction);
 	}
-
-    if (DefaultWeaponClass)
-    {
-        CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(DefaultWeaponClass);
-        if (CurrentWeapon)
-        {
-            CurrentWeapon->SetOwner(this);
-            CurrentWeapon->UnEquipmentWeapon(this);
-        }
-    }
 }
 
 void AMyCharacter::Tick(float DeltaTime)
@@ -382,45 +391,100 @@ void AMyCharacter::ToggleFlashlight()
 	}
 }
 
-void AMyCharacter::EquipWeapon()
+void AMyCharacter::EquipPistol()
 {
-	if (bEquipped)
+    EquipWeapon(EWeaponDataType::Pistol);
+}
+
+void AMyCharacter::EquipRifle()
+{
+    EquipWeapon(EWeaponDataType::Rifle);
+}
+
+void AMyCharacter::EquipShotgun()
+{
+    EquipWeapon(EWeaponDataType::Shotgun);
+}
+
+void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
+{
+    /*
+    if (CurrentWeapon && CurrentWeapon->GetWeaponType() == WeaponToEquip)
+    {
+        return;
+    }
+    */
+    
+	if (CurrentWeapon)
 	{
+	    UnEquipWeapon();
 	}
 
-	if (!EquipMontage || !CurrentWeapon)
-	{
-		return;
-	}
+    if (WeaponInventory.Contains(WeaponToEquip))
+    {
+        const FWeaponData& NewWeaponData = WeaponInventory[WeaponToEquip];
 
-	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
-	if (AnimInstance)
-	{
-		AnimInstance->Montage_Play(EquipMontage, 1.f);
-	}
-    CurrentWeapon->EquipmentWeapon(this);
+        CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(NewWeaponData.WeaponClass);
+        if (CurrentWeapon)
+        {
+            //CurrentWeapon->SetCurrentAmmo(NewWeaponData.CurrentAmmo);
+            //CurrentWeapon->SetMaxAmmo(NewWeaponData.MaxAmmo);
 
-	bEquipped = true;
-	CharacterArms->SetVisibility(true);
-    CurrentWeapon->SetActorHiddenInGame(false);
+            CurrentWeapon->EquipmentWeapon(this);
+            
+            UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+            if (AnimInstance)
+            {
+                AnimInstance->Montage_Play(EquipMontage, 1.f);
+            }
+            
+            bEquipped = true;
+            CharacterArms->SetVisibility(true);
+            CurrentWeapon->SetActorHiddenInGame(false);
+        }
+    }
 }
 
 void AMyCharacter::UnEquipWeapon()
 {
-	if (!bEquipped)
+	if (!bEquipped || !CurrentWeapon)
 	{
 		return;
 	}
-	
+
+    /*
+    EWeaponDataType OldWeaponType = CurrentWeapon->GetWeaponType();
+    if (WeaponInventory.Contains(OldWeaponType))
+    {
+        //WeaponInventory[OldWeaponType].CurrentAmmo = CurrentWeapon->GetCurrentAmmo();
+        //WeaponInventory[OldWeaponType].CurrentAmmo = CurrentWeapon->GetMaxAmmo();
+    }
+    */
+    float MontagePlaytime = 0.f;
 	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
 	if (AnimInstance)
 	{
-		AnimInstance->Montage_Play(UnEquipMontage, 1.f);
+		MontagePlaytime = AnimInstance->Montage_Play(UnEquipMontage, 1.f);
 	}
-    CurrentWeapon->UnEquipmentWeapon(this);
-
-	bEquipped = false;
-	CharacterArms->SetVisibility(false);
+    
+    FTimerHandle DestroyTimer;
+    GetWorld()->GetTimerManager().SetTimer(
+        DestroyTimer, 
+        this, 
+        &AMyCharacter::FinishUnEquip,
+        MontagePlaytime, 
+        false);
+    
+}
+void AMyCharacter::FinishUnEquip()
+{
+    UE_LOG(LogTemp, Warning, TEXT("FinishUnEquip function called!"));
+    
+    CurrentWeapon->Destroy();
+    CurrentWeapon = nullptr;
+    
+    bEquipped = false;
+    CharacterArms->SetVisibility(false);
 }
 
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
@@ -621,9 +685,23 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 				PlayerController->Key1Action,
 				ETriggerEvent::Started,
 				this,
-				&AMyCharacter::EquipWeapon
+				&AMyCharacter::EquipPistol
 			);
-			
+		    
+		    EnhancedInputComponent->BindAction(
+                PlayerController->Key2Action,
+                ETriggerEvent::Started,
+                this,
+                &AMyCharacter::EquipRifle
+            );
+		    
+		    EnhancedInputComponent->BindAction(
+                PlayerController->Key3Action,
+                ETriggerEvent::Started,
+                this,
+                &AMyCharacter::EquipShotgun
+            );
+		    
 			EnhancedInputComponent->BindAction(
 				PlayerController->KeyQAction,
 				ETriggerEvent::Started,
