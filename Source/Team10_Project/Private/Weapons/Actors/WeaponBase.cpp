@@ -2,14 +2,17 @@
 #include "Components/BoxComponent.h"
 
 AWeaponBase::AWeaponBase()
-	:WeaponType(), WeaponName(""), Power(0), RateOfFire(0.0f),
-	Height(0.0f), Width(0.0f), Vertical(0.0f), FireState(ERangeFireState::Idle), bIsEquip(false)
+	:FireState(ERangeFireState::Idle), BoxExtent(FVector::ZeroVector), CollisionSize(FVector::ZeroVector),
+	WeaponType(), WeaponName(""), Power(0), RateOfFire(0.0f),
+	Height(0.0f), Width(0.0f), Vertical(0.0f), bIsEquip(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	SetRootComponent(Scene);
 
+    WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+    WeaponStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	/*GetCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
 	GetCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	GetCollision->SetupAttachment(Scene);
@@ -51,15 +54,32 @@ void AWeaponBase::UseWeapon()
 
 void AWeaponBase::EquipmentWeapon(AActor* Player)
 {
+    if (!Player) return;
+
+
 }
 
 void AWeaponBase::UnEquipmentWeapon(AActor* Player)
 {
+    if (!Player) return;
 }
 
 void AWeaponBase::Attack(AActor* Activator)
 {
 	if (!Activator) return;
+}
+
+void AWeaponBase::StartFire()
+{
+}
+
+void AWeaponBase::StopFire()
+{
+}
+
+FVector AWeaponBase::SetHitScale()
+{
+	return FVector::ZeroVector;
 }
 
 void AWeaponBase::OnHit(UPrimitiveComponent* HitComp,

@@ -12,4 +12,6 @@ public:
 	APistol();
 
 	virtual void BeginPlay() override;
+    virtual void StartFire() override;
+    virtual void StopFire() override;
 };
