@@ -73,6 +73,10 @@ void AWeaponBase::StartFire()
 {
 }
 
+void AWeaponBase::StopFire()
+{
+}
+
 FVector AWeaponBase::SetHitScale()
 {
 	return FVector::ZeroVector;
