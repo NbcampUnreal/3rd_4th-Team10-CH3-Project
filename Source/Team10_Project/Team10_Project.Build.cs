@@ -8,15 +8,10 @@ public class Team10_Project : ModuleRules
 	{
 		PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 	
-		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "AIModule" });
+		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput" });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });
 
-		PublicIncludePaths.AddRange(new string[]
-		{
-			"Team10_Project",
-			"Team10_Project/Public"
-		});
 		// Uncomment if you are using Slate UI
 		// PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 		
