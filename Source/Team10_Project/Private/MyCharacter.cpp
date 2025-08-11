@@ -402,7 +402,7 @@ void AMyCharacter::EquipWeapon()
 
 	bEquipped = true;
 	CharacterArms->SetVisibility(true);
-    EquippedWeapon->SetActorHiddenInGame(false);
+    CurrentWeapon->SetActorHiddenInGame(false);
 }
 
 void AMyCharacter::UnEquipWeapon()
