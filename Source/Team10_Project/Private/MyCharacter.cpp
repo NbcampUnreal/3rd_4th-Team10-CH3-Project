@@ -84,15 +84,13 @@ void AMyCharacter::BeginPlay()
 		CrouchTimeline->AddInterpFloat(CrouchCurve, CrouchInterpFunction);
 	}
 
-    if (WeaponClass)
+    if (DefaultWeaponClass)
     {
-        EquippedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator);
-
-        if (EquippedWeapon)
+        CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(DefaultWeaponClass);
+        if (CurrentWeapon)
         {
-            EquippedWeapon->AttachToComponent(CharacterArms, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponGrip"));
-            EquippedWeapon->SetOwner(this);
-            EquippedWeapon->SetActorHiddenInGame(false);
+            CurrentWeapon->SetOwner(this);
+            CurrentWeapon->UnEquipmentWeapon(this);
         }
     }
 }
@@ -390,7 +388,7 @@ void AMyCharacter::EquipWeapon()
 	{
 	}
 
-	if (!EquipMontage)
+	if (!EquipMontage || !CurrentWeapon)
 	{
 		return;
 	}
@@ -400,6 +398,8 @@ void AMyCharacter::EquipWeapon()
 	{
 		AnimInstance->Montage_Play(EquipMontage, 1.f);
 	}
+    CurrentWeapon->EquipmentWeapon(this);
+
 	bEquipped = true;
 	CharacterArms->SetVisibility(true);
     EquippedWeapon->SetActorHiddenInGame(false);
@@ -417,6 +417,8 @@ void AMyCharacter::UnEquipWeapon()
 	{
 		AnimInstance->Montage_Play(UnEquipMontage, 1.f);
 	}
+    CurrentWeapon->UnEquipmentWeapon(this);
+
 	bEquipped = false;
 	CharacterArms->SetVisibility(false);
 }

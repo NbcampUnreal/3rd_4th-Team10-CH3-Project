@@ -9,7 +9,8 @@
 #include "Components/SpotLightComponent.h"
 #include "Weapons/Actors/WeaponBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "GenericTeamAgentInterface.h"
+#include "Weapons/Actors/WeaponBase.h"
+#include "GenericTeamAgentInterface.h" // <--- [AI 기능 추가] 1. 헤더 추가
 #include "MyCharacter.generated.h"
 
 class UCameraComponent;
@@ -53,15 +54,15 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
     // ----- 무기 -----
-    
-    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
-    TSubclassOf<AWeaponBase> WeaponClass;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    TSubclassOf<AWeaponBase> DefaultWeaponClass;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
-    TObjectPtr<AWeaponBase> EquippedWeapon;
+    TObjectPtr<AWeaponBase> CurrentWeapon;
 
-    // ----------------
-    
+    // -----------------
+
 	// ----- 동작 바인딩 함수 -----
 
 	void Move(const FInputActionValue& Value);
