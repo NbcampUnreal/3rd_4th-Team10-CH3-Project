@@ -9,7 +9,6 @@
 #include "Components/SpotLightComponent.h"
 #include "Weapons/Actors/WeaponBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "Weapons/Actors/WeaponBase.h"
 #include "GenericTeamAgentInterface.h" // <--- [AI 기능 추가] 1. 헤더 추가
 #include "MyCharacter.generated.h"
 
@@ -46,6 +45,15 @@ public:
 	
 	// ------------------------------------------
 
+    // ----- Getter 함수 -----
+
+    FName GetWeaponSocketName() const { return WeaponSocketName; }
+
+    UFUNCTION(BlueprintPure, Category = "Mesh")
+    USkeletalMeshComponent* GetCharacterArms() const { return CharacterArms.Get(); }
+
+    // -----------------------
+
 protected:
 
 	virtual void BeginPlay() override;
@@ -60,6 +68,9 @@ protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
     TObjectPtr<AWeaponBase> CurrentWeapon;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    FName WeaponSocketName = TEXT("WeaponSocket");
 
     // -----------------
 
