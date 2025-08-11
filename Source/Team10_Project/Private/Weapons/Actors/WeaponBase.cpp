@@ -1,5 +1,6 @@
 #include "Weapons/Actors/WeaponBase.h"
 #include "Components/BoxComponent.h"
+#include "MyCharacter.h"
 
 AWeaponBase::AWeaponBase()
 	:FireState(ERangeFireState::Idle), BoxExtent(FVector::ZeroVector), CollisionSize(FVector::ZeroVector),
@@ -56,12 +57,15 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
 {
     if (!Player) return;
 
-
+    AMyCharacter* Character = Cast<AMyCharacter>(Player);
+    FTransform GripTransform = Character->CharacterArms->GetSocketTransform(TEXT("MuzzleSocket"), RTS_World);
 }
 
 void AWeaponBase::UnEquipmentWeapon(AActor* Player)
 {
     if (!Player) return;
+
+
 }
 
 void AWeaponBase::Attack(AActor* Activator)
