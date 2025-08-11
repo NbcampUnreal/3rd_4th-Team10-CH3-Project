@@ -83,6 +83,8 @@ public:
 	virtual void EquipmentWeapon(AActor* Player) override;
 	virtual void UnEquipmentWeapon(AActor* Player) override;
 	virtual void Attack(AActor* Activator) override;
+    virtual void StartFire() override;
+    virtual void StopFire() override;
 	EWeaponType GetWeaponType() const;
 	FName GetWeaponName() const;
 	int32 GetPower() const;
