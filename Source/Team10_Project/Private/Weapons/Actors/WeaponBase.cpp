@@ -58,7 +58,9 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
     if (!Player) return;
 
     AMyCharacter* Character = Cast<AMyCharacter>(Player);
-    FTransform GripTransform = Character->CharacterArms->GetSocketTransform(TEXT("MuzzleSocket"), RTS_World);
+    FName GripSocketName = Character->GetWeaponSocketName();
+    WeaponStaticMesh->AttachToComponent(Character->GetCharacterArms(),
+        FAttachmentTransformRules::SnapToTargetNotIncludingScale, GripSocketName);
 }
 
 void AWeaponBase::UnEquipmentWeapon(AActor* Player)
@@ -84,6 +86,12 @@ void AWeaponBase::StopFire()
 FVector AWeaponBase::SetHitScale()
 {
 	return FVector::ZeroVector;
+}
+
+FTransform AWeaponBase::GetGripTransform() const
+{
+    FTransform GripTransform = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), RTS_World);
+    return GripTransform;
 }
 
 void AWeaponBase::OnHit(UPrimitiveComponent* HitComp,
