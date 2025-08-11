@@ -1,6 +1,7 @@
 #include "Weapons/Actors/RangeWeapon.h"
 #include "Weapons/Actors/ProjectileBase.h"
 #include "Systems/ObjectPoolManager.h"
+#include "EngineUtils.h"
 
 ARangeWeapon::ARangeWeapon()
 	:LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
@@ -8,7 +9,6 @@ ARangeWeapon::ARangeWeapon()
 {
 	WeaponType = EWeaponType::Range;
 
-	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	WeaponStaticMesh->SetupAttachment(Scene);
 }
 
@@ -29,6 +29,7 @@ void ARangeWeapon::BeginPlay()
 		FireType = ERangeFireType::Repeatedly;
 	}
 }
+
 void ARangeWeapon::Attack(AActor* Activator)
 {
 	Super::Attack(Activator);
@@ -44,8 +45,13 @@ void ARangeWeapon::Attack(AActor* Activator)
 		MuzzleRotate = FireDirection.Rotation();
 
 		FireState = ERangeFireState::Fire;
-		UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
-		AProjectileBase* Projectile = Pool->GetObject<AProjectileBase>();
+        AObjectPoolManager* Pool = nullptr;
+        for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
+        {
+            Pool = *It;
+            break;
+        }
+		AProjectileBase* Projectile = Pool->GetObject<ABullet>();
 		Projectile->Activate(this, MuzzleLocation, MuzzleRotate, FireDirection);
 		GetWorld()->GetTimerManager().SetTimer(
 			FireTimerHandle,
@@ -64,7 +70,13 @@ void ARangeWeapon::Attack(AActor* Activator)
 		}
 	}
 }
+void ARangeWeapon::StartFire()
+{
+}
 
+void ARangeWeapon::StopFire()
+{
+}
 
 //class AIneventory;
 

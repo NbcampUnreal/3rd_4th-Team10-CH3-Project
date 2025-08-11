@@ -3,40 +3,40 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Weapons/Actors/Bullet.h"
-#include "Systems/SingletonSubsystem.h"
+#include <Kismet/GameplayStatics.h>
 #include "ObjectPoolManager.generated.h"
 
 UCLASS()
-class TEAM10_PROJECT_API UObjectPoolManager : public USingletonSubsystem
+class TEAM10_PROJECT_API AObjectPoolManager : public AActor
 {
 	GENERATED_BODY()
 
 public:	
-	UObjectPoolManager();
+	AObjectPoolManager();
 
 protected:
-	void Initialize(FSubsystemCollectionBase& Collection) override;
+    virtual void PostInitializeComponents() override;
+    virtual void BeginPlay() override;
 private:
 	UPROPERTY(EditAnywhere, Category = "PoolData")
 	int32 PoolSize;
-	UPROPERTY(EditAnywhere, Category = "PoolData")
-	TArray<TSubclassOf<AActor>> PoolObjectData;
+
 public:
 	UPROPERTY(EditAnywhere, Category = "PoolData")
-	TArray<AActor*> ObjectPool;
+	TArray<TSubclassOf <AActor>> PoolObjectData;
+	UPROPERTY(EditAnywhere, Category = "PoolData")
+    TArray<AActor*> ObjectPool;
 
 	void InitPool()
 	{
-		for (int i = 0; i < PoolObjectData.Num(); i++)
+		for (TSubclassOf<AActor> ActorToSpawn : PoolObjectData)
 		{
-			for (int32 j = 0; j < PoolSize; ++j)
+			for (int32 i = 0; i < PoolSize; ++i)
 			{
-				FActorSpawnParameters SpawnParams;
-				SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+				AActor* NewActor = GetWorld()->SpawnActorDeferred<AActor>(ActorToSpawn,
+					FTransform::Identity, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
-				AActor* NewActor = GetWorld()->SpawnActor<AActor>(PoolObjectData[i], 
-					FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
-
+                UGameplayStatics::FinishSpawningActor(NewActor, FTransform::Identity);
 				if (NewActor->GetClass()->ImplementsInterface(UPoolObjectInterface::StaticClass()))
 				{
 					IPoolObjectInterface::Execute_SetActive(NewActor, true);
@@ -68,15 +68,20 @@ public:
 			}
 		}
 
-		T* NewObject = GetWorld()->SpawnActor<T>(ObjectClass);
-		if (NewObject->GetClass()->ImplementsInterface(UPoolObjectInterface::StaticClass()))
-		{
-			IPoolObjectInterface::Execute_ActiveObject(NewObject);
-		}
-		ObjectPool.Add(NewObject);
+        T* NewObject = GetWorld()->SpawnActorDeferred<T>(ObjectClass,
+            FTransform::Identity, nullptr, nullptr, ESpawnActorCollisionHandlingMethod::AlwaysSpawn);
 
-		return NewObject;
+        UGameplayStatics::FinishSpawningActor(NewObject, FTransform::Identity);
+        if (NewObject->GetClass()->ImplementsInterface(UPoolObjectInterface::StaticClass()))
+        {
+            IPoolObjectInterface::Execute_ActiveObject(NewObject);
+        }
+        ObjectPool.Add(NewObject);
+
+        return NewObject;
+		
 	}
+
 	template <typename T>
 	void ReturnObject(T* Object)
 	{
