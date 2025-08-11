@@ -52,6 +52,9 @@ public:
     UFUNCTION(BlueprintPure, Category = "Mesh")
     USkeletalMeshComponent* GetCharacterArms() const { return CharacterArms.Get(); }
 
+    UFUNCTION(BlueprintPure, Category = "Weapon")
+    AWeaponBase* GetCurrentWeapon() const { return CurrentWeapon.Get(); }
+
     // -----------------------
 
 protected:
