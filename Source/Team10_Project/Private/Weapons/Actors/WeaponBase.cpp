@@ -54,15 +54,23 @@ void AWeaponBase::UseWeapon()
 
 void AWeaponBase::EquipmentWeapon(AActor* Player)
 {
+    if (!Player) return;
+
+
 }
 
 void AWeaponBase::UnEquipmentWeapon(AActor* Player)
 {
+    if (!Player) return;
 }
 
 void AWeaponBase::Attack(AActor* Activator)
 {
 	if (!Activator) return;
+}
+
+void AWeaponBase::StartFire()
+{
 }
 
 FVector AWeaponBase::SetHitScale()

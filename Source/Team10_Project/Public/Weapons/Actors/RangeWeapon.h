@@ -39,8 +39,8 @@ protected:
 
 public:
 	virtual void Attack(AActor* Activator) override;
-    virtual void StartFire();
-    virtual void StopFire();
+    virtual void StartFire() override;
+    virtual void StopFire() override;
 	void Reload(AActor* Activator);
 	float GetFireSpeed();
 	void SetFireState();
