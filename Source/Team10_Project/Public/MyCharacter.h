@@ -7,6 +7,7 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Components/TimelineComponent.h"
 #include "Components/SpotLightComponent.h"
+#include "Weapons/Actors/WeaponBase.h"
 #include "Kismet/GameplayStatics.h"
 #include "GenericTeamAgentInterface.h" // <--- [AI 기능 추가] 1. 헤더 추가
 #include "MyCharacter.generated.h"
@@ -44,12 +45,37 @@ public:
 	
 	// ------------------------------------------
 
+    // ----- Getter 함수 -----
+
+    FName GetWeaponSocketName() const { return WeaponSocketName; }
+
+    UFUNCTION(BlueprintPure, Category = "Mesh")
+    USkeletalMeshComponent* GetCharacterArms() const { return CharacterArms.Get(); }
+
+    UFUNCTION(BlueprintPure, Category = "Weapon")
+    AWeaponBase* GetCurrentWeapon() const { return CurrentWeapon.Get(); }
+
+    // -----------------------
+
 protected:
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+    // ----- 무기 -----
+
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    TSubclassOf<AWeaponBase> DefaultWeaponClass;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+    TObjectPtr<AWeaponBase> CurrentWeapon;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    FName WeaponSocketName = TEXT("WeaponSocket");
+
+    // -----------------
 
 	// ----- 동작 바인딩 함수 -----
 

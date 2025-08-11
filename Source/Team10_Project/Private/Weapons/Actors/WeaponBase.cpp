@@ -39,7 +39,7 @@ void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	UE_LOG(LogTemp, Warning, TEXT("Overlap Object"));
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
-		//FÅ°¸¦ ´©¸£¸é È¹µæ ¶Ç´Â ±³È¯
+		//FÅ°ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È¹ï¿½ï¿½ ï¿½Ç´ï¿½ ï¿½ï¿½È¯
 		GetCollision->SetCollisionEnabled(ECollisionEnabled ::NoCollision);
 	}
 }
@@ -100,7 +100,7 @@ void AWeaponBase::OnHit(UPrimitiveComponent* HitComp,
 	}
 	else
 	{
-		//Enemy¸¦ Á¦¿ÜÇÑ »ç¹° ¿ÀºêÁ§Æ® ex).¶¥, º®, °ÇÃà¹°
+		//Enemyï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ç¹° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ex).ï¿½ï¿½, ï¿½ï¿½, ï¿½ï¿½ï¿½à¹°
 	}
 }
 
