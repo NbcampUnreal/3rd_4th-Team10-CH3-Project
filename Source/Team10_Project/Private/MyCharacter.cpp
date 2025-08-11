@@ -83,6 +83,16 @@ void AMyCharacter::BeginPlay()
 		CrouchInterpFunction.BindUFunction(this, FName("UpdateCrouch"));
 		CrouchTimeline->AddInterpFloat(CrouchCurve, CrouchInterpFunction);
 	}
+
+    if (DefaultWeaponClass)
+    {
+        CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(DefaultWeaponClass);
+        if (CurrentWeapon)
+        {
+            CurrentWeapon->SetOwner(this);
+            CurrentWeapon->UnEquipmentWeapon(this);
+        }
+    }
 }
 
 void AMyCharacter::Tick(float DeltaTime)
@@ -378,7 +388,7 @@ void AMyCharacter::EquipWeapon()
 	{
 	}
 
-	if (!EquipMontage)
+	if (!EquipMontage || !CurrentWeapon)
 	{
 		return;
 	}
@@ -388,8 +398,11 @@ void AMyCharacter::EquipWeapon()
 	{
 		AnimInstance->Montage_Play(EquipMontage, 1.f);
 	}
+    CurrentWeapon->EquipmentWeapon(this);
+
 	bEquipped = true;
 	CharacterArms->SetVisibility(true);
+    CurrentWeapon->SetActorHiddenInGame(false);
 }
 
 void AMyCharacter::UnEquipWeapon()
@@ -404,6 +417,8 @@ void AMyCharacter::UnEquipWeapon()
 	{
 		AnimInstance->Montage_Play(UnEquipMontage, 1.f);
 	}
+    CurrentWeapon->UnEquipmentWeapon(this);
+
 	bEquipped = false;
 	CharacterArms->SetVisibility(false);
 }
