@@ -83,6 +83,18 @@ void AMyCharacter::BeginPlay()
 		CrouchInterpFunction.BindUFunction(this, FName("UpdateCrouch"));
 		CrouchTimeline->AddInterpFloat(CrouchCurve, CrouchInterpFunction);
 	}
+
+    if (WeaponClass)
+    {
+        EquippedWeapon = GetWorld()->SpawnActor<AWeaponBase>(WeaponClass, FVector::ZeroVector, FRotator::ZeroRotator);
+
+        if (EquippedWeapon)
+        {
+            EquippedWeapon->AttachToComponent(CharacterArms, FAttachmentTransformRules::SnapToTargetNotIncludingScale, TEXT("WeaponGrip"));
+            EquippedWeapon->SetOwner(this);
+            EquippedWeapon->SetActorHiddenInGame(false);
+        }
+    }
 }
 
 void AMyCharacter::Tick(float DeltaTime)
@@ -390,6 +402,7 @@ void AMyCharacter::EquipWeapon()
 	}
 	bEquipped = true;
 	CharacterArms->SetVisibility(true);
+    EquippedWeapon->SetActorHiddenInGame(false);
 }
 
 void AMyCharacter::UnEquipWeapon()

@@ -7,8 +7,9 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Components/TimelineComponent.h"
 #include "Components/SpotLightComponent.h"
+#include "Weapons/Actors/WeaponBase.h"
 #include "Kismet/GameplayStatics.h"
-#include "GenericTeamAgentInterface.h" // <--- [AI 기능 추가] 1. 헤더 추가
+#include "GenericTeamAgentInterface.h"
 #include "MyCharacter.generated.h"
 
 class UCameraComponent;
@@ -51,6 +52,16 @@ protected:
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+    // ----- 무기 -----
+    
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Weapon")
+    TSubclassOf<AWeaponBase> WeaponClass;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+    TObjectPtr<AWeaponBase> EquippedWeapon;
+
+    // ----------------
+    
 	// ----- 동작 바인딩 함수 -----
 
 	void Move(const FInputActionValue& Value);
