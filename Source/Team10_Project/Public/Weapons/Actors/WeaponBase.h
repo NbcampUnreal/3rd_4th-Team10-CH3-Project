@@ -78,6 +78,7 @@ protected:
 	virtual void GetItem() override;
 	virtual void UseWeapon() override;
     virtual FVector SetHitScale() override;
+    FTransform GetGripTransform() const;
 
 public:
 	virtual void EquipmentWeapon(AActor* Player) override;
