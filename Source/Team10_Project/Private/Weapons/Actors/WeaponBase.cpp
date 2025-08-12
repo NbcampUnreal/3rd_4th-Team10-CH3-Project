@@ -39,7 +39,6 @@ void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	UE_LOG(LogTemp, Warning, TEXT("Overlap Object"));
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
-		//FŰ�� ������ ȹ�� �Ǵ� ��ȯ
 		GetCollision->SetCollisionEnabled(ECollisionEnabled ::NoCollision);
 	}
 }
@@ -58,9 +57,19 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
     if (!Player) return;
 
     AMyCharacter* Character = Cast<AMyCharacter>(Player);
+
     FName GripSocketName = Character->GetWeaponSocketName();
-    WeaponStaticMesh->AttachToComponent(Character->GetCharacterArms(),
-        FAttachmentTransformRules::SnapToTargetNotIncludingScale, GripSocketName);
+    FTransform ArmGrips = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
+    FTransform WeaponGrip = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), RTS_Component);
+
+    FTransform Offset = WeaponGrip.Inverse() * ArmGrips;
+    WeaponStaticMesh->SetupAttachment(Character->GetCharacterArms());
+    WeaponStaticMesh->SetWorldTransform(Offset);
+
+    WeaponStaticMesh->AttachToComponent(
+        Character->GetCharacterArms(),
+        FAttachmentTransformRules::SnapToTargetIncludingScale,
+        GripSocketName);
 }
 
 void AWeaponBase::UnEquipmentWeapon(AActor* Player)
