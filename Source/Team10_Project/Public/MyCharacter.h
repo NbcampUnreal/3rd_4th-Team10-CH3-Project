@@ -59,6 +59,13 @@ public:
 
     // -----------------------
 
+    // ----- Setter 함수 -----
+
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void SetCurrentWeapon(AWeaponBase* NewWeapon);
+
+    // -----------------------
+
 protected:
 
 	virtual void BeginPlay() override;
