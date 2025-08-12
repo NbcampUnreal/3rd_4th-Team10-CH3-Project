@@ -3,6 +3,7 @@
 #include "Weapons/Actors/ProjectileBase.h"
 #include "Weapons/Actors/WeaponBase.h"
 #include "Systems/ObjectPoolManager.h"
+#include "EngineUtils.h"
 
 AHitBoxObject::AHitBoxObject()
 {
@@ -12,16 +13,11 @@ AHitBoxObject::AHitBoxObject()
 	SetRootComponent(Scene);
 
 	HitBoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("BoxComponent"));
-	HitBoxCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+	HitBoxCollision->SetCollisionProfileName(TEXT("OverlapAll"));
 	HitBoxCollision->SetupAttachment(Scene);
 
-	HitBoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AHitBoxObject::Hit);
-}
-
-void AHitBoxObject::BeginPlay()
-{
-	Super::BeginPlay();
-	
+	HitBoxCollision->SetGenerateOverlapEvents(true);
+	HitBoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AHitBoxObject::OnOverlapHit);
 }
 
 void AHitBoxObject::Tick(float Time)
@@ -40,7 +36,7 @@ void AHitBoxObject::Tick(float Time)
 		true,     // 지속 여부
 		2.f,       // 지속 시간 (0이면 한 프레임만)
 		0,         // Depth Priority
-		2.f        // 선 굵기
+		3.f        // 선 굵기
 	);
 }
 
@@ -51,8 +47,9 @@ void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, flo
 	AWeaponBase* Weapon  = Cast<AWeaponBase>(Activator);
 	if (Weapon->GetWeaponType() == EWeaponType::Projectile)
 	{
-		HitBoxCollision->SetRelativeLocation(Activator->GetActorLocation());
-		HitBoxCollision->SetRelativeRotation(Activator->GetActorRotation());
+		AProjectileBase* Projectile = Cast<AProjectileBase>(Weapon);
+		HitBoxCollision->SetRelativeLocation(Projectile->ProjectileCollision->GetComponentLocation());
+		HitBoxCollision->SetRelativeRotation(Projectile->ProjectileCollision->GetComponentRotation());
 
 		HitBoxLifeTime(Time);
 	}
@@ -71,14 +68,26 @@ void AHitBoxObject::HitBoxLifeTime(float Time)
 	);
 }
 
-void AHitBoxObject::Hit(UPrimitiveComponent* OverlappedComp,AActor* OtherActor,
-	UPrimitiveComponent* OtherComp,	int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Hit HitBox"));
+    UE_LOG(LogTemp, Warning, TEXT("OnHit Actor : %s"), *OtherActor->GetName());
+    AObjectPoolManager* Pool = nullptr;
+    for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
+    {
+        Pool = *It;
+        break;
+    }
 
-	//HitObjectSet
-	UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
-	Pool->ReturnObject(this);
+	if (OtherActor->ActorHasTag("Enemy"))
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
+		//HitObjectSet
+		//Cast<ACharacter_Monster>(CollisionActor)->TakeDamage(TotalDamage);
+	}
+
+	//Pool->ReturnObject(this);
 }
 
 void AHitBoxObject::SetActive_Implementation(bool Active)
@@ -97,6 +106,9 @@ void AHitBoxObject::ActiveObject_Implementation()
 	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
 	SetActorTickEnabled(true);
+
+	HitBoxCollision->Activate();
+	HitBoxCollision->SetNotifyRigidBodyCollision(true);
 }
 
 void AHitBoxObject::DeActiveObject_Implementation()
@@ -109,5 +121,8 @@ void AHitBoxObject::DeActiveObject_Implementation()
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
 		SetActorTickEnabled(false);
+
+		HitBoxCollision->SetNotifyRigidBodyCollision(false);
+		HitBoxCollision->Deactivate();
 	}
 }

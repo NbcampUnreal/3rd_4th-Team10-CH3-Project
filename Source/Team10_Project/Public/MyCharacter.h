@@ -7,6 +7,9 @@
 #include "Camera/PlayerCameraManager.h"
 #include "Components/TimelineComponent.h"
 #include "Components/SpotLightComponent.h"
+#include "Weapons/Actors/WeaponBase.h"
+#include "Weapons/WeaponData.h"
+#include "Items/ItemTypes.h"
 #include "Kismet/GameplayStatics.h"
 #include "GenericTeamAgentInterface.h" // <--- [AI 기능 추가] 1. 헤더 추가
 #include "MyCharacter.generated.h"
@@ -44,12 +47,47 @@ public:
 	
 	// ------------------------------------------
 
+    // ----- Getter 함수 -----
+
+    FName GetWeaponSocketName() const { return WeaponSocketName; }
+
+    UFUNCTION(BlueprintPure, Category = "Mesh")
+    USkeletalMeshComponent* GetCharacterArms() const { return CharacterArms.Get(); }
+
+    UFUNCTION(BlueprintPure, Category = "Weapon")
+    AWeaponBase* GetCurrentWeapon() const { return CurrentWeapon.Get(); }
+
+    // -----------------------
+
+    // ----- Setter 함수 -----
+
+    UFUNCTION(BlueprintCallable, Category = "Weapon")
+    void SetCurrentWeapon(AWeaponBase* NewWeapon);
+
+    // -----------------------
+
 protected:
 
 	virtual void BeginPlay() override;
 	virtual void Tick(float DeltaTime) override;
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+    // ----- 무기 -----
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
+    TObjectPtr<AWeaponBase> CurrentWeapon;
+
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    FName WeaponSocketName = TEXT("WeaponSocket");
+
+    UPROPERTY(VisibleAnywhere, Category = "Weapon")
+    TMap<EWeaponDataType, FWeaponData> WeaponInventory;
+    
+    UPROPERTY(EditDefaultsOnly, Category = "Data")
+    TObjectPtr<UDataTable> WeaponDataTable;
+
+    // -----------------
 
 	// ----- 동작 바인딩 함수 -----
 
@@ -60,7 +98,8 @@ protected:
 	void ToggleCrouch();
 	void StartSprint();
 	void StopSprint();
-	void Shoot();
+    void StartShoot();
+    void StopShoot();
 
 	void StartZoom();
 	void StopZoom();
@@ -69,9 +108,14 @@ protected:
 	void Reload();
 	void FinishReload();
     void ToggleFlashlight();
+    
+    void EquipPistol();
+    void EquipRifle();
+    void EquipShotgun();
 
-	void EquipWeapon();
+	void EquipWeapon(EWeaponDataType WeaponToEquip);
 	void UnEquipWeapon();
+    void FinishUnEquip();
 	
 	// ---------------------------
 

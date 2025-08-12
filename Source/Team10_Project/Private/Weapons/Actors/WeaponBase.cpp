@@ -1,15 +1,19 @@
 #include "Weapons/Actors/WeaponBase.h"
 #include "Components/BoxComponent.h"
+#include "MyCharacter.h"
 
 AWeaponBase::AWeaponBase()
-	:WeaponType(), WeaponName(""), Power(0), RateOfFire(0.0f),
-	Height(0.0f), Width(0.0f), Vertical(0.0f), FireState(ERangeFireState::Idle), bIsEquip(false)
+	:FireState(ERangeFireState::Idle), BoxExtent(FVector::ZeroVector), CollisionSize(FVector::ZeroVector),
+	WeaponType(), WeaponName(""), Power(0), RateOfFire(0.0f),
+	Height(0.0f), Width(0.0f), Vertical(0.0f), bIsEquip(false)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	SetRootComponent(Scene);
 
+    WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
+    WeaponStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	/*GetCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
 	GetCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	GetCollision->SetupAttachment(Scene);
@@ -35,7 +39,6 @@ void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	UE_LOG(LogTemp, Warning, TEXT("Overlap Object"));
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
-		//FÅ°¸¦ ´©¸£¸é È¹µæ ¶Ç´Â ±³È¯
 		GetCollision->SetCollisionEnabled(ECollisionEnabled ::NoCollision);
 	}
 }
@@ -51,15 +54,53 @@ void AWeaponBase::UseWeapon()
 
 void AWeaponBase::EquipmentWeapon(AActor* Player)
 {
+    if (!Player) return;
+
+    AMyCharacter* Character = Cast<AMyCharacter>(Player);
+
+    FName GripSocketName = Character->GetWeaponSocketName();
+    FTransform ArmGrips = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
+    FTransform WeaponGrip = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), RTS_Component);
+
+    FTransform Offset = WeaponGrip.Inverse() * ArmGrips;
+    WeaponStaticMesh->SetupAttachment(Character->GetCharacterArms());
+    WeaponStaticMesh->SetWorldTransform(Offset);
+
+    WeaponStaticMesh->AttachToComponent(
+        Character->GetCharacterArms(),
+        FAttachmentTransformRules::SnapToTargetIncludingScale,
+        GripSocketName);
 }
 
 void AWeaponBase::UnEquipmentWeapon(AActor* Player)
 {
+    if (!Player) return;
+
+
 }
 
 void AWeaponBase::Attack(AActor* Activator)
 {
 	if (!Activator) return;
+}
+
+void AWeaponBase::StartFire()
+{
+}
+
+void AWeaponBase::StopFire()
+{
+}
+
+FVector AWeaponBase::SetHitScale()
+{
+	return FVector::ZeroVector;
+}
+
+FTransform AWeaponBase::GetGripTransform() const
+{
+    FTransform GripTransform = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), RTS_World);
+    return GripTransform;
 }
 
 void AWeaponBase::OnHit(UPrimitiveComponent* HitComp,
@@ -76,7 +117,7 @@ void AWeaponBase::OnHit(UPrimitiveComponent* HitComp,
 	}
 	else
 	{
-		//Enemy¸¦ Á¦¿ÜÇÑ »ç¹° ¿ÀºêÁ§Æ® ex).¶¥, º®, °ÇÃà¹°
+		//Enemyï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ç¹° ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ex).ï¿½ï¿½, ï¿½ï¿½, ï¿½ï¿½ï¿½à¹°
 	}
 }
 
