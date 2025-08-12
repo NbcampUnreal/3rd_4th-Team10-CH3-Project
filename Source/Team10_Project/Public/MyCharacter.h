@@ -98,7 +98,8 @@ protected:
 	void ToggleCrouch();
 	void StartSprint();
 	void StopSprint();
-	void Shoot();
+    void StartShoot();
+    void StopShoot();
 
 	void StartZoom();
 	void StopZoom();
