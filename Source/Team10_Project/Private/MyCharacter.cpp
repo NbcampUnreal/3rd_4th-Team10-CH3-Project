@@ -173,6 +173,11 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 	UpdateGroundState();
 }
 
+void AMyCharacter::SetCurrentWeapon(AWeaponBase* NewWeapon)
+{
+    CurrentWeapon = NewWeapon;
+}
+
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
@@ -309,13 +314,26 @@ void AMyCharacter::StopJump()
 	StopJumping();
 }
 
-void AMyCharacter::Shoot()
+void AMyCharacter::StartShoot()
 {
 	if (CurrentState == ECharacterState::Sprinting || bIsReloading)
 	{
 		return;
 	}
 
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->StartFire();
+    }
+
+}
+
+void AMyCharacter::StopShoot()
+{
+    if (CurrentWeapon)
+    {
+        CurrentWeapon->StopFire();
+    }
 }
 
 void AMyCharacter::StartZoom()
@@ -649,10 +667,17 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 
 			EnhancedInputComponent->BindAction(
 				PlayerController->ShootAction,
-				ETriggerEvent::Triggered,
+				ETriggerEvent::Started,
 				this,
-				&AMyCharacter::Shoot
+				&AMyCharacter::StartShoot
 			);
+
+            EnhancedInputComponent->BindAction(
+                PlayerController->ShootAction,
+                ETriggerEvent::Completed,
+                this,
+                &AMyCharacter::StopShoot
+            );
 
 			EnhancedInputComponent->BindAction(
 				PlayerController->ZoomAction,
