@@ -57,6 +57,12 @@ enum class EBuffType : uint8
 	Speed UMETA(DisplayName = "Speed")
 };
 
+enum class EItemUsableType: uint8
+{
+    Immediately UMETA(DisplayName = "Immediately"),
+    Acquire UMETA(DisplayName = "Acquire")
+};
+
 class TEAM10_PROJECT_API ItemTypes
 {
 
