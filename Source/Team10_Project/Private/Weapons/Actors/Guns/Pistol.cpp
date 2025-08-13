@@ -9,7 +9,7 @@ APistol::APistol()
 
 	LeverType = ERangeLeverType::Single;
 	FireSpeed = 1;
-	MaxBulletAmount = 100;
+	MaxBulletAmount = 12;
 	CurBulletAmount = MaxBulletAmount;
 	bIsFire = true;
 }

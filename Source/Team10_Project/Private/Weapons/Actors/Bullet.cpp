@@ -5,7 +5,7 @@
 ABullet::ABullet()
 {
 	WeaponName = "Bullet";
-	ProjectileSpeed = 100.0f;
+	ProjectileSpeed = 8500.0f;
 	ProjectileRange = 8000.0f;
 	Power = 10;
     bIsVisible = true;

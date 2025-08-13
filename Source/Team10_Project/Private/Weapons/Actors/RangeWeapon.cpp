@@ -84,28 +84,31 @@ void ARangeWeapon::Reload(AActor* Activator)
 	if (!Activator) return;
 
 	FireState = ERangeFireState::Reload;
-	int32 RemainingBullet = 10;
-	//AIneventory* Inven = CreateDefaultSubobject<AIneventory>(TEXT("AIneventory"));
-	if (RemainingBullet > 10/*Inven = Cast<AIneventory>(Activator)*/)
-	{
-		//int32 RemainingBullet = Inven->GetRaminingBullet();
-		if (RemainingBullet > 0 && MaxBulletAmount > CurBulletAmount)
-		{
-			int32 NeedBullet = MaxBulletAmount - CurBulletAmount;
-			if (RemainingBullet >= NeedBullet)
-			{
-				CurBulletAmount += NeedBullet;
-				//Inven->SetRemainingBullet(-NeedBullet);
-			}
-			else if (RemainingBullet < NeedBullet)
-			{
-				CurBulletAmount += RemainingBullet;
-				//Inven->SetRemainingBullet(-RemainingBullet);
-			}
-			bIsFire = true;
-			FireState = ERangeFireState::Load;
-		}
-	}
+	int32 RemainingAmmo = 10;
+    AMyCharacter* Character = nullptr;
+    for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
+    {
+        Character = *It;
+        break;
+    }
+
+    //int32 RemainingBullet = Character->GetPossessAmmo();
+    if (RemainingAmmo > 0 && MaxBulletAmount > CurBulletAmount)
+    {
+        int32 NeedAmmo = MaxBulletAmount - CurBulletAmount;
+        if (RemainingAmmo >= NeedAmmo)
+        {
+            CurBulletAmount += NeedAmmo;
+            //Character->SetRemainingAmmo(-NeedAmmo);
+        }
+        else if (RemainingAmmo < NeedAmmo)
+        {
+            CurBulletAmount += RemainingAmmo;
+            //Character->SetRemainingAmmo(-RemainingAmmo);
+        }
+        bIsFire = true;
+        FireState = ERangeFireState::Load;
+    }
 }
 
 ERangeLeverType ARangeWeapon::GetRangeLeverType()
@@ -126,14 +129,6 @@ float ARangeWeapon::GetFireSpeed()
 void ARangeWeapon::SetFireState()
 {
 	FireState = ERangeFireState::Load;
-
-    /*AMyCharacter* Pool = nullptr;
-    for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
-    {
-        Pool = *It;
-        break;
-    }
-    EquipmentWeapon(Pool);*/
 }
 
 void ARangeWeapon::SwitchFireType()
