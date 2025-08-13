@@ -35,26 +35,21 @@ void ACharacter_Monster::BeginPlay()
     AttackHitbox->OnComponentBeginOverlap.AddDynamic(this, &ACharacter_Monster::OnAttackHitboxOverlapBegin);
 }
 
-// Tick 함수는 이제 깨끗하게 비워둡니다.
 void ACharacter_Monster::Tick(float DeltaTime)
 {
     Super::Tick(DeltaTime);
 }
 
-// --- 수정된 Attack 함수 ---
 void ACharacter_Monster::Attack()
 {
-    // 1. 캐릭터의 움직임을 담당하는 컴포넌트를 가져옵니다.
     UCharacterMovementComponent* MoveComp = GetCharacterMovement();
     if (MoveComp)
     {
-        // 2. 현재 속도를 0으로 만들어 모든 움직임을 강제로 멈춥니다.
         MoveComp->StopMovementImmediately();
         MoveComp->Velocity = FVector::ZeroVector;
-        MoveComp->DisableMovement();  // 이동 비활성화 추가
+        MoveComp->DisableMovement();
     }
 
-    // 3. 그 다음에 공격 애니메이션을 재생합니다.
     if (AttackAnimMontage)
     {
         UAnimInstance* AnimInstance = GetMesh()->GetAnimInstance();
@@ -62,7 +57,6 @@ void ACharacter_Monster::Attack()
         {
             AnimInstance->Montage_Play(AttackAnimMontage, 1.0f);
 
-            // 애니메이션 길이만큼 타이머 설정
             float Duration = AttackAnimMontage->GetPlayLength();
 
             GetWorld()->GetTimerManager().SetTimer(
@@ -76,13 +70,11 @@ void ACharacter_Monster::Attack()
     }
 }
 
-// 공격 애니메이션 종료 시 호출되는 함수
 void ACharacter_Monster::OnAttackEnd()
 {
     UCharacterMovementComponent* MoveComp = GetCharacterMovement();
     if (MoveComp)
     {
-        // 이동 다시 활성화
         MoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
     }
 }
@@ -136,4 +128,15 @@ void ACharacter_Monster::OnAttackHitboxOverlapBegin(UPrimitiveComponent* Overlap
 FGenericTeamId ACharacter_Monster::GetGenericTeamId() const
 {
     return TeamId;
+}
+
+//
+// ? 링크 오류 해결을 위한 필수 함수 정의
+//
+void ACharacter_Monster::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+    Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+    // AI 몬스터는 기본적으로 입력을 사용하지 않지만,
+    // 링크 에러 방지를 위해 이 정의는 반드시 필요합니다.
 }
