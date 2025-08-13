@@ -2,7 +2,6 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-#include "Items/ItemTypes.h"
 #include "ItemInterface.generated.h"
 
 UINTERFACE(MinimalAPI)
@@ -20,12 +19,5 @@ public:
 	virtual void OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
 		bool bFromSweep, const FHitResult& SweepResult) = 0;
-    virtual void OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-        bool bFromSweep, const FHitResult& SweepResult) = 0;
-    virtual void OnItemOverlapJudgement() = 0;
-    virtual void GetItem(AActor*) = 0;
-    virtual void VisibleItem() = 0;
-    virtual void InVisibleItem() = 0;
-    virtual EItemType GetItemType() = 0;
+	virtual void GetItem() = 0;
 };

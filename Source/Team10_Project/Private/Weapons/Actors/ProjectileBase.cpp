@@ -2,15 +2,13 @@
 #include "Weapons/Actors/RangeWeapon.h"
 #include "Systems/ObjectPoolManager.h"
 #include "Systems/HitboxObject.h"
-#include "AI/Character_Monster.h"
 
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "EngineUtils.h"
 
 AProjectileBase::AProjectileBase()
-	:bIsActive(false), ProjectileLocation(FVector::ZeroVector), ProjectileRotation(FRotator::ZeroRotator), ProjectileDir(FVector::ZeroVector), 
-    ProjectileSpeed(100), ProjectileRange(0), Only(false)
+	:bIsActive(false), ProjectileLocation(FVector::ZeroVector), ProjectileRotation(FRotator::ZeroRotator), ProjectileDir(FVector::ZeroVector), ProjectileSpeed(85000), ProjectileRange(0), Only(false)
 {
 	WeaponType = EWeaponType::Projectile;
 
@@ -25,18 +23,12 @@ AProjectileBase::AProjectileBase()
 	ProjectileMovementComp->SetUpdatedComponent(ProjectileCollision);
 	ProjectileMovementComp->bForceSubStepping = true;
 	ProjectileMovementComp->ProjectileGravityScale = 0.0f;
-    ProjectileMovementComp->bAutoActivate = false;
 	ProjectileMovementComp->InitialSpeed = ProjectileSpeed;
 	ProjectileMovementComp->MaxSpeed = ProjectileSpeed;
 
 	ProjectileCollision->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
 
 	//bIsActive = true;
-}
-
-void AProjectileBase::BeginPlay()
-{
-    Super::BeginPlay();
 }
 
 void AProjectileBase::Tick(float Time)
@@ -62,14 +54,12 @@ void AProjectileBase::Tick(float Time)
 void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector ProjectileLoc, FRotator ProjectileRotate, FVector FireDir)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Active"));
-    ProjectileCollision->SetRelativeLocation(FVector::ZeroVector);
-    WeaponStaticMesh->SetRelativeLocation(FVector::ZeroVector);
-
-    ProjectileLocation = ProjectileLoc;
+	ProjectileLocation = ProjectileLoc;
 	ProjectileRotation = ProjectileRotate;
 	ProjectileDir = FireDir;
-    SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation, false, nullptr, ETeleportType::TeleportPhysics);
-    ProjectileCollision->SetWorldLocationAndRotation(ProjectileLocation, ProjectileRotation);
+
+	this->SetActorLocation(ProjectileLocation);
+	this->SetActorRotation(ProjectileRotation);
 
 	SetDamage(ActiveWeapon->GetPower());
 
@@ -80,8 +70,8 @@ void AProjectileBase::ProjectileMovement()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Move"));
 
-	//ProjectileMovementComp->Velocity = ProjectileDir * ProjectileSpeed;
-    ProjectileCollision->SetPhysicsLinearVelocity(ProjectileDir * ProjectileSpeed);
+	ProjectileMovementComp->Velocity = ProjectileDir * ProjectileSpeed;
+
 	ProjectileLifeTime();
 }
 
@@ -107,7 +97,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
 	if (OtherActor->ActorHasTag("Enemy"))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
-		Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(TotalDamage);
+		//Cast<ACharacter_Monster>(CollisionActor)->TakeDamage(TotalDamage);
 	}
 
 	Pool->ReturnObject(this);
@@ -156,16 +146,14 @@ bool AProjectileBase::GetIsActive_Implementation()
 void AProjectileBase::ActiveObject_Implementation()
 {
 	bIsActive = true;
-	SetActorHiddenInGame(false);
+	this->SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
 	SetActorTickEnabled(true);
+    
 	ProjectileCollision->Activate();
 	ProjectileCollision->SetNotifyRigidBodyCollision(true);
-    //ProjectileCollision->SetSimulatePhysics(true);
 
-    ProjectileMovementComp->SetUpdatedComponent(ProjectileCollision);
 	ProjectileMovementComp->Activate();
-    ProjectileMovementComp->SetComponentTickEnabled(true);
 }
 
 void AProjectileBase::DeActiveObject_Implementation()
@@ -173,7 +161,8 @@ void AProjectileBase::DeActiveObject_Implementation()
 	if (!bIsActive) return;
 
 	if (bIsActive)
-	{ 
+	{
+		UE_LOG(LogTemp, Warning, (TEXT("RETURN")));
 		bIsActive = false;
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
@@ -181,18 +170,7 @@ void AProjectileBase::DeActiveObject_Implementation()
 
 		ProjectileCollision->SetNotifyRigidBodyCollision(false);
 		ProjectileCollision->Deactivate();
-        //ProjectileCollision->SetSimulatePhysics(false);
-
-        ProjectileMovementComp->Deactivate();
-        ProjectileMovementComp->SetComponentTickEnabled(false);
-
-        DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-
-        Scene->SetRelativeLocation(FVector::ZeroVector);
-        ProjectileCollision->SetRelativeLocation(FVector::ZeroVector);
-        WeaponStaticMesh->SetRelativeLocation(FVector::ZeroVector);
-		
-        SetActorLocation(FVector::ZeroVector);
+		ProjectileMovementComp->Deactivate();
 	}
 }
 

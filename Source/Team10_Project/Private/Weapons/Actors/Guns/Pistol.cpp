@@ -9,7 +9,7 @@ APistol::APistol()
 
 	LeverType = ERangeLeverType::Single;
 	FireSpeed = 1;
-	MaxBulletAmount = 100;
+	MaxBulletAmount = 10;
 	CurBulletAmount = MaxBulletAmount;
 	bIsFire = true;
 }
@@ -17,12 +17,7 @@ APistol::APistol()
 void APistol::BeginPlay()
 {
 	Super::BeginPlay();
-    bIsVisible = true;
-    SetActorHiddenInGame(false);
-    SetActorTickEnabled(false);
-
     SetFireState();
-    Attack(this);
 }
 
 void APistol::StartFire()

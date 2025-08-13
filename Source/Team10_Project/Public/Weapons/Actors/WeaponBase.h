@@ -4,11 +4,10 @@
 #include "GameFramework/Actor.h"
 #include "Weapons/Interface/WeaponInterface.h"
 #include "Items/ItemInterface.h"
+#include "Items/ItemTypes.h"
 #include "WeaponBase.generated.h"
 
 class UBoxComponent;
-class AMyPlayerController;
-
 UCLASS()
 class TEAM10_PROJECT_API AWeaponBase : public AActor, public IWeaponInterface, public IItemInterface
 {
@@ -20,10 +19,6 @@ public:
 protected:
 	virtual void BeginPlay() override;
 
-private:
-    bool bOverlappingItem;
-    TArray<AMyPlayerController*> OverlappingCharacters;
-
 public:	
 	virtual void Tick(float DeltaTime) override;
 
@@ -34,7 +29,6 @@ public:
 	ERangeFireState FireState;
 
 protected:
-    bool bIsVisible;
 	TSet<AActor*> CollisionObject;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
@@ -45,10 +39,7 @@ protected:
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	FVector CollisionSize;
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
-    EItemType ItemType;
-
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	EWeaponType WeaponType;
 	
@@ -74,42 +65,28 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
 	UBoxComponent* GetCollision;
 
-    // Overlap과 Hit Event 처리 함수
     virtual void OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
         bool bFromSweep, const FHitResult& SweepResult) override;
-    virtual void OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-        bool bFromSweep, const FHitResult& SweepResult) override;
+
     virtual void OnHit(UPrimitiveComponent* HitComp,
         AActor* OtherActor,
         UPrimitiveComponent* OtherComp,
         FVector NormalImpulse,
         const FHitResult& Hit) override;
 
-    //ItemInterface 상속 함수
-    virtual void OnItemOverlapJudgement() override;
-	virtual void GetItem(AActor* Player) override;
-    virtual void VisibleItem() override;
-    virtual void InVisibleItem() override;
-
-    //Weapon 함수
+	virtual void GetItem() override;
 	virtual void UseWeapon() override;
     virtual FVector SetHitScale() override;
     FTransform GetGripTransform() const;
 
 public:
-    //WeaponInterface 상속 함수
 	virtual void EquipmentWeapon(AActor* Player) override;
 	virtual void UnEquipmentWeapon(AActor* Player) override;
 	virtual void Attack(AActor* Activator) override;
     virtual void StartFire() override;
     virtual void StopFire() override;
-	
-    EWeaponType GetWeaponType() const;
+	EWeaponType GetWeaponType() const;
 	FName GetWeaponName() const;
 	int32 GetPower() const;
-
-    //ItemInterface 상속 함수
-    virtual EItemType GetItemType() override;
 };

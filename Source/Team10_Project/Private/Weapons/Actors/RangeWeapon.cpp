@@ -9,6 +9,8 @@ ARangeWeapon::ARangeWeapon()
 	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
 {
 	WeaponType = EWeaponType::Range;
+
+	WeaponStaticMesh->SetupAttachment(Scene);
 }
 
 void ARangeWeapon::BeginPlay()
@@ -36,14 +38,14 @@ void ARangeWeapon::Attack(AActor* Activator)
 	if (bIsFire && FireState == ERangeFireState::Load)
 	{
 		UE_LOG(LogTemp, Warning, (TEXT("Fire")));
-		FireState = ERangeFireState::Fire;
 
 		FTransform SocketWorldTransform = WeaponStaticMesh->GetSocketTransform(TEXT("MuzzleSocket"), RTS_World);
 
-		FVector FireDirection = SocketWorldTransform.GetRotation().GetForwardVector().GetSafeNormal();
 		MuzzleLocation = SocketWorldTransform.GetLocation();
+		FVector FireDirection = SocketWorldTransform.GetRotation().GetForwardVector();
 		MuzzleRotate = FireDirection.Rotation();
 
+		FireState = ERangeFireState::Fire;
         AObjectPoolManager* Pool = nullptr;
         for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
         {
@@ -127,12 +129,13 @@ void ARangeWeapon::SetFireState()
 {
 	FireState = ERangeFireState::Load;
 
-    /*AMyCharacter* Char = nullptr;
+    AMyCharacter* Pool = nullptr;
     for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
     {
-        Char = *It;
+        Pool = *It;
+        break;
     }
-    EquipmentWeapon(Char);*/
+    EquipmentWeapon(Pool);
 }
 
 void ARangeWeapon::SwitchFireType()
