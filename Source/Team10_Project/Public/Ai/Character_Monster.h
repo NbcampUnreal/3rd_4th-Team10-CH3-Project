@@ -18,20 +18,24 @@ public:
     UFUNCTION(BlueprintCallable)
     void Attack();
 
-    // 데미지를 받는 함수
-    virtual float TakeDamage(float DamageAmount, struct FDamageEvent const& DamageEvent, class AController* EventInstigator, AActor* DamageCauser) override;
+    UFUNCTION(BlueprintCallable, Category = "Combat")
+    void ApplyCustomDamage(int32 DamageAmount);  // int32로 변경
 
-    // --- 상태(Status) 변수들 ---
+    // 상태 변수들
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-    float MaxHealth;
+    int32 MaxHealth;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
-    float Health;
+    int32 Health;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-    float Defence;
+    int32 Defence;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-    float MaxStamina;
+    float MaxStamina;  // 실수형 유지
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
-    float Stamina;
+    float Stamina;  // 실수형 유지
 
     // 죽었을 때 처리할 함수
     void Die();
@@ -52,15 +56,11 @@ protected:
 private:
     FGenericTeamId TeamId;
 
-    // 히트박스 겹침 이벤트 함수
     UFUNCTION()
-    void OnAttackHitboxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+    void OnAttackHitboxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
-    // ** 여기에 추가: 공격 종료 후 이동 재개를 위한 함수 및 타이머 핸들러 선언 **
     void OnAttackEnd();
 
     FTimerHandle TimerHandle_AttackEnd;
-
-    // 기존에 있던 테스트용 함수가 필요 없으면 지우셔도 됩니다.
-    void ForceAttackTest();
 };
