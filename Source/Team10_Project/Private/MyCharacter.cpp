@@ -35,6 +35,7 @@ AMyCharacter::AMyCharacter()
 
 	SprintFOVTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SprintFOVTimeline"));
 	CrouchTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CrouchTimeline"));
+    RecoilTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("RecoilTimeline"));
 
 	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
 
@@ -102,6 +103,13 @@ void AMyCharacter::BeginPlay()
 		CrouchInterpFunction.BindUFunction(this, FName("UpdateCrouch"));
 		CrouchTimeline->AddInterpFloat(CrouchCurve, CrouchInterpFunction);
 	}
+
+    if (RecoilCurve && RecoilTimeline)
+    {
+        FOnTimelineFloat RecoilInterpFunction;
+        RecoilInterpFunction.BindUFunction(this, FName("UpdateRecoil"));
+        RecoilTimeline->AddInterpFloat(RecoilCurve, RecoilInterpFunction);
+    }
 }
 
 void AMyCharacter::Tick(float DeltaTime)
@@ -246,6 +254,11 @@ void AMyCharacter::UpdateCrouch(float Value)
 	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
 }
 
+void AMyCharacter::UpdateRecoil(float Value)
+{
+    CurrentRecoilPitch = Value;
+}
+
 void AMyCharacter::ToggleCrouch()
 {
 	if (bIsCrouching)
@@ -324,8 +337,21 @@ void AMyCharacter::StartShoot()
     if (CurrentWeapon)
     {
         CurrentWeapon->StartFire();
-    }
+        bIsFiring = true;
 
+        if (RecoilTimeline)
+        {
+            RecoilTimeline->PlayFromStart();
+        }
+        if (FireCameraShakeClass)
+        {
+            APlayerController* PlayerController = Cast<APlayerController>(GetController());
+            if (PlayerController)
+            {
+                PlayerController->ClientStartCameraShake(FireCameraShakeClass);
+            }
+        }
+    }
 }
 
 void AMyCharacter::StopShoot()
@@ -333,6 +359,7 @@ void AMyCharacter::StopShoot()
     if (CurrentWeapon)
     {
         CurrentWeapon->StopFire();
+        bIsFiring = false;
     }
 }
 
@@ -443,6 +470,7 @@ void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
         const FWeaponData& NewWeaponData = WeaponInventory[WeaponToEquip];
 
         CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(NewWeaponData.WeaponClass);
+        CurrentWeapon->SetOwner(this);
         if (CurrentWeapon)
         {
             //CurrentWeapon->SetCurrentAmmo(NewWeaponData.CurrentAmmo);
@@ -482,7 +510,7 @@ void AMyCharacter::UnEquipWeapon()
 	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
 	if (AnimInstance)
 	{
-		MontagePlaytime = AnimInstance->Montage_Play(UnEquipMontage, 1.f);
+		MontagePlaytime = AnimInstance->Montage_Play(UnEquipMontage, -1.f);
 	}
     
     FTimerHandle DestroyTimer;
