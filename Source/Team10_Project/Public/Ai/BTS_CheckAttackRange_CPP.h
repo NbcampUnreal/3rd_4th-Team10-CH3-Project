@@ -17,5 +17,5 @@ protected:
 
 	// 공격 범위를 에디터에서 조절할 수 있도록 변수 추가
 	UPROPERTY(EditAnywhere, Category = "AI")
-	float AttackRange = 500.0f;
+	float AttackRange = 150.0f;
 };
