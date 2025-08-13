@@ -2,13 +2,15 @@
 #include "Weapons/Actors/RangeWeapon.h"
 #include "Systems/ObjectPoolManager.h"
 #include "Systems/HitboxObject.h"
+#include "AI/Character_Monster.h"
 
 #include "Components/BoxComponent.h"
 #include "GameFramework/ProjectileMovementComponent.h"
 #include "EngineUtils.h"
 
 AProjectileBase::AProjectileBase()
-	:bIsActive(false), ProjectileLocation(FVector::ZeroVector), ProjectileRotation(FRotator::ZeroRotator), ProjectileDir(FVector::ZeroVector), ProjectileSpeed(85000), ProjectileRange(0), Only(false)
+	:bIsActive(false), ProjectileLocation(FVector::ZeroVector), ProjectileRotation(FRotator::ZeroRotator), ProjectileDir(FVector::ZeroVector), 
+    ProjectileSpeed(200), ProjectileRange(0), Only(false)
 {
 	WeaponType = EWeaponType::Projectile;
 
@@ -23,12 +25,16 @@ AProjectileBase::AProjectileBase()
 	ProjectileMovementComp->SetUpdatedComponent(ProjectileCollision);
 	ProjectileMovementComp->bForceSubStepping = true;
 	ProjectileMovementComp->ProjectileGravityScale = 0.0f;
+    ProjectileMovementComp->bAutoActivate = false;
 	ProjectileMovementComp->InitialSpeed = ProjectileSpeed;
 	ProjectileMovementComp->MaxSpeed = ProjectileSpeed;
 
 	ProjectileCollision->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
+}
 
-	//bIsActive = true;
+void AProjectileBase::BeginPlay()
+{
+    Super::BeginPlay();
 }
 
 void AProjectileBase::Tick(float Time)
@@ -54,12 +60,15 @@ void AProjectileBase::Tick(float Time)
 void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector ProjectileLoc, FRotator ProjectileRotate, FVector FireDir)
 {
 	UE_LOG(LogTemp, Warning, TEXT("Active"));
-	ProjectileLocation = ProjectileLoc;
+    ProjectileCollision->SetRelativeLocation(FVector::ZeroVector);
+    WeaponStaticMesh->SetRelativeLocation(FVector::ZeroVector);
+
+    ProjectileLocation = ProjectileLoc;
 	ProjectileRotation = ProjectileRotate;
 	ProjectileDir = FireDir;
 
-	this->SetActorLocation(ProjectileLocation);
-	this->SetActorRotation(ProjectileRotation);
+    SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation, false, nullptr, ETeleportType::TeleportPhysics);
+    ProjectileCollision->SetWorldLocationAndRotation(ProjectileLocation, ProjectileRotation);
 
 	SetDamage(ActiveWeapon->GetPower());
 
@@ -70,8 +79,7 @@ void AProjectileBase::ProjectileMovement()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Move"));
 
-	ProjectileMovementComp->Velocity = ProjectileDir * ProjectileSpeed;
-
+    ProjectileCollision->SetPhysicsLinearVelocity(ProjectileDir * ProjectileSpeed);
 	ProjectileLifeTime();
 }
 
@@ -97,7 +105,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
 	if (OtherActor->ActorHasTag("Enemy"))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
-		//Cast<ACharacter_Monster>(CollisionActor)->TakeDamage(TotalDamage);
+        Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(TotalDamage);
 	}
 
 	Pool->ReturnObject(this);
@@ -153,7 +161,9 @@ void AProjectileBase::ActiveObject_Implementation()
 	ProjectileCollision->Activate();
 	ProjectileCollision->SetNotifyRigidBodyCollision(true);
 
-	ProjectileMovementComp->Activate();
+    ProjectileMovementComp->SetUpdatedComponent(ProjectileCollision);
+    ProjectileMovementComp->Activate();
+    ProjectileMovementComp->SetComponentTickEnabled(true);
 }
 
 void AProjectileBase::DeActiveObject_Implementation()
@@ -170,7 +180,17 @@ void AProjectileBase::DeActiveObject_Implementation()
 
 		ProjectileCollision->SetNotifyRigidBodyCollision(false);
 		ProjectileCollision->Deactivate();
-		ProjectileMovementComp->Deactivate();
+
+        ProjectileMovementComp->Deactivate();
+        ProjectileMovementComp->SetComponentTickEnabled(false);
+
+        DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+        Scene->SetRelativeLocation(FVector::ZeroVector);
+        ProjectileCollision->SetRelativeLocation(FVector::ZeroVector);
+        WeaponStaticMesh->SetRelativeLocation(FVector::ZeroVector);
+
+        SetActorLocation(FVector::ZeroVector);
 	}
 }
 

@@ -31,6 +31,7 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	FRotator MuzzleRotate;
 
+    virtual void Attack(AActor* Activator) override;
 	ERangeLeverType GetRangeLeverType();
 	ERangeFireType GetAttackType();
 
@@ -38,7 +39,6 @@ protected:
 	FTimerDelegate TimerDel;
 
 public:
-	virtual void Attack(AActor* Activator) override;
     virtual void StartFire() override;
     virtual void StopFire() override;
 	void Reload(AActor* Activator);
