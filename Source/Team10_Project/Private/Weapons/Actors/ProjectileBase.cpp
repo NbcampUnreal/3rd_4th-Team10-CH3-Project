@@ -107,7 +107,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
 	if (OtherActor->ActorHasTag("Enemy"))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
-		Cast<ACharacter_Monster>(OtherActor)->TakeDamage(TotalDamage);
+		Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(TotalDamage);
 	}
 
 	Pool->ReturnObject(this);
