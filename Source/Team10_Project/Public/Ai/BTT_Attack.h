@@ -12,4 +12,8 @@ class TEAM10_PROJECT_API UBTT_Attack : public UBTTaskNode
 public:
 	UBTT_Attack();
 	virtual EBTNodeResult::Type ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory) override;
+
+    bool Isattack = true;
+
+
 };
