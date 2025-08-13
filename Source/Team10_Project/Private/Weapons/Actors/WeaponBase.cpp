@@ -16,33 +16,35 @@ AWeaponBase::AWeaponBase()
     WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
     WeaponStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     WeaponStaticMesh->SetupAttachment(Scene);
-	
-    GetCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
+
+	GetCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
 	GetCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
 	GetCollision->SetupAttachment(Scene);
+
 	GetCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnItemOverlap);
 }
 
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-
-    if (!bIsVisible)
+	
+    /*if (!bIsVisible)
     {
         InVisibleItem();
-    }
+    }*/
 }
 
 void AWeaponBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
     OnItemOverlapJudgement();
 }
 
 void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("OnOverlap Item"));
+    UE_LOG(LogTemp, Warning, TEXT("OnOverlap Item"));
     UE_LOG(LogTemp, Warning, TEXT("OverlapActor : %s"), *OtherActor->GetName());
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
@@ -61,7 +63,7 @@ void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	}
 }
 
-void AWeaponBase::OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
+void AWeaponBase::OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
     UE_LOG(LogTemp, Warning, TEXT("EndOverlap Item"));
@@ -74,7 +76,7 @@ void AWeaponBase::OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
                 OverlappingCharacters.Remove(MyPlayerCon);
             }
         }
-        
+
         if (OverlappingCharacters.IsEmpty())
         {
             bOverlappingItem = false;
@@ -86,7 +88,7 @@ void AWeaponBase::OnItemOverlapJudgement()
 {
     if (bOverlappingItem)
     {
-        for(AMyPlayerController* InputController : OverlappingCharacters)
+        for (AMyPlayerController* InputController : OverlappingCharacters)
         {
             if (InputController->WasInputKeyJustPressed(EKeys::F))
             {
@@ -154,13 +156,10 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
     FVector DesiredScale(0.75f);
     Offset.SetScale3D(DesiredScale);
 
-    RootComponent->AttachToComponent(
+    WeaponStaticMesh->AttachToComponent(
         Character->GetCharacterArms(),
         FAttachmentTransformRules::SnapToTargetNotIncludingScale,
         GripSocketName);
-
-    WeaponStaticMesh->SetWorldTransform(Offset);
-    Character->SetCurrentWeapon(this);
 }
 
 void AWeaponBase::UnEquipmentWeapon(AActor* Player)

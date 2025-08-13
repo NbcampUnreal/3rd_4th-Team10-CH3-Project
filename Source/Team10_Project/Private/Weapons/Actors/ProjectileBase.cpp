@@ -10,7 +10,7 @@
 
 AProjectileBase::AProjectileBase()
 	:bIsActive(false), ProjectileLocation(FVector::ZeroVector), ProjectileRotation(FRotator::ZeroRotator), ProjectileDir(FVector::ZeroVector), 
-    ProjectileSpeed(100), ProjectileRange(0), Only(false)
+    ProjectileSpeed(200), ProjectileRange(0), Only(false)
 {
 	WeaponType = EWeaponType::Projectile;
 
@@ -30,8 +30,6 @@ AProjectileBase::AProjectileBase()
 	ProjectileMovementComp->MaxSpeed = ProjectileSpeed;
 
 	ProjectileCollision->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
-
-	//bIsActive = true;
 }
 
 void AProjectileBase::BeginPlay()
@@ -68,6 +66,7 @@ void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector ProjectileLoc
     ProjectileLocation = ProjectileLoc;
 	ProjectileRotation = ProjectileRotate;
 	ProjectileDir = FireDir;
+
     SetActorLocationAndRotation(ProjectileLocation, ProjectileRotation, false, nullptr, ETeleportType::TeleportPhysics);
     ProjectileCollision->SetWorldLocationAndRotation(ProjectileLocation, ProjectileRotation);
 
@@ -80,7 +79,6 @@ void AProjectileBase::ProjectileMovement()
 {
 	UE_LOG(LogTemp, Warning, TEXT("Move"));
 
-	//ProjectileMovementComp->Velocity = ProjectileDir * ProjectileSpeed;
     ProjectileCollision->SetPhysicsLinearVelocity(ProjectileDir * ProjectileSpeed);
 	ProjectileLifeTime();
 }
@@ -107,7 +105,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
 	if (OtherActor->ActorHasTag("Enemy"))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
-		Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(TotalDamage);
+        Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(TotalDamage);
 	}
 
 	Pool->ReturnObject(this);
@@ -156,15 +154,15 @@ bool AProjectileBase::GetIsActive_Implementation()
 void AProjectileBase::ActiveObject_Implementation()
 {
 	bIsActive = true;
-	SetActorHiddenInGame(false);
+	this->SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
 	SetActorTickEnabled(true);
+    
 	ProjectileCollision->Activate();
 	ProjectileCollision->SetNotifyRigidBodyCollision(true);
-    //ProjectileCollision->SetSimulatePhysics(true);
 
     ProjectileMovementComp->SetUpdatedComponent(ProjectileCollision);
-	ProjectileMovementComp->Activate();
+    ProjectileMovementComp->Activate();
     ProjectileMovementComp->SetComponentTickEnabled(true);
 }
 
@@ -173,7 +171,8 @@ void AProjectileBase::DeActiveObject_Implementation()
 	if (!bIsActive) return;
 
 	if (bIsActive)
-	{ 
+	{
+		UE_LOG(LogTemp, Warning, (TEXT("RETURN")));
 		bIsActive = false;
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
@@ -181,7 +180,6 @@ void AProjectileBase::DeActiveObject_Implementation()
 
 		ProjectileCollision->SetNotifyRigidBodyCollision(false);
 		ProjectileCollision->Deactivate();
-        //ProjectileCollision->SetSimulatePhysics(false);
 
         ProjectileMovementComp->Deactivate();
         ProjectileMovementComp->SetComponentTickEnabled(false);
@@ -191,7 +189,7 @@ void AProjectileBase::DeActiveObject_Implementation()
         Scene->SetRelativeLocation(FVector::ZeroVector);
         ProjectileCollision->SetRelativeLocation(FVector::ZeroVector);
         WeaponStaticMesh->SetRelativeLocation(FVector::ZeroVector);
-		
+
         SetActorLocation(FVector::ZeroVector);
 	}
 }
