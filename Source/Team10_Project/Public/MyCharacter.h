@@ -133,11 +133,17 @@ protected:
 	UFUNCTION()
 	void UpdateCrouch(float Value);
 
+    UFUNCTION()
+    void UpdateRecoil(float Value);
+
 	// --------------------------
 	
 	// ----- 캐릭터 상태 관리 -----
 	
 	FVector2D LastInputVector;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    float CurrentRecoilPitch;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	bool bEquipped;
@@ -153,6 +159,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	bool bIsCloseToWall;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    bool bIsFiring;
 	
 	bool bWantsToSprint;
 
@@ -200,7 +209,13 @@ protected:
 	TObjectPtr<UCurveFloat> CrouchCurve;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	TObjectPtr<UTimelineComponent> CrouchTimeline;
+    TObjectPtr<UTimelineComponent> CrouchTimeline;
+    
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+    TObjectPtr<UCurveFloat> RecoilCurve;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    TObjectPtr<UTimelineComponent> RecoilTimeline;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Flashlight")
 	TObjectPtr<USpotLightComponent> Flashlight;
@@ -220,9 +235,6 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> UnEquipMontage;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	TObjectPtr<UAnimMontage> HolsterMontage;
 	
 	// ---------------------------
 
