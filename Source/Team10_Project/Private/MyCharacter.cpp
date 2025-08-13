@@ -67,6 +67,7 @@ void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SetCharacterState(ECharacterState::Idle);
+    CurrentRangeType = ERangeType::None;
 
 	bEquipped = false;
 	CharacterArms->SetVisibility(false);
@@ -79,10 +80,10 @@ void AMyCharacter::BeginPlay()
             FWeaponData* Data = WeaponDataTable->FindRow<FWeaponData>(RowName, TEXT(""));
             if (Data)
             {
-                EWeaponDataType WeaponType;
-                if (RowName == "Pistol") WeaponType = EWeaponDataType::Pistol;
-                else if (RowName == "Rifle") WeaponType = EWeaponDataType::Rifle;
-                else if (RowName == "Shotgun") WeaponType = EWeaponDataType::Shotgun;
+                ERangeType WeaponType;
+                if (RowName == "Pistol") WeaponType = ERangeType::Pistol;
+                else if (RowName == "Rifle") WeaponType = ERangeType::Rifle;
+                else if (RowName == "Shotgun") WeaponType = ERangeType::Shotgun;
                 else continue;
 
                 WeaponInventory.Add(WeaponType, *Data);
@@ -383,12 +384,10 @@ void AMyCharacter::Reload()
 {
 	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Reload is not allowed!"));
 		return;
 	}
 	if (!ReloadMontage)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Reload Montage is not set!"));
 		return;
 	}
 
@@ -413,8 +412,6 @@ void AMyCharacter::FinishReload()
 
 void AMyCharacter::ToggleFlashlight()
 {
-    UE_LOG(LogTemp, Warning, TEXT("ToggleFlashlight function called!")); // 디버깅 로그
-
 	if (Flashlight)
 	{
 		Flashlight->ToggleVisibility();
@@ -438,27 +435,28 @@ void AMyCharacter::ToggleFlashlight()
 
 void AMyCharacter::EquipPistol()
 {
-    EquipWeapon(EWeaponDataType::Pistol);
+    CurrentRangeType = ERangeType::Pistol;
+    EquipWeapon(CurrentRangeType);
 }
 
 void AMyCharacter::EquipRifle()
 {
-    EquipWeapon(EWeaponDataType::Rifle);
+    CurrentRangeType = ERangeType::Rifle;
+    EquipWeapon(CurrentRangeType);
 }
 
 void AMyCharacter::EquipShotgun()
 {
-    EquipWeapon(EWeaponDataType::Shotgun);
+    CurrentRangeType = ERangeType::Shotgun;
+    EquipWeapon(CurrentRangeType);
 }
 
-void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
+void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
 {
-    /*
-    if (CurrentWeapon && CurrentWeapon->GetWeaponType() == WeaponToEquip)
+    if (CurrentWeapon && CurrentRangeType == WeaponToEquip)
     {
         return;
     }
-    */
     
 	if (CurrentWeapon)
 	{
@@ -620,6 +618,11 @@ void AMyCharacter::StopSprintFOV()
 ECharacterState AMyCharacter::GetCurrentState() const
 {
 	return CurrentState;
+}
+
+ERangeType AMyCharacter::GetRangeType() const
+{
+    return CurrentRangeType;
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
