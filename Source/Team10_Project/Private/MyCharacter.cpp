@@ -257,7 +257,6 @@ void AMyCharacter::UpdateCrouch(float Value)
 void AMyCharacter::UpdateRecoil(float Value)
 {
     CurrentRecoilPitch = Value;
-    UE_LOG(LogTemp, Warning, TEXT("Recoil Value: %f"), Value);
 }
 
 void AMyCharacter::ToggleCrouch()
@@ -343,6 +342,14 @@ void AMyCharacter::StartShoot()
         if (RecoilTimeline)
         {
             RecoilTimeline->PlayFromStart();
+        }
+        if (FireCameraShakeClass)
+        {
+            APlayerController* PlayerController = Cast<APlayerController>(GetController());
+            if (PlayerController)
+            {
+                PlayerController->ClientStartCameraShake(FireCameraShakeClass);
+            }
         }
     }
 }

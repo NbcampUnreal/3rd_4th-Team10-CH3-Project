@@ -236,6 +236,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> UnEquipMontage;
 	
+    UPROPERTY(EditDefaultsOnly, Category = "Effects|Camera")
+    TSubclassOf<UCameraShakeBase> FireCameraShakeClass;
+	
 	// ---------------------------
 
 	// ----- 사운드 -----
