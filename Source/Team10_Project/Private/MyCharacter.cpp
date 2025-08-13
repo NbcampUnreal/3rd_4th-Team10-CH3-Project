@@ -390,6 +390,20 @@ void AMyCharacter::Reload()
 	{
 		return;
 	}
+    /*
+    UAnimMontage* MontageToPlay = CurrentWeapon->GetReloadMontage();
+
+    if (!MontageToPlay)
+    {
+        return;
+    }
+
+    UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+    if (AnimInstance)
+    {
+        AnimInstance->Montage_Play(MontageToPlay, 1.f);
+    }
+    */
 
 	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
 	if (AnimInstance)
@@ -435,20 +449,17 @@ void AMyCharacter::ToggleFlashlight()
 
 void AMyCharacter::EquipPistol()
 {
-    CurrentRangeType = ERangeType::Pistol;
-    EquipWeapon(CurrentRangeType);
+    EquipWeapon(ERangeType::Pistol);
 }
 
 void AMyCharacter::EquipRifle()
 {
-    CurrentRangeType = ERangeType::Rifle;
-    EquipWeapon(CurrentRangeType);
+    EquipWeapon(ERangeType::Rifle);
 }
 
 void AMyCharacter::EquipShotgun()
 {
-    CurrentRangeType = ERangeType::Shotgun;
-    EquipWeapon(CurrentRangeType);
+    EquipWeapon(ERangeType::Shotgun);
 }
 
 void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
@@ -465,6 +476,7 @@ void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
 
     if (WeaponInventory.Contains(WeaponToEquip))
     {
+        CurrentRangeType = WeaponToEquip;
         const FWeaponData& NewWeaponData = WeaponInventory[WeaponToEquip];
 
         CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(NewWeaponData.WeaponClass);
@@ -497,7 +509,7 @@ void AMyCharacter::UnEquipWeapon()
 	}
 
     /*
-    EWeaponDataType OldWeaponType = CurrentWeapon->GetWeaponType();
+    ERangeType OldWeaponType = CurrentWeapon->GetWeaponType();
     if (WeaponInventory.Contains(OldWeaponType))
     {
         //WeaponInventory[OldWeaponType].CurrentAmmo = CurrentWeapon->GetCurrentAmmo();
