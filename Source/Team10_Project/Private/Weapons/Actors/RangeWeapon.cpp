@@ -3,6 +3,7 @@
 #include "Systems/ObjectPoolManager.h"
 #include "EngineUtils.h"
 
+#include "MyCharacter.h"
 ARangeWeapon::ARangeWeapon()
 	:LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
 	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
@@ -127,6 +128,14 @@ float ARangeWeapon::GetFireSpeed()
 void ARangeWeapon::SetFireState()
 {
 	FireState = ERangeFireState::Load;
+
+    AMyCharacter* Pool = nullptr;
+    for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
+    {
+        Pool = *It;
+        break;
+    }
+    EquipmentWeapon(Pool);
 }
 
 void ARangeWeapon::SwitchFireType()
