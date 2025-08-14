@@ -1,12 +1,12 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "AIController.h"
-#include "Perception/AIPerceptionComponent.h"
+#include "DetourCrowdAIController.h" 
 #include "AIController_Monster.generated.h"
 
+                                   
 UCLASS()
-class TEAM10_PROJECT_API AAIController_Monster : public AAIController
+class TEAM10_PROJECT_API AAIController_Monster : public ADetourCrowdAIController
 {
     GENERATED_BODY()
 
@@ -35,7 +35,4 @@ private:
     // AI의 눈에 무언가 감지되었을 때 호출될 함수 (선언)
     UFUNCTION()
     void OnTargetPerceptionUpdated(AActor* Actor, FAIStimulus Stimulus);
-
-    // UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Animation")  
-    // TObjectPtr<class UAnimMontage> AttackAnimMontage;                   
 };

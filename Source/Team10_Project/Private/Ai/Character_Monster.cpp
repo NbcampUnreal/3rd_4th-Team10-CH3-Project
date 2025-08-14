@@ -106,7 +106,7 @@ void ACharacter_Monster::Die()
         }
     }
 
-    SetLifeSpan(5.0f);
+    SetLifeSpan(0.1f);
 }
 
 void ACharacter_Monster::OnAttackHitboxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
@@ -118,7 +118,7 @@ void ACharacter_Monster::OnAttackHitboxOverlapBegin(UPrimitiveComponent* Overlap
         {
             if (PlayerCharacter->IsPlayerControlled())
             {
-                // 데미지 양은 float 타입이므로 10.0f 유지
+
                 UGameplayStatics::ApplyDamage(PlayerCharacter, 10.0f, GetController(), this, nullptr);
 
                 AttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
