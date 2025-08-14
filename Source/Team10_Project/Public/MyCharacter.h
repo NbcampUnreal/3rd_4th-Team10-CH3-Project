@@ -190,6 +190,8 @@ protected:
     
 	UFUNCTION(BlueprintCallable, Category = "State")
     ERangeType GetRangeType() const;
+    
+    FName GetWeaponRowNameFromType(ERangeType WeaponType) const;
 	
 	// ---------------------
 
@@ -237,9 +239,6 @@ protected:
 	// -------------------
 
 	// ----- 애니메이션 몽타주 -----
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	TObjectPtr<UAnimMontage> ReloadMontage;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> FireMontage;
