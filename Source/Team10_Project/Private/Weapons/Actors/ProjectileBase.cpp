@@ -10,7 +10,7 @@
 
 AProjectileBase::AProjectileBase()
 	:bIsActive(false), ProjectileLocation(FVector::ZeroVector), ProjectileRotation(FRotator::ZeroRotator), ProjectileDir(FVector::ZeroVector), 
-    ProjectileSpeed(200), ProjectileRange(0), Only(false)
+    ProjectileSpeed(0), ProjectileRange(0), Only(false)
 {
 	WeaponType = EWeaponType::Projectile;
 
@@ -160,6 +160,9 @@ void AProjectileBase::ActiveObject_Implementation()
     
 	ProjectileCollision->Activate();
 	ProjectileCollision->SetNotifyRigidBodyCollision(true);
+
+    ProjectileMovementComp->InitialSpeed = ProjectileSpeed;
+    ProjectileMovementComp->MaxSpeed = ProjectileSpeed;
 
     ProjectileMovementComp->SetUpdatedComponent(ProjectileCollision);
     ProjectileMovementComp->Activate();

@@ -22,23 +22,18 @@ AWeaponBase::AWeaponBase()
 	GetCollision->SetupAttachment(Scene);
 
 	GetCollision->OnComponentBeginOverlap.AddDynamic(this, &AWeaponBase::OnItemOverlap);
+    GetCollision->OnComponentEndOverlap.AddDynamic(this, &AWeaponBase::OnItemEndOverlap);
 }
 
 void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
-	
-    /*if (!bIsVisible)
-    {
-        InVisibleItem();
-    }*/
+
 }
 
 void AWeaponBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-    OnItemOverlapJudgement();
 }
 
 void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
@@ -63,8 +58,11 @@ void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	}
 }
 
-void AWeaponBase::OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+void AWeaponBase::OnItemEndOverlap(
+    UPrimitiveComponent* OverlappedComp,
+    AActor* OtherActor,
+    UPrimitiveComponent* OtherComp,
+    int32 OtherBodyIndex)
 {
     UE_LOG(LogTemp, Warning, TEXT("EndOverlap Item"));
     if (OtherActor && OtherActor->ActorHasTag("Player"))
@@ -84,32 +82,9 @@ void AWeaponBase::OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* 
     }
 }
 
-void AWeaponBase::OnItemOverlapJudgement()
+void AWeaponBase::InteractiveItem(AActor* Player)
 {
-    if (bOverlappingItem)
-    {
-        for (AMyPlayerController* InputController : OverlappingCharacters)
-        {
-            if (InputController->WasInputKeyJustPressed(EKeys::F))
-            {
-                AMyCharacter* MyChar = Cast<AMyCharacter>(InputController->GetPawn());
-                if (MyChar)
-                {
-                    GetItem(MyChar);
-                }
-            }
-        }
-    }
-}
-
-void AWeaponBase::GetItem(AActor* Player)
-{
-    InVisibleItem();
     if (GetItemType() == EItemType::Weapon)
-    {
-
-    }
-    else if (GetItemType() == EItemType::Buff)
     {
 
     }
@@ -126,10 +101,6 @@ void AWeaponBase::InVisibleItem()
 {
     GetCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     GetCollision->Deactivate();
-
-    SetActorHiddenInGame(true);
-    SetActorEnableCollision(false);
-    SetActorTickEnabled(false);
 }
 
 void AWeaponBase::UseWeapon()
@@ -143,10 +114,6 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
 
     UE_LOG(LogTemp, Warning, TEXT("Equip"));
     AMyCharacter* Character = Cast<AMyCharacter>(Player);
-    if (Character->GetCurrentWeapon())
-    {
-        UnEquipmentWeapon(Character);
-    }
 
     FName GripSocketName = Character->GetWeaponSocketName();
     FTransform ArmGrips = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
@@ -160,14 +127,6 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
         Character->GetCharacterArms(),
         FAttachmentTransformRules::SnapToTargetNotIncludingScale,
         GripSocketName);
-}
-
-void AWeaponBase::UnEquipmentWeapon(AActor* Player)
-{
-    if (!Player) return;
-
-    AMyCharacter* Character = Cast<AMyCharacter>(Player);
-    Character->SetCurrentWeapon(NULL);
 }
 
 void AWeaponBase::Attack(AActor* Activator)
@@ -230,4 +189,9 @@ int32 AWeaponBase::GetPower() const
 EItemType AWeaponBase::GetItemType()
 {
     return ItemType;
+}
+
+bool AWeaponBase::GetItemOverlapState()
+{
+    return bOverlappingItem;
 }
