@@ -6,7 +6,7 @@
 #include "MyCharacter.h"
 ARangeWeapon::ARangeWeapon()
 	:LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
-	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
+	FireSpeed(0), MaxBulletAmount(0), LoadAmmoAmount(0), ConsumeAmmoAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
 {
 	WeaponType = EWeaponType::Range;
 
@@ -62,9 +62,9 @@ void ARangeWeapon::Attack(AActor* Activator)
 			false
 		);
 
-		CurBulletAmount--;
+        LoadAmmoAmount -= ConsumeAmmoAmount;
 		//장전된 총알이 다 떨어졌으면
-		if (CurBulletAmount == 0)
+		if (LoadAmmoAmount == 0)
 		{
 			bIsFire = false;
 			FireState = ERangeFireState::Idle;
@@ -93,17 +93,17 @@ void ARangeWeapon::Reload(AActor* Activator)
     }
 
     //int32 RemainingBullet = Character->GetPossessAmmo();
-    if (RemainingAmmo > 0 && MaxBulletAmount > CurBulletAmount)
+    if (RemainingAmmo > 0 && MaxBulletAmount > LoadAmmoAmount)
     {
-        int32 NeedAmmo = MaxBulletAmount - CurBulletAmount;
+        int32 NeedAmmo = MaxBulletAmount - LoadAmmoAmount;
         if (RemainingAmmo >= NeedAmmo)
         {
-            CurBulletAmount += NeedAmmo;
+            LoadAmmoAmount += NeedAmmo;
             //Character->SetRemainingAmmo(-NeedAmmo);
         }
         else if (RemainingAmmo < NeedAmmo)
         {
-            CurBulletAmount += RemainingAmmo;
+            LoadAmmoAmount += RemainingAmmo;
             //Character->SetRemainingAmmo(-RemainingAmmo);
         }
         bIsFire = true;
@@ -152,4 +152,14 @@ void ARangeWeapon::SwitchFireType()
 	{
 		FireType = ERangeFireType::SingleShot;
 	}
+}
+
+int ARangeWeapon::GetLoadedAmmoAmount() const
+{
+	return LoadAmmoAmount;
+}
+
+int ARangeWeapon::GetMaxAmmoAmount() const
+{
+    return MaxBulletAmount;
 }
