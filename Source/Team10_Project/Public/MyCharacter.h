@@ -16,6 +16,7 @@
 
 class UCameraComponent;
 class UAudioComponent;
+class USphereComponent;
 struct FInputActionValue;
 
 UENUM(BlueprintType)
@@ -78,6 +79,33 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+    // ----- 아이템 상호작용 -----
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+    TArray<TObjectPtr<AActor>> OverlappingItems;
+    
+    UFUNCTION()
+    void OnInteractBeginOverlap(
+        UPrimitiveComponent* OverlappedComponent,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex,
+        bool bFromSweep,
+        const FHitResult& SweepResult);
+
+    UFUNCTION()
+    void OnInteractEndOverlap(
+        UPrimitiveComponent* OverlappedComponent,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex);
+
+    void Interact();
+
+    void PickupWeapon(ERangeType RangeTypeToPickup);
+    
+    // -------------------------
 
     // ----- 무기 -----
 
@@ -178,6 +206,8 @@ protected:
 	void UpdateGroundState();
 	
 	void ApplyMovementSpeedByState();
+
+    bool CanShoot();
 	
 	UPROPERTY(VisibleAnywhere, Category = "State")
 	ECharacterState CurrentState;
@@ -235,6 +265,9 @@ protected:
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Flashlight")
 	TObjectPtr<USpotLightComponent> Flashlight;
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+    TObjectPtr<USphereComponent> InteractSphere;
 
 	// -------------------
 
@@ -248,6 +281,9 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> UnEquipMontage;
+    
+    UPROPERTY(EditDefaultsOnly, Category = "Animation")
+    TObjectPtr<UAnimMontage> InteractMontage;
     
     UPROPERTY(EditDefaultsOnly, Category = "Effects|Camera")
     TSubclassOf<UCameraShakeBase> FireCameraShakeClass;
