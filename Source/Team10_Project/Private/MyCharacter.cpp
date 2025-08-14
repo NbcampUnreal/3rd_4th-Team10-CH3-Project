@@ -67,7 +67,7 @@ AMyCharacter::AMyCharacter()
 		StimuliSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
 		StimuliSource->RegisterWithPerceptionSystem();
 	}
-	// --------------------
+
 }
 
 void AMyCharacter::BeginPlay()
@@ -191,6 +191,7 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 
 	UpdateGroundState();
 }
+
 void AMyCharacter::OnInteractBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
     UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
@@ -227,7 +228,7 @@ void AMyCharacter::Interact()
             AnimInstance->Montage_Play(InteractMontage, 1.4f);
         }
         PickupWeapon(ERangeType::Pistol);   // 테스트
-        InteractingItem->Destroy();
+        InteractingItem->Destroy();         // 테스트
     }
 }
 

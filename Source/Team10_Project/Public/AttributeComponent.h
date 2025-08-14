@@ -31,10 +31,10 @@ protected:
 	float Health;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float MaxHealth;
+	float MaxHealth = 100;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float Defence;
+	float Defence = 10; // 현재 미사용
 
 	// --------------------
 
