@@ -30,7 +30,7 @@ public:
         AActor* OtherActor,
         UPrimitiveComponent* OtherComp,
         int32 OtherBodyIndex) = 0;
-    virtual void GetItem(AActor*) = 0;
+    virtual void InteractiveItem(AActor* Activate) = 0;
     virtual void VisibleItem() = 0;
     virtual void InVisibleItem() = 0;
     virtual EItemType GetItemType() = 0;
