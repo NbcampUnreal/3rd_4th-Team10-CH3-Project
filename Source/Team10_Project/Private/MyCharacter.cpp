@@ -480,12 +480,12 @@ void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
         const FWeaponData& NewWeaponData = WeaponInventory[WeaponToEquip];
 
         CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(NewWeaponData.WeaponClass);
-        CurrentWeapon->SetOwner(this);
         if (CurrentWeapon)
         {
             //CurrentWeapon->SetCurrentAmmo(NewWeaponData.CurrentAmmo);
             //CurrentWeapon->SetMaxAmmo(NewWeaponData.MaxAmmo);
 
+            CurrentWeapon->SetOwner(this);
             CurrentWeapon->EquipmentWeapon(this);
             
             UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
@@ -497,50 +497,21 @@ void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
             bEquipped = true;
             CharacterArms->SetVisibility(true);
             CurrentWeapon->SetActorHiddenInGame(false);
+            
         }
     }
 }
 
 void AMyCharacter::UnEquipWeapon()
 {
-	if (!bEquipped || !CurrentWeapon)
-	{
-		return;
-	}
-
-    /*
-    ERangeType OldWeaponType = CurrentWeapon->GetWeaponType();
-    if (WeaponInventory.Contains(OldWeaponType))
+    if (CurrentWeapon)
     {
-        //WeaponInventory[OldWeaponType].CurrentAmmo = CurrentWeapon->GetCurrentAmmo();
-        //WeaponInventory[OldWeaponType].CurrentAmmo = CurrentWeapon->GetMaxAmmo();
+        CurrentWeapon->Destroy();
+        CurrentWeapon = nullptr;
+    
+        bEquipped = false;
+        CharacterArms->SetVisibility(false);
     }
-    */
-    float MontagePlaytime = 0.f;
-	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
-	if (AnimInstance)
-	{
-		MontagePlaytime = AnimInstance->Montage_Play(UnEquipMontage, -1.f);
-	}
-    
-    FTimerHandle DestroyTimer;
-    GetWorld()->GetTimerManager().SetTimer(
-        DestroyTimer, 
-        this, 
-        &AMyCharacter::FinishUnEquip,
-        MontagePlaytime, 
-        false);
-    
-}
-void AMyCharacter::FinishUnEquip()
-{
-    UE_LOG(LogTemp, Warning, TEXT("FinishUnEquip function called!"));
-    
-    CurrentWeapon->Destroy();
-    CurrentWeapon = nullptr;
-    
-    bEquipped = false;
-    CharacterArms->SetVisibility(false);
 }
 
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
