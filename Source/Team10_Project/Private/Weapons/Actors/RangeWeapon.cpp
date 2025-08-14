@@ -9,6 +9,8 @@ ARangeWeapon::ARangeWeapon()
 	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
 {
 	WeaponType = EWeaponType::Range;
+
+	WeaponStaticMesh->SetupAttachment(Scene);
 }
 
 void ARangeWeapon::BeginPlay()
@@ -77,8 +79,6 @@ void ARangeWeapon::StopFire()
 {
 }
 
-//class AIneventory;
-
 void ARangeWeapon::Reload(AActor* Activator)
 {
 	if (!Activator) return;
@@ -127,12 +127,13 @@ void ARangeWeapon::SetFireState()
 {
 	FireState = ERangeFireState::Load;
 
-    /*AMyCharacter* Char = nullptr;
+    /*AMyCharacter* Pool = nullptr;
     for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
     {
-        Char = *It;
+        Pool = *It;
+        break;
     }
-    EquipmentWeapon(Char);*/
+    EquipmentWeapon(Pool);*/
 }
 
 void ARangeWeapon::SwitchFireType()
