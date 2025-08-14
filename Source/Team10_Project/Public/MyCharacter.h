@@ -56,6 +56,9 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Weapon")
     AWeaponBase* GetCurrentWeapon() const { return CurrentWeapon.Get(); }
+    
+    UFUNCTION(BlueprintCallable, Category = "Weapon|Ammo")
+    int GetAmmoAmount() const { return AmmoAmount; }
 
     // -----------------------
 
@@ -63,6 +66,9 @@ public:
 
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SetCurrentWeapon(AWeaponBase* NewWeapon);
+
+    UFUNCTION(BlueprintCallable, Category = "Weapon|Ammo")
+    void SetAmmoAmount(int NewAmmoAmount);
 
     // -----------------------
 
@@ -86,6 +92,9 @@ protected:
     
     UPROPERTY(EditDefaultsOnly, Category = "Data")
     TObjectPtr<UDataTable> WeaponDataTable;
+
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Weapon|Ammo")
+    int AmmoAmount;
 
     // -----------------
 

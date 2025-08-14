@@ -187,6 +187,11 @@ void AMyCharacter::SetCurrentWeapon(AWeaponBase* NewWeapon)
     CurrentWeapon = NewWeapon;
 }
 
+void AMyCharacter::SetAmmoAmount(int NewAmmoAmount)
+{
+    AmmoAmount = NewAmmoAmount;
+}
+
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
