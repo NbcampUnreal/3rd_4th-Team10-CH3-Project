@@ -67,6 +67,18 @@ protected:
 	// ---------------------
 
 public:
+
+    // ----- Setter 함수 -----
+
+    void SetHealth(float NewHealth);
+    void SetDefence(float NewDefence);
+    void SetStamina(float NewStamina);
+    
+    void ModityHealth(float Amount);
+    void ModityDefence(float Amount);
+    void ModityStamina(float Amount);
+    
+    // -----------------------
 	
 	// ----- 속도 및 기타 속성 -----
 	
