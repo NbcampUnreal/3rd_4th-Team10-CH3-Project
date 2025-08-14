@@ -6,7 +6,7 @@
 #include "MyCharacter.h"
 ARangeWeapon::ARangeWeapon()
 	:LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
-	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
+	FireSpeed(0), MaxBulletAmount(0), LoadAmmoAmount(0), ConsumeAmmoAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
 {
 	WeaponType = EWeaponType::Range;
 
@@ -62,9 +62,9 @@ void ARangeWeapon::Attack(AActor* Activator)
 			false
 		);
 
-		CurBulletAmount--;
+        LoadAmmoAmount -= ConsumeAmmoAmount;
 		//장전된 총알이 다 떨어졌으면
-		if (CurBulletAmount == 0)
+		if (LoadAmmoAmount == 0)
 		{
 			bIsFire = false;
 			FireState = ERangeFireState::Idle;
@@ -84,28 +84,31 @@ void ARangeWeapon::Reload(AActor* Activator)
 	if (!Activator) return;
 
 	FireState = ERangeFireState::Reload;
-	int32 RemainingBullet = 10;
-	//AIneventory* Inven = CreateDefaultSubobject<AIneventory>(TEXT("AIneventory"));
-	if (RemainingBullet > 10/*Inven = Cast<AIneventory>(Activator)*/)
-	{
-		//int32 RemainingBullet = Inven->GetRaminingBullet();
-		if (RemainingBullet > 0 && MaxBulletAmount > CurBulletAmount)
-		{
-			int32 NeedBullet = MaxBulletAmount - CurBulletAmount;
-			if (RemainingBullet >= NeedBullet)
-			{
-				CurBulletAmount += NeedBullet;
-				//Inven->SetRemainingBullet(-NeedBullet);
-			}
-			else if (RemainingBullet < NeedBullet)
-			{
-				CurBulletAmount += RemainingBullet;
-				//Inven->SetRemainingBullet(-RemainingBullet);
-			}
-			bIsFire = true;
-			FireState = ERangeFireState::Load;
-		}
-	}
+	int32 RemainingAmmo = 10;
+    AMyCharacter* Character = nullptr;
+    for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
+    {
+        Character = *It;
+        break;
+    }
+
+    //int32 RemainingBullet = Character->GetPossessAmmo();
+    if (RemainingAmmo > 0 && MaxBulletAmount > LoadAmmoAmount)
+    {
+        int32 NeedAmmo = MaxBulletAmount - LoadAmmoAmount;
+        if (RemainingAmmo >= NeedAmmo)
+        {
+            LoadAmmoAmount += NeedAmmo;
+            //Character->SetRemainingAmmo(-NeedAmmo);
+        }
+        else if (RemainingAmmo < NeedAmmo)
+        {
+            LoadAmmoAmount += RemainingAmmo;
+            //Character->SetRemainingAmmo(-RemainingAmmo);
+        }
+        bIsFire = true;
+        FireState = ERangeFireState::Load;
+    }
 }
 
 ERangeLeverType ARangeWeapon::GetRangeLeverType()
@@ -126,14 +129,6 @@ float ARangeWeapon::GetFireSpeed()
 void ARangeWeapon::SetFireState()
 {
 	FireState = ERangeFireState::Load;
-
-    /*AMyCharacter* Pool = nullptr;
-    for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
-    {
-        Pool = *It;
-        break;
-    }
-    EquipmentWeapon(Pool);*/
 }
 
 void ARangeWeapon::SwitchFireType()
@@ -157,4 +152,14 @@ void ARangeWeapon::SwitchFireType()
 	{
 		FireType = ERangeFireType::SingleShot;
 	}
+}
+
+int ARangeWeapon::GetLoadedAmmoAmount() const
+{
+	return LoadAmmoAmount;
+}
+
+int ARangeWeapon::GetMaxAmmoAmount() const
+{
+    return MaxBulletAmount;
 }

@@ -23,7 +23,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	int32 MaxBulletAmount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
-	int32 CurBulletAmount;
+	int32 LoadAmmoAmount;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
+    int32 ConsumeAmmoAmount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	bool bIsFire;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
@@ -45,5 +47,8 @@ public:
 	float GetFireSpeed();
 	void SetFireState();
 	void SwitchFireType();
+
+    int GetLoadedAmmoAmount() const;
+    int GetMaxAmmoAmount() const;
 
 };

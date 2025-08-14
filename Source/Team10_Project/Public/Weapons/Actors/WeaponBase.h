@@ -77,9 +77,11 @@ protected:
     virtual void OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
         UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
         bool bFromSweep, const FHitResult& SweepResult) override;
-    virtual void OnItemEndOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-        bool bFromSweep, const FHitResult& SweepResult) override;
+    virtual void OnItemEndOverlap(
+        UPrimitiveComponent* OverlappedComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex) override;
     virtual void OnHit(UPrimitiveComponent* HitComp,
         AActor* OtherActor,
         UPrimitiveComponent* OtherComp,
@@ -87,8 +89,6 @@ protected:
         const FHitResult& Hit) override;
 
     //ItemInterface
-    virtual void OnItemOverlapJudgement() override;
-    virtual void GetItem(AActor* Player) override;
     virtual void VisibleItem() override;
     virtual void InVisibleItem() override;
 
@@ -100,7 +100,6 @@ protected:
 public:
     //WeaponInterface
 	virtual void EquipmentWeapon(AActor* Player) override;
-	virtual void UnEquipmentWeapon(AActor* Player) override;
 	virtual void Attack(AActor* Activator) override;
     virtual void StartFire() override;
     virtual void StopFire() override;
@@ -109,5 +108,8 @@ public:
 	FName GetWeaponName() const;
 	int32 GetPower() const;
 
+    //ItemInterface
     virtual EItemType GetItemType() override;
+    virtual void InteractiveItem(AActor* Player) override;
+    virtual bool GetItemOverlapState() override;
 };
