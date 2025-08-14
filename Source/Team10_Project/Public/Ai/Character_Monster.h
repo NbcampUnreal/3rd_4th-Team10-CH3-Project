@@ -19,7 +19,7 @@ public:
     void Attack();
 
     UFUNCTION(BlueprintCallable, Category = "Combat")
-    void ApplyCustomDamage(int32 DamageAmount);  // int32로 변경
+    void ApplyCustomDamage(int32 DamageAmount);
 
     // 상태 변수들
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
@@ -32,12 +32,12 @@ public:
     int32 Defence;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-    float MaxStamina;  // 실수형 유지
+    float MaxStamina;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
-    float Stamina;  // 실수형 유지
+    float Stamina;
 
-    // 죽었을 때 처리할 함수
+
     void Die();
 
     // 공격 애니메이션 몽타주
