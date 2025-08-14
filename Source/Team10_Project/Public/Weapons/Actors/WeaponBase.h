@@ -100,7 +100,6 @@ protected:
 public:
     //WeaponInterface
 	virtual void EquipmentWeapon(AActor* Player) override;
-	virtual void UnEquipmentWeapon(AActor* Player) override;
 	virtual void Attack(AActor* Activator) override;
     virtual void StartFire() override;
     virtual void StopFire() override;
@@ -111,6 +110,6 @@ public:
 
     //ItemInterface
     virtual EItemType GetItemType() override;
-    virtual void GetItem(AActor* Player) override;
+    virtual void InteractiveItem(AActor* Player) override;
     virtual bool GetItemOverlapState() override;
 };

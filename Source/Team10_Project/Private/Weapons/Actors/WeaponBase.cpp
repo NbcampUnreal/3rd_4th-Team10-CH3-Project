@@ -82,7 +82,7 @@ void AWeaponBase::OnItemEndOverlap(
     }
 }
 
-void AWeaponBase::GetItem(AActor* Player)
+void AWeaponBase::InteractiveItem(AActor* Player)
 {
     if (GetItemType() == EItemType::Weapon)
     {
@@ -114,10 +114,6 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
 
     UE_LOG(LogTemp, Warning, TEXT("Equip"));
     AMyCharacter* Character = Cast<AMyCharacter>(Player);
-    if (Character->GetCurrentWeapon())
-    {
-        UnEquipmentWeapon(Character);
-    }
 
     FName GripSocketName = Character->GetWeaponSocketName();
     FTransform ArmGrips = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
@@ -131,14 +127,6 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
         Character->GetCharacterArms(),
         FAttachmentTransformRules::SnapToTargetNotIncludingScale,
         GripSocketName);
-}
-
-void AWeaponBase::UnEquipmentWeapon(AActor* Player)
-{
-    if (!Player) return;
-
-    AMyCharacter* Character = Cast<AMyCharacter>(Player);
-    Character->SetCurrentWeapon(NULL);
 }
 
 void AWeaponBase::Attack(AActor* Activator)
