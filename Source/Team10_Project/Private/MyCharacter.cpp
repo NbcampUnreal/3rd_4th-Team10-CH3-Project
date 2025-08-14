@@ -67,6 +67,7 @@ void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SetCharacterState(ECharacterState::Idle);
+    CurrentRangeType = ERangeType::None;
 
 	bEquipped = false;
 	CharacterArms->SetVisibility(false);
@@ -79,10 +80,10 @@ void AMyCharacter::BeginPlay()
             FWeaponData* Data = WeaponDataTable->FindRow<FWeaponData>(RowName, TEXT(""));
             if (Data)
             {
-                EWeaponDataType WeaponType;
-                if (RowName == "Pistol") WeaponType = EWeaponDataType::Pistol;
-                else if (RowName == "Rifle") WeaponType = EWeaponDataType::Rifle;
-                else if (RowName == "Shotgun") WeaponType = EWeaponDataType::Shotgun;
+                ERangeType WeaponType;
+                if (RowName == "Pistol") WeaponType = ERangeType::Pistol;
+                else if (RowName == "Rifle") WeaponType = ERangeType::Rifle;
+                else if (RowName == "Shotgun") WeaponType = ERangeType::Shotgun;
                 else continue;
 
                 WeaponInventory.Add(WeaponType, *Data);
@@ -383,14 +384,26 @@ void AMyCharacter::Reload()
 {
 	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Reload is not allowed!"));
 		return;
 	}
 	if (!ReloadMontage)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Reload Montage is not set!"));
 		return;
 	}
+    /*
+    UAnimMontage* MontageToPlay = CurrentWeapon->GetReloadMontage();
+
+    if (!MontageToPlay)
+    {
+        return;
+    }
+
+    UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+    if (AnimInstance)
+    {
+        AnimInstance->Montage_Play(MontageToPlay, 1.f);
+    }
+    */
 
 	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
 	if (AnimInstance)
@@ -413,8 +426,6 @@ void AMyCharacter::FinishReload()
 
 void AMyCharacter::ToggleFlashlight()
 {
-    UE_LOG(LogTemp, Warning, TEXT("ToggleFlashlight function called!")); // 디버깅 로그
-
 	if (Flashlight)
 	{
 		Flashlight->ToggleVisibility();
@@ -438,27 +449,25 @@ void AMyCharacter::ToggleFlashlight()
 
 void AMyCharacter::EquipPistol()
 {
-    EquipWeapon(EWeaponDataType::Pistol);
+    EquipWeapon(ERangeType::Pistol);
 }
 
 void AMyCharacter::EquipRifle()
 {
-    EquipWeapon(EWeaponDataType::Rifle);
+    EquipWeapon(ERangeType::Rifle);
 }
 
 void AMyCharacter::EquipShotgun()
 {
-    EquipWeapon(EWeaponDataType::Shotgun);
+    EquipWeapon(ERangeType::Shotgun);
 }
 
-void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
+void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
 {
-    /*
-    if (CurrentWeapon && CurrentWeapon->GetWeaponType() == WeaponToEquip)
+    if (CurrentWeapon && CurrentRangeType == WeaponToEquip)
     {
         return;
     }
-    */
     
 	if (CurrentWeapon)
 	{
@@ -467,15 +476,16 @@ void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
 
     if (WeaponInventory.Contains(WeaponToEquip))
     {
+        CurrentRangeType = WeaponToEquip;
         const FWeaponData& NewWeaponData = WeaponInventory[WeaponToEquip];
 
         CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(NewWeaponData.WeaponClass);
-        CurrentWeapon->SetOwner(this);
         if (CurrentWeapon)
         {
             //CurrentWeapon->SetCurrentAmmo(NewWeaponData.CurrentAmmo);
             //CurrentWeapon->SetMaxAmmo(NewWeaponData.MaxAmmo);
 
+            CurrentWeapon->SetOwner(this);
             CurrentWeapon->EquipmentWeapon(this);
             
             UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
@@ -487,50 +497,21 @@ void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
             bEquipped = true;
             CharacterArms->SetVisibility(true);
             CurrentWeapon->SetActorHiddenInGame(false);
+            
         }
     }
 }
 
 void AMyCharacter::UnEquipWeapon()
 {
-	if (!bEquipped || !CurrentWeapon)
-	{
-		return;
-	}
-
-    /*
-    EWeaponDataType OldWeaponType = CurrentWeapon->GetWeaponType();
-    if (WeaponInventory.Contains(OldWeaponType))
+    if (CurrentWeapon)
     {
-        //WeaponInventory[OldWeaponType].CurrentAmmo = CurrentWeapon->GetCurrentAmmo();
-        //WeaponInventory[OldWeaponType].CurrentAmmo = CurrentWeapon->GetMaxAmmo();
+        CurrentWeapon->Destroy();
+        CurrentWeapon = nullptr;
+    
+        bEquipped = false;
+        CharacterArms->SetVisibility(false);
     }
-    */
-    float MontagePlaytime = 0.f;
-	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
-	if (AnimInstance)
-	{
-		MontagePlaytime = AnimInstance->Montage_Play(UnEquipMontage, -1.f);
-	}
-    
-    FTimerHandle DestroyTimer;
-    GetWorld()->GetTimerManager().SetTimer(
-        DestroyTimer, 
-        this, 
-        &AMyCharacter::FinishUnEquip,
-        MontagePlaytime, 
-        false);
-    
-}
-void AMyCharacter::FinishUnEquip()
-{
-    UE_LOG(LogTemp, Warning, TEXT("FinishUnEquip function called!"));
-    
-    CurrentWeapon->Destroy();
-    CurrentWeapon = nullptr;
-    
-    bEquipped = false;
-    CharacterArms->SetVisibility(false);
 }
 
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
@@ -620,6 +601,11 @@ void AMyCharacter::StopSprintFOV()
 ECharacterState AMyCharacter::GetCurrentState() const
 {
 	return CurrentState;
+}
+
+ERangeType AMyCharacter::GetRangeType() const
+{
+    return CurrentRangeType;
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)

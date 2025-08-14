@@ -5,11 +5,12 @@
 #include "WeaponData.generated.h"
 
 UENUM(BlueprintType)
-enum class EWeaponDataType : uint8
+enum class ERangeType : uint8
 {
     Pistol UMETA(DisplayName = "Pistol"),
     Rifle UMETA(DisplayName = "Rifle"),
-    Shotgun UMETA(DisplayName = "Shotgun")
+    Shotgun UMETA(DisplayName = "Shotgun"),
+    None UMETA(DisplayName = "None")
 };
 class AWeaponBase;
 
@@ -26,4 +27,10 @@ struct FWeaponData : public FTableRowBase
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 MaxAmmo;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    TObjectPtr<UAnimMontage> ReloadTacMontage;
+
+    UPROPERTY(EditAnywhere, BlueprintReadOnly)
+    TObjectPtr<UAnimMontage> ReloadEmptyMontage;
 };

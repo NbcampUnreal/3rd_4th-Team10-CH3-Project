@@ -82,7 +82,7 @@ protected:
     FName WeaponSocketName = TEXT("WeaponSocket");
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon")
-    TMap<EWeaponDataType, FWeaponData> WeaponInventory;
+    TMap<ERangeType, FWeaponData> WeaponInventory;
     
     UPROPERTY(EditDefaultsOnly, Category = "Data")
     TObjectPtr<UDataTable> WeaponDataTable;
@@ -113,9 +113,8 @@ protected:
     void EquipRifle();
     void EquipShotgun();
 
-	void EquipWeapon(EWeaponDataType WeaponToEquip);
+	void EquipWeapon(ERangeType WeaponToEquip);
 	void UnEquipWeapon();
-    void FinishUnEquip();
 	
 	// ---------------------------
 
@@ -176,6 +175,12 @@ protected:
 
 	UFUNCTION(BlueprintCallable, Category = "State")
 	ECharacterState GetCurrentState() const;
+
+    UPROPERTY(VisibleAnywhere, Category = "State")
+    ERangeType CurrentRangeType;
+    
+	UFUNCTION(BlueprintCallable, Category = "State")
+    ERangeType GetRangeType() const;
 	
 	// ---------------------
 
@@ -235,7 +240,7 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> UnEquipMontage;
-	
+    
     UPROPERTY(EditDefaultsOnly, Category = "Effects|Camera")
     TSubclassOf<UCameraShakeBase> FireCameraShakeClass;
 	
