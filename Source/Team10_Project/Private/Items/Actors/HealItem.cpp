@@ -1,5 +1,7 @@
 #include "Items/Actors/HealItem.h"
 #include "Items/ItemInterface.h"
+#include "MyCharacter.h"
+#include "AttributeComponent.h"
 
 AHealItem::AHealItem()
 {
@@ -12,4 +14,9 @@ AHealItem::AHealItem()
 void AHealItem::ImmediatelyItem(AActor* Activate)
 {
     Super::ImmediatelyItem(Activate);
+
+    AMyCharacter* Character = Cast<AMyCharacter>(Activate);
+    Character->GetAttributeComponent()->ModityHealth(HealAmount);
+
+    InVisibleItem();
 }

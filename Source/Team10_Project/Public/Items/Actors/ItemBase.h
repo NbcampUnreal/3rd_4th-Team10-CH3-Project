@@ -22,7 +22,10 @@ protected:
     USceneComponent* Scene;
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
-    UBoxComponent* GetCollision;
+    UBoxComponent* InteractiveCollision;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Item|Component")
+    UStaticMeshComponent* ItemStaticMesh;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ItemData")
     EItemType ItemType;
