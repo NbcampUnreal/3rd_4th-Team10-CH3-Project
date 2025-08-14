@@ -92,19 +92,19 @@ void ARangeWeapon::Reload(AActor* Activator)
         break;
     }
 
-    //int32 RemainingBullet = Character->GetPossessAmmo();
+    int32 RemainingBullet = Character->GetAmmoAmount();
     if (RemainingAmmo > 0 && MaxBulletAmount > LoadAmmoAmount)
     {
         int32 NeedAmmo = MaxBulletAmount - LoadAmmoAmount;
         if (RemainingAmmo >= NeedAmmo)
         {
             LoadAmmoAmount += NeedAmmo;
-            //Character->SetRemainingAmmo(-NeedAmmo);
+            Character->SetAmmoAmount(-NeedAmmo);
         }
         else if (RemainingAmmo < NeedAmmo)
         {
             LoadAmmoAmount += RemainingAmmo;
-            //Character->SetRemainingAmmo(-RemainingAmmo);
+            Character->SetAmmoAmount(-RemainingAmmo);
         }
         bIsFire = true;
         FireState = ERangeFireState::Load;
