@@ -10,6 +10,7 @@
 
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
+#include "Weapons/Actors/RangeWeapon.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -185,6 +186,11 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 void AMyCharacter::SetCurrentWeapon(AWeaponBase* NewWeapon)
 {
     CurrentWeapon = NewWeapon;
+}
+
+void AMyCharacter::SetAmmoAmount(int NewAmmoAmount)
+{
+    AmmoAmount = NewAmmoAmount;
 }
 
 void AMyCharacter::Move(const FInputActionValue& Value)
@@ -386,29 +392,41 @@ void AMyCharacter::Reload()
 	{
 		return;
 	}
-	if (!ReloadMontage)
-	{
-		return;
-	}
-    /*
-    UAnimMontage* MontageToPlay = CurrentWeapon->GetReloadMontage();
-
-    if (!MontageToPlay)
+    
+    ARangeWeapon* RangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
+    if (RangeWeapon)
     {
-        return;
+        int32 LoadAmmo = RangeWeapon->GetLoadedAmmoAmount();
+        int32 MaxAmmo = RangeWeapon->GetMaxAmmoAmount();
+        if (MaxAmmo < LoadAmmo)
+        {
+            return;
+        }
     }
-
-    UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
-    if (AnimInstance)
+    
+    UAnimMontage* MontageToPlay = nullptr;
+    const FName WeaponRowName = GetWeaponRowNameFromType(CurrentRangeType);
+    
+    if (WeaponRowName != NAME_None)
     {
-        AnimInstance->Montage_Play(MontageToPlay, 1.f);
+        const FWeaponData* WeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponRowName, TEXT(""));
+        if (WeaponData)
+        {
+            if (RangeWeapon->GetLoadedAmmoAmount() > 0)
+            {
+                MontageToPlay = WeaponData->ReloadTacMontage; 
+            }
+            else
+            {
+                MontageToPlay = WeaponData->ReloadEmptyMontage;
+            }
+        }
     }
-    */
 
 	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
 	if (AnimInstance)
 	{
-		AnimInstance->Montage_Play(ReloadMontage, 1.f);
+		AnimInstance->Montage_Play(MontageToPlay, 1.f);
 	}
 	
 	StopZoom();
@@ -607,7 +625,20 @@ ERangeType AMyCharacter::GetRangeType() const
 {
     return CurrentRangeType;
 }
-
+FName AMyCharacter::GetWeaponRowNameFromType(ERangeType WeaponType) const
+{
+    switch (WeaponType)
+    {
+    case ERangeType::Pistol:
+        return FName("Pistol");
+    case ERangeType::Rifle:
+        return FName("Rifle");
+    case ERangeType::Shotgun:
+        return FName("Shotgun");
+    default:
+        return NAME_None;
+    }
+}
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
