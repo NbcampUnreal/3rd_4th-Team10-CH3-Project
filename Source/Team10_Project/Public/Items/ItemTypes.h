@@ -64,6 +64,15 @@ enum class EItemUsableType: uint8
     Acquire UMETA(DisplayName = "Acquire")
 };
 
+UENUM(BlueprintType)
+enum class ERangeType : uint8
+{
+    Pistol UMETA(DisplayName = "Pistol"),
+    Rifle UMETA(DisplayName = "Rifle"),
+    Shotgun UMETA(DisplayName = "Shotgun"),
+    None UMETA(DisplayName = "None")
+};
+
 class TEAM10_PROJECT_API ItemTypes
 {
 
