@@ -10,12 +10,16 @@ AItemBase::AItemBase()
     Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
     SetRootComponent(Scene);
 
-    GetCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
-    GetCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
-    GetCollision->SetupAttachment(Scene);
+    InteractiveCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("Collision"));
+    InteractiveCollision->SetCollisionProfileName(TEXT("OverlapAllDynamic"));
+    InteractiveCollision->SetupAttachment(Scene);
 
-    GetCollision->OnComponentBeginOverlap.AddDynamic(this, &AItemBase::OnItemOverlap);
-    GetCollision->OnComponentEndOverlap.AddDynamic(this, &AItemBase::OnItemEndOverlap);
+    ItemStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemStaticMesh"));
+    ItemStaticMesh->SetupAttachment(InteractiveCollision);
+    ItemStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+    InteractiveCollision->OnComponentBeginOverlap.AddDynamic(this, &AItemBase::OnItemOverlap);
+    InteractiveCollision->OnComponentEndOverlap.AddDynamic(this, &AItemBase::OnItemEndOverlap);
 }
 
 void AItemBase::BeginPlay()
@@ -61,6 +65,22 @@ void AItemBase::OnItemEndOverlap(
     int32 OtherBodyIndex)
 {
     UE_LOG(LogTemp, Warning, TEXT("EndOverlap Item"));
+
+    if (OtherActor && OtherActor->ActorHasTag("Player"))
+    {
+        if (AMyCharacter* MyChar = Cast<AMyCharacter>(OtherActor))
+        {
+            if (AMyPlayerController* MyPlayerCon = Cast<AMyPlayerController>(MyChar->GetController()))
+            {
+                OverlappingCharacters.Remove(MyPlayerCon);
+            }
+        }
+
+        if (OverlappingCharacters.IsEmpty())
+        {
+            bOverlappingItem = false;
+        }
+    }
 }
 
 void AItemBase::InteractiveItem(AActor* Activate)
@@ -77,12 +97,14 @@ void AItemBase::VisibleItem()
 
 void AItemBase::InVisibleItem()
 {
-    GetCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    GetCollision->Deactivate();
+    InteractiveCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    InteractiveCollision->Deactivate();
 
     SetActorHiddenInGame(true);
     SetActorEnableCollision(false);
     SetActorTickEnabled(false);
+
+    OverlappingCharacters.Empty();
 }
 
 EItemType AItemBase::GetItemType()
