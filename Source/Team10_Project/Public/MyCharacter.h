@@ -72,6 +72,8 @@ public:
     void SetAmmoAmount(int NewAmmoAmount);
 
     // -----------------------
+    
+    void OnDeath();
 
 protected:
 
@@ -126,8 +128,8 @@ protected:
 
     // -----------------
 
-	// ----- 동작 바인딩 함수 -----
-
+	// ----- 동작 함수 -----
+    
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void StartCrouch();

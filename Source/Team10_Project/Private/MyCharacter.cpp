@@ -254,6 +254,11 @@ void AMyCharacter::PickupWeapon(ERangeType RangeTypeToPickup)
     }
 }
 
+void AMyCharacter::OnDeath()
+{
+    
+}
+
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();

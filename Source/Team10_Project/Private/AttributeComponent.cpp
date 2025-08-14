@@ -1,5 +1,7 @@
 #include "AttributeComponent.h"
 
+#include "MyCharacter.h"
+
 UAttributeComponent::UAttributeComponent()
 {
 	PrimaryComponentTick.bCanEverTick = true;
@@ -55,6 +57,15 @@ void UAttributeComponent::StartStaminaRegen()
 void UAttributeComponent::SetHealth(float NewHealth)
 {
     Health = NewHealth;
+
+    if (FMath::IsNearlyZero(Health))
+    {
+        AMyCharacter* MyCharacter = Cast<AMyCharacter>(GetOwner());
+        if (MyCharacter)
+        {
+            MyCharacter->OnDeath();
+        }
+    }
 }
 
 void UAttributeComponent::SetDefence(float NewDefence)
