@@ -12,8 +12,9 @@ class TEAM10_PROJECT_API ARangeWeapon : public AWeaponBase
 public:
 	ARangeWeapon();
 protected:
-	virtual void BeginPlay() override;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
+    ERangeType RangeType;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	ERangeLeverType LeverType;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
@@ -34,9 +35,12 @@ protected:
 	FRotator MuzzleRotate;
 
     virtual void Attack(AActor* Activator) override;
-	ERangeLeverType GetRangeLeverType();
-	ERangeFireType GetAttackType();
+	ERangeLeverType GetRangeLeverType() const;
+	ERangeFireType GetFireType() const;
 
+    int32 FireCount;
+    int32 RemainingFireCount;
+    FTimerHandle FireCountHandle;
 	FTimerHandle FireTimerHandle;
 	FTimerDelegate TimerDel;
 

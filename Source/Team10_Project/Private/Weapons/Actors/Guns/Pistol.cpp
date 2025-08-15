@@ -2,13 +2,13 @@
 
 APistol::APistol()
 {
+    RangeType = ERangeType::Pistol;
 	FireType = ERangeFireType::SingleShot;
 	WeaponName = "Pistol";
-	Power = 5;
+	Power = 3;
 	RateOfFire = 0.3f;
 
-	LeverType = ERangeLeverType::Single;
-	FireSpeed = 1;
+	FireSpeed = 1.0f;
 	MaxBulletAmount = 12;
     LoadAmmoAmount = MaxBulletAmount;
     ConsumeAmmoAmount = 1;
@@ -23,7 +23,6 @@ void APistol::BeginPlay()
     SetActorTickEnabled(false);
 
     SetFireState();
-    Attack(this);
 }
 
 void APistol::StartFire()

@@ -1,0 +1,41 @@
+#include "Weapons/Actors/Guns/Rifle.h"
+
+ARifle::ARifle()
+{
+    RangeType = ERangeType::Rifle;
+    FireType = ERangeFireType::Repeatedly;
+    Power = 5;
+    RateOfFire = 0.0f;
+
+    FireSpeed = 1.0f;
+    MaxBulletAmount = 30;
+    LoadAmmoAmount = MaxBulletAmount;
+    ConsumeAmmoAmount = 1;
+    bIsFire = true;
+}
+
+void ARifle::BeginPlay()
+{
+    Super::BeginPlay();
+    bIsVisible = true;
+    SetActorHiddenInGame(false);
+    SetActorTickEnabled(false);
+
+    SetFireState();
+}
+
+void ARifle::StartFire()
+{
+    Super::StartFire();
+
+    RemainingFireCount = FireCount;
+    FTimerDelegate Delegate;
+    Delegate.BindUObject(this, &ARifle::Attack, Cast<AActor>(this));
+
+    GetWorld()->GetTimerManager().SetTimer(
+        FireCountHandle,
+        Delegate,
+        RateOfFire,
+        true
+    );
+}

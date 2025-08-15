@@ -5,30 +5,12 @@
 
 #include "MyCharacter.h"
 ARangeWeapon::ARangeWeapon()
-	:LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
-	FireSpeed(0), MaxBulletAmount(0), LoadAmmoAmount(0), ConsumeAmmoAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
+	:RangeType(), LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
+	FireSpeed(0), MaxBulletAmount(0), LoadAmmoAmount(0), ConsumeAmmoAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator), FireCount(1), RemainingFireCount(0)
 {
 	WeaponType = EWeaponType::Range;
 
 	WeaponStaticMesh->SetupAttachment(Scene);
-}
-
-void ARangeWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (LeverType == ERangeLeverType::Single)
-	{
-		FireType = ERangeFireType::SingleShot;
-	}
-	if (LeverType == ERangeLeverType::Point)
-	{
-		FireType = ERangeFireType::PointFire;
-	}
-	if (LeverType == ERangeLeverType::Repeatedly)
-	{
-		FireType = ERangeFireType::Repeatedly;
-	}
 }
 
 void ARangeWeapon::Attack(AActor* Activator)
@@ -62,10 +44,18 @@ void ARangeWeapon::Attack(AActor* Activator)
 			false
 		);
 
+        RemainingFireCount--;
         LoadAmmoAmount -= ConsumeAmmoAmount;
+        UE_LOG(LogTemp, Warning, TEXT("LoadAmmo Amount: %d"), LoadAmmoAmount);
+
+        if (RemainingFireCount == 0)
+        {
+            StopFire();
+        }
 		//장전된 총알이 다 떨어졌으면
 		if (LoadAmmoAmount == 0)
 		{
+            StopFire();
 			bIsFire = false;
 			FireState = ERangeFireState::Idle;
 		}
@@ -73,10 +63,23 @@ void ARangeWeapon::Attack(AActor* Activator)
 }
 void ARangeWeapon::StartFire()
 {
+    if (FireType == ERangeFireType::SingleShot)
+    {
+        FireCount = 1;
+    }
+    else if (FireType == ERangeFireType::PointFire)
+    {
+        FireCount = 3;
+    }
+    else if (FireType == ERangeFireType::Repeatedly)
+    {
+        FireCount = 99;
+    }
 }
 
 void ARangeWeapon::StopFire()
 {
+    GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
 }
 
 void ARangeWeapon::Reload(AActor* Activator)
@@ -111,12 +114,12 @@ void ARangeWeapon::Reload(AActor* Activator)
     }
 }
 
-ERangeLeverType ARangeWeapon::GetRangeLeverType()
+ERangeLeverType ARangeWeapon::GetRangeLeverType() const
 {
 	return LeverType;
 }
 
-ERangeFireType ARangeWeapon::GetAttackType()
+ERangeFireType ARangeWeapon::GetFireType() const
 {
 	return FireType;
 }
@@ -131,27 +134,46 @@ void ARangeWeapon::SetFireState()
 	FireState = ERangeFireState::Load;
 }
 
+DEFINE_LOG_CATEGORY_STATIC(LogRangeWeapon, Log, All);
+
+static FORCEINLINE FString EnumNameString(ERangeFireType V)
+{
+    return StaticEnum<ERangeFireType>()->GetNameStringByValue(static_cast<int64>(V));
+}
+
+static FORCEINLINE FString EnumDisplayString(ERangeFireType V)
+{
+    return StaticEnum<ERangeFireType>()->GetDisplayNameTextByValue(static_cast<int64>(V)).ToString();
+}
 void ARangeWeapon::SwitchFireType()
 {
-	if (FireType == ERangeFireType::SingleShot)
-	{
-		if (LeverType == ERangeLeverType::Point)
-		{
-			FireType = ERangeFireType::PointFire;
-		}
-		if (LeverType == ERangeLeverType::Repeatedly)
-		{
-			FireType = ERangeFireType::Repeatedly;
-		}
-	}
-	else if (FireType == ERangeFireType::PointFire)
-	{
-		FireType = ERangeFireType::SingleShot;
-	}
-	else if (FireType == ERangeFireType::Repeatedly)
-	{
-		FireType = ERangeFireType::SingleShot;
-	}
+    if (FireType == ERangeFireType::SingleShot)
+    {
+        if (LeverType == ERangeLeverType::Single)
+        {
+            return;
+        }
+        else if (LeverType == ERangeLeverType::Point)
+        {
+            FireType = ERangeFireType::PointFire;
+        }
+        else if (LeverType == ERangeLeverType::Repeatedly)
+        {
+            FireType = ERangeFireType::Repeatedly;
+        }
+    }
+    else if (FireType == ERangeFireType::PointFire)
+    {
+        FireType = ERangeFireType::SingleShot;
+    }
+    else if (FireType == ERangeFireType::Repeatedly)
+    {
+        FireType = ERangeFireType::SingleShot;
+    }
+
+    UE_LOG(LogRangeWeapon, Log, TEXT("FireType: %s (%s)"),
+        *EnumNameString(GetFireType()),
+        *EnumDisplayString(GetFireType()));
 }
 
 int ARangeWeapon::GetLoadedAmmoAmount() const
