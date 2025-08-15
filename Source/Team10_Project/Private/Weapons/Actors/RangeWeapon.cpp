@@ -5,7 +5,7 @@
 
 #include "MyCharacter.h"
 ARangeWeapon::ARangeWeapon()
-	:RangeType(), LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
+	:RangeType(ERangeType::None), LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
 	FireSpeed(0), MaxBulletAmount(0), LoadAmmoAmount(0), ConsumeAmmoAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator), FireCount(1), RemainingFireCount(0)
 {
 	WeaponType = EWeaponType::Range;
@@ -88,12 +88,7 @@ void ARangeWeapon::Reload(AActor* Activator)
 
 	FireState = ERangeFireState::Reload;
 	int32 RemainingAmmo = 10;
-    AMyCharacter* Character = nullptr;
-    for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
-    {
-        Character = *It;
-        break;
-    }
+    AMyCharacter* Character = Cast<AMyCharacter>(Activator);
 
     int32 RemainingBullet = Character->GetAmmoAmount();
     if (RemainingAmmo > 0 && MaxBulletAmount > LoadAmmoAmount)
@@ -132,6 +127,14 @@ float ARangeWeapon::GetFireSpeed()
 void ARangeWeapon::SetFireState()
 {
 	FireState = ERangeFireState::Load;
+
+    /*AMyCharacter* Character = nullptr;
+    for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
+    {
+        Character = *It;
+        break;
+    }
+    EquipmentWeapon(Character);*/
 }
 
 DEFINE_LOG_CATEGORY_STATIC(LogRangeWeapon, Log, All);

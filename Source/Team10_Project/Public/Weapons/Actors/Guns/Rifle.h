@@ -8,7 +8,8 @@ UCLASS()
 class TEAM10_PROJECT_API ARifle : public ARangeWeapon
 {
 	GENERATED_BODY()
-	
+
+public:
     ARifle();
 
     virtual void BeginPlay() override;

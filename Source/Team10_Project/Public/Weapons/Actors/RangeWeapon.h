@@ -11,6 +11,7 @@ class TEAM10_PROJECT_API ARangeWeapon : public AWeaponBase
 
 public:
 	ARangeWeapon();
+
 protected:
 
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")

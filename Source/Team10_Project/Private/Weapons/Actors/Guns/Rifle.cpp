@@ -4,6 +4,7 @@ ARifle::ARifle()
 {
     RangeType = ERangeType::Rifle;
     FireType = ERangeFireType::Repeatedly;
+    WeaponName = "Rifle";
     Power = 5;
     RateOfFire = 0.0f;
 

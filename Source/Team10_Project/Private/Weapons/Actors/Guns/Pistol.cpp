@@ -30,8 +30,3 @@ void APistol::StartFire()
     Super::StartFire();
     Attack(this);
 }
-
-void APistol::StopFire()
-{
-    Super::StopFire();
-}
