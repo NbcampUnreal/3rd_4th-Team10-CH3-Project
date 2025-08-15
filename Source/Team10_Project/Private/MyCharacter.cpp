@@ -643,6 +643,15 @@ void AMyCharacter::UnEquipWeapon()
     }
 }
 
+void AMyCharacter::SwitchFireMode()
+{
+    ARangeWeapon* RangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
+    if (RangeWeapon)
+    {
+        RangeWeapon->SwitchFireType();
+    }
+}
+
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
 {
 	if (CurrentState == NewState)
@@ -906,6 +915,13 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
                 ETriggerEvent::Started,
                 this,
                 &AMyCharacter::Interact
+            );
+            
+		    EnhancedInputComponent->BindAction(
+                PlayerController->KeyTabAction,
+                ETriggerEvent::Started,
+                this,
+                &AMyCharacter::SwitchFireMode
             );
 		    
 		}

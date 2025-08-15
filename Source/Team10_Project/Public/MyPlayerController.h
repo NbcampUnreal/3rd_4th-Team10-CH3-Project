@@ -60,6 +60,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
     UInputAction* KeyQAction;
     
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+    UInputAction* KeyTabAction;
+    
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
     UInputAction* InteractAction;
 protected:

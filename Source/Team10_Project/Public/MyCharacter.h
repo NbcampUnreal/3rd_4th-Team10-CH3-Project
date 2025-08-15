@@ -154,6 +154,7 @@ protected:
 
 	void EquipWeapon(ERangeType WeaponToEquip);
 	void UnEquipWeapon();
+    void SwitchFireMode();
 	
 	// ---------------------------
 
