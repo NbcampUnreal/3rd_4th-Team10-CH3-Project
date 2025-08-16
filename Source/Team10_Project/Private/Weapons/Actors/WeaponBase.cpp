@@ -8,7 +8,7 @@ AWeaponBase::AWeaponBase()
     ItemType(EItemType::Weapon), WeaponType(), WeaponName(""), Power(0), RateOfFire(0.0f),
 	Height(0.0f), Width(0.0f), Vertical(0.0f), bIsEquip(false)
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	SetRootComponent(Scene);
@@ -29,11 +29,6 @@ void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
 
-}
-
-void AWeaponBase::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
 }
 
 void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
@@ -116,17 +111,19 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
     AMyCharacter* Character = Cast<AMyCharacter>(Player);
 
     FName GripSocketName = Character->GetWeaponSocketName();
-    FTransform ArmGrips = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
-    FTransform WeaponGrip = GetGripTransform();
 
-    FTransform Offset = WeaponGrip.Inverse() * ArmGrips;
-    FVector DesiredScale(0.75f);
-    Offset.SetScale3D(DesiredScale);
+    FTransform ArmGripsSocket = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
+    FTransform WeaponGripSocket = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), RTS_Component);;
 
+    FTransform Offset = ArmGripsSocket * WeaponGripSocket.Inverse();
+    Offset.SetScale3D(WeaponStaticMesh->GetRelativeScale3D());
+    
     WeaponStaticMesh->AttachToComponent(
         Character->GetCharacterArms(),
         FAttachmentTransformRules::SnapToTargetNotIncludingScale,
         GripSocketName);
+
+    //WeaponStaticMesh->SetRelativeTransform(Offset, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 void AWeaponBase::Attack(AActor* Activator)

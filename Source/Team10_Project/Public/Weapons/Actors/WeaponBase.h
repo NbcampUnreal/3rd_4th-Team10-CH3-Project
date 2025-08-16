@@ -24,7 +24,6 @@ protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void Tick(float DeltaTime) override;
 
 	bool bIsEquip;
 	bool bIsAttack;
