@@ -87,22 +87,21 @@ void ARangeWeapon::Reload(AActor* Activator)
 	if (!Activator) return;
 
 	FireState = ERangeFireState::Reload;
-	int32 RemainingAmmo = 10;
     AMyCharacter* Character = Cast<AMyCharacter>(Activator);
 
     int32 RemainingBullet = Character->GetAmmoAmount();
-    if (RemainingAmmo > 0 && MaxBulletAmount > LoadAmmoAmount)
+    if (RemainingBullet > 0 && MaxBulletAmount > LoadAmmoAmount)
     {
         int32 NeedAmmo = MaxBulletAmount - LoadAmmoAmount;
-        if (RemainingAmmo >= NeedAmmo)
+        if (RemainingBullet >= NeedAmmo)
         {
             LoadAmmoAmount += NeedAmmo;
             Character->SetAmmoAmount(-NeedAmmo);
         }
-        else if (RemainingAmmo < NeedAmmo)
+        else if (RemainingBullet < NeedAmmo)
         {
-            LoadAmmoAmount += RemainingAmmo;
-            Character->SetAmmoAmount(-RemainingAmmo);
+            LoadAmmoAmount += RemainingBullet;
+            Character->SetAmmoAmount(-RemainingBullet);
         }
         bIsFire = true;
         FireState = ERangeFireState::Load;
@@ -150,6 +149,7 @@ static FORCEINLINE FString EnumDisplayString(ERangeFireType V)
 }
 void ARangeWeapon::SwitchFireType()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Switch Fire Type"));
     if (FireType == ERangeFireType::SingleShot)
     {
         if (LeverType == ERangeLeverType::Single)
