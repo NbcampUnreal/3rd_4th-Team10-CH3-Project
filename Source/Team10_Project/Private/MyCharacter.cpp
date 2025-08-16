@@ -473,7 +473,7 @@ void AMyCharacter::StopZoom()
 
 void AMyCharacter::Reload()
 {
-	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped)
+	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped || AmmoAmount <= 0)
 	{
 		return;
 	}
