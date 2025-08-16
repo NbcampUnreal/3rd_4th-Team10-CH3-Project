@@ -3,10 +3,10 @@
 ARifle::ARifle()
 {
     RangeType = ERangeType::Rifle;
-    FireType = ERangeFireType::Repeatedly;
+    LeverType = ERangeLeverType::Repeatedly;
     WeaponName = "Rifle";
     Power = 5;
-    RateOfFire = 0.0f;
+    RateOfFire = 0.1f;
 
     FireSpeed = 1.0f;
     MaxBulletAmount = 30;

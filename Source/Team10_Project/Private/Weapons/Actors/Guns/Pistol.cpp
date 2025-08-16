@@ -3,10 +3,10 @@
 APistol::APistol()
 {
     RangeType = ERangeType::Pistol;
-	FireType = ERangeFireType::SingleShot;
+    LeverType = ERangeLeverType::Single;
 	WeaponName = "Pistol";
 	Power = 3;
-	RateOfFire = 0.3f;
+	RateOfFire = 0.1f;
 
 	FireSpeed = 1.0f;
 	MaxBulletAmount = 12;
@@ -28,5 +28,15 @@ void APistol::BeginPlay()
 void APistol::StartFire()
 {
     Super::StartFire();
-    Attack(this);
+
+    RemainingFireCount = FireCount;
+    FTimerDelegate Delegate;
+    Delegate.BindUObject(this, &APistol::Attack, Cast<AActor>(this));
+
+    GetWorld()->GetTimerManager().SetTimer(
+        FireCountHandle,
+        Delegate,
+        RateOfFire,
+        true
+    );
 }
