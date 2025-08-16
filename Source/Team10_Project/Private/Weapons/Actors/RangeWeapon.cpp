@@ -28,6 +28,20 @@ void ARangeWeapon::Attack(AActor* Activator)
 		MuzzleLocation = SocketWorldTransform.GetLocation();
 		MuzzleRotate = FireDirection.Rotation();
 
+        if (FireCameraShakeClass)
+        {
+            if (AMyCharacter* Player = Cast<AMyCharacter>(Activator->GetOwner()))
+            {
+                if (APlayerController* PlayerController = Cast<APlayerController>(Player->GetController()))
+                {
+                    if (PlayerController)
+                    {
+                        PlayerController->ClientStartCameraShake(FireCameraShakeClass);
+                    }
+                }
+            }
+        }
+
         AObjectPoolManager* Pool = nullptr;
         for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
         {
