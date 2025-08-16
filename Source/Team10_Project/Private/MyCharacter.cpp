@@ -473,7 +473,7 @@ void AMyCharacter::StopZoom()
 
 void AMyCharacter::Reload()
 {
-	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped)
+	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped || AmmoAmount <= 0)
 	{
 		return;
 	}
@@ -645,6 +645,7 @@ void AMyCharacter::UnEquipWeapon()
 
 void AMyCharacter::SwitchFireMode()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Switch Fire Mode"));
     ARangeWeapon* RangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
     if (RangeWeapon)
     {
