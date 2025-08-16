@@ -21,6 +21,11 @@ protected:
 private:
 	FTimerHandle HitBoxTimerHandle;
 	float LifeTime;
+
+protected:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
+    int32 Damage;
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
 	USceneComponent* Scene;
@@ -28,6 +33,7 @@ public:
 	UBoxComponent* HitBoxCollision;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
 	TSet<AActor*> HitObjectSet;
+    
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
 	bool bIsActive;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
@@ -38,6 +44,8 @@ public:
 	void OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	void HitBoxLifeTime(float Time);
+    void SetDamage(int32 NewDamage);
+    int32 GetDamage() const;
 
 	virtual void SetActive_Implementation(bool Active) override;
 	virtual bool GetIsActive_Implementation() override;

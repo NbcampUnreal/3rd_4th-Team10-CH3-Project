@@ -435,14 +435,14 @@ void AMyCharacter::StartShoot()
             RecoilTimeline->PlayFromStart();
         }
         
-        if (FireCameraShakeClass)
+        /*if (FireCameraShakeClass)
         {
             APlayerController* PlayerController = Cast<APlayerController>(GetController());
             if (PlayerController)
             {
                 PlayerController->ClientStartCameraShake(FireCameraShakeClass);
             }
-        }
+        }*/
     }
 }
 
