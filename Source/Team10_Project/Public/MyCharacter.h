@@ -16,6 +16,7 @@
 
 class UCameraComponent;
 class UAudioComponent;
+class USphereComponent;
 struct FInputActionValue;
 
 UENUM(BlueprintType)
@@ -56,6 +57,9 @@ public:
 
     UFUNCTION(BlueprintPure, Category = "Weapon")
     AWeaponBase* GetCurrentWeapon() const { return CurrentWeapon.Get(); }
+    
+    UFUNCTION(BlueprintCallable, Category = "Weapon|Ammo")
+    int GetAmmoAmount() const { return AmmoAmount; }
 
     // -----------------------
 
@@ -64,7 +68,12 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Weapon")
     void SetCurrentWeapon(AWeaponBase* NewWeapon);
 
+    UFUNCTION(BlueprintCallable, Category = "Weapon|Ammo")
+    void SetAmmoAmount(int NewAmmoAmount);
+
     // -----------------------
+    
+    void OnDeath();
 
 protected:
 
@@ -72,6 +81,33 @@ protected:
 	virtual void Tick(float DeltaTime) override;
 	virtual void Landed(const FHitResult& Hit) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
+
+    // ----- 아이템 상호작용 -----
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+    TArray<TObjectPtr<AActor>> OverlappingItems;
+    
+    UFUNCTION()
+    void OnInteractBeginOverlap(
+        UPrimitiveComponent* OverlappedComponent,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex,
+        bool bFromSweep,
+        const FHitResult& SweepResult);
+
+    UFUNCTION()
+    void OnInteractEndOverlap(
+        UPrimitiveComponent* OverlappedComponent,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex);
+
+    void Interact();
+
+    void PickupWeapon(ERangeType RangeTypeToPickup);
+    
+    // -------------------------
 
     // ----- 무기 -----
 
@@ -82,15 +118,18 @@ protected:
     FName WeaponSocketName = TEXT("WeaponSocket");
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon")
-    TMap<EWeaponDataType, FWeaponData> WeaponInventory;
+    TMap<ERangeType, FWeaponData> WeaponInventory;
     
     UPROPERTY(EditDefaultsOnly, Category = "Data")
     TObjectPtr<UDataTable> WeaponDataTable;
 
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Weapon|Ammo")
+    int AmmoAmount;
+
     // -----------------
 
-	// ----- 동작 바인딩 함수 -----
-
+	// ----- 동작 함수 -----
+    
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void StartCrouch();
@@ -113,9 +152,9 @@ protected:
     void EquipRifle();
     void EquipShotgun();
 
-	void EquipWeapon(EWeaponDataType WeaponToEquip);
+	void EquipWeapon(ERangeType WeaponToEquip);
 	void UnEquipWeapon();
-    void FinishUnEquip();
+    void SwitchFireMode();
 	
 	// ---------------------------
 
@@ -133,11 +172,17 @@ protected:
 	UFUNCTION()
 	void UpdateCrouch(float Value);
 
+    UFUNCTION()
+    void UpdateRecoil(float Value);
+
 	// --------------------------
 	
 	// ----- 캐릭터 상태 관리 -----
 	
 	FVector2D LastInputVector;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    float CurrentRecoilPitch;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "State")
 	bool bEquipped;
@@ -153,6 +198,9 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
 	bool bIsCloseToWall;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
+    bool bIsFiring;
 	
 	bool bWantsToSprint;
 
@@ -161,12 +209,22 @@ protected:
 	void UpdateGroundState();
 	
 	void ApplyMovementSpeedByState();
+
+    bool CanShoot();
 	
 	UPROPERTY(VisibleAnywhere, Category = "State")
 	ECharacterState CurrentState;
 
 	UFUNCTION(BlueprintCallable, Category = "State")
 	ECharacterState GetCurrentState() const;
+
+    UPROPERTY(VisibleAnywhere, Category = "State")
+    ERangeType CurrentRangeType;
+    
+	UFUNCTION(BlueprintCallable, Category = "State")
+    ERangeType GetRangeType() const;
+    
+    FName GetWeaponRowNameFromType(ERangeType WeaponType) const;
 	
 	// ---------------------
 
@@ -200,17 +258,23 @@ protected:
 	TObjectPtr<UCurveFloat> CrouchCurve;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
-	TObjectPtr<UTimelineComponent> CrouchTimeline;
+    TObjectPtr<UTimelineComponent> CrouchTimeline;
+    
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Movement")
+    TObjectPtr<UCurveFloat> RecoilCurve;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Movement")
+    TObjectPtr<UTimelineComponent> RecoilTimeline;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Components|Flashlight")
 	TObjectPtr<USpotLightComponent> Flashlight;
+    
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Interaction")
+    TObjectPtr<USphereComponent> InteractSphere;
 
 	// -------------------
 
 	// ----- 애니메이션 몽타주 -----
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	TObjectPtr<UAnimMontage> ReloadMontage;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> FireMontage;
@@ -220,9 +284,12 @@ protected:
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Animation")
 	TObjectPtr<UAnimMontage> UnEquipMontage;
-	
-	UPROPERTY(EditDefaultsOnly, Category = "Animation")
-	TObjectPtr<UAnimMontage> HolsterMontage;
+    
+    UPROPERTY(EditDefaultsOnly, Category = "Animation")
+    TObjectPtr<UAnimMontage> InteractMontage;
+    
+    UPROPERTY(EditDefaultsOnly, Category = "Effects|Camera")
+    TSubclassOf<UCameraShakeBase> FireCameraShakeClass;
 	
 	// ---------------------------
 

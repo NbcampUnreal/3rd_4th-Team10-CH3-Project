@@ -2,31 +2,41 @@
 
 APistol::APistol()
 {
-	FireType = ERangeFireType::SingleShot;
+    RangeType = ERangeType::Pistol;
+    LeverType = ERangeLeverType::Single;
 	WeaponName = "Pistol";
-	Power = 5;
-	RateOfFire = 0.3f;
+	Power = 3;
+	RateOfFire = 0.1f;
 
-	LeverType = ERangeLeverType::Single;
-	FireSpeed = 1;
-	MaxBulletAmount = 10;
-	CurBulletAmount = MaxBulletAmount;
+	FireSpeed = 1.0f;
+	MaxBulletAmount = 12;
+    LoadAmmoAmount = MaxBulletAmount;
+    ConsumeAmmoAmount = 1;
 	bIsFire = true;
 }
 
 void APistol::BeginPlay()
 {
 	Super::BeginPlay();
+    bIsVisible = true;
+    SetActorHiddenInGame(false);
+    SetActorTickEnabled(false);
+
     SetFireState();
 }
 
 void APistol::StartFire()
 {
     Super::StartFire();
-    Attack(this);
-}
 
-void APistol::StopFire()
-{
-    Super::StopFire();
+    RemainingFireCount = FireCount;
+    FTimerDelegate Delegate;
+    Delegate.BindUObject(this, &APistol::Attack, Cast<AActor>(this));
+
+    GetWorld()->GetTimerManager().SetTimer(
+        FireCountHandle,
+        Delegate,
+        RateOfFire,
+        true
+    );
 }

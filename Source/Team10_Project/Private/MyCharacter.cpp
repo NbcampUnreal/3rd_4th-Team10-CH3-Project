@@ -4,12 +4,14 @@
 #include "EnhancedInputComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SphereComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/AudioComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
 #include "Perception/AIPerceptionStimuliSourceComponent.h"
 #include "Perception/AISense_Sight.h"
+#include "Weapons/Actors/RangeWeapon.h"
 
 AMyCharacter::AMyCharacter()
 {
@@ -27,6 +29,11 @@ AMyCharacter::AMyCharacter()
 	CharacterArms->bCastCapsuleDirectShadow = false;
 	CharacterArms->CastShadow = false;
 
+    InteractSphere = CreateDefaultSubobject<USphereComponent>(TEXT("InteractSphere"));
+    InteractSphere->SetupAttachment(RootComponent);
+    InteractSphere->SetSphereRadius(250.f);;
+    InteractSphere->SetCollisionProfileName(TEXT("Trigger"));
+
 	Sounds = CreateDefaultSubobject<USceneComponent>(TEXT("Sounds"));
 	Sounds->SetupAttachment(GetCapsuleComponent());
 
@@ -35,6 +42,7 @@ AMyCharacter::AMyCharacter()
 
 	SprintFOVTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("SprintFOVTimeline"));
 	CrouchTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("CrouchTimeline"));
+    RecoilTimeline = CreateDefaultSubobject<UTimelineComponent>(TEXT("RecoilTimeline"));
 
 	AttributeComponent = CreateDefaultSubobject<UAttributeComponent>(TEXT("AttributeComponent"));
 
@@ -59,16 +67,20 @@ AMyCharacter::AMyCharacter()
 		StimuliSource->RegisterForSense(TSubclassOf<UAISense_Sight>());
 		StimuliSource->RegisterWithPerceptionSystem();
 	}
-	// --------------------
+
 }
 
 void AMyCharacter::BeginPlay()
 {
 	Super::BeginPlay();
 	SetCharacterState(ECharacterState::Idle);
+    CurrentRangeType = ERangeType::None;
 
 	bEquipped = false;
 	CharacterArms->SetVisibility(false);
+
+    InteractSphere->OnComponentBeginOverlap.AddDynamic(this, &AMyCharacter::OnInteractBeginOverlap);
+    InteractSphere->OnComponentEndOverlap.AddDynamic(this, &AMyCharacter::OnInteractEndOverlap);
     
     if (WeaponDataTable)
     {
@@ -78,13 +90,13 @@ void AMyCharacter::BeginPlay()
             FWeaponData* Data = WeaponDataTable->FindRow<FWeaponData>(RowName, TEXT(""));
             if (Data)
             {
-                EWeaponDataType WeaponType;
-                if (RowName == "Pistol") WeaponType = EWeaponDataType::Pistol;
-                else if (RowName == "Rifle") WeaponType = EWeaponDataType::Rifle;
-                else if (RowName == "Shotgun") WeaponType = EWeaponDataType::Shotgun;
+                ERangeType WeaponType;
+                if (RowName == "Pistol") WeaponType = ERangeType::Pistol;
+                else if (RowName == "Rifle") WeaponType = ERangeType::Rifle;
+                else if (RowName == "Shotgun") WeaponType = ERangeType::Shotgun;
                 else continue;
 
-                WeaponInventory.Add(WeaponType, *Data);
+                //WeaponInventory.Add(WeaponType, *Data);
             }
         }
     }
@@ -102,6 +114,13 @@ void AMyCharacter::BeginPlay()
 		CrouchInterpFunction.BindUFunction(this, FName("UpdateCrouch"));
 		CrouchTimeline->AddInterpFloat(CrouchCurve, CrouchInterpFunction);
 	}
+
+    if (RecoilCurve && RecoilTimeline)
+    {
+        FOnTimelineFloat RecoilInterpFunction;
+        RecoilInterpFunction.BindUFunction(this, FName("UpdateRecoil"));
+        RecoilTimeline->AddInterpFloat(RecoilCurve, RecoilInterpFunction);
+    }
 }
 
 void AMyCharacter::Tick(float DeltaTime)
@@ -173,9 +192,72 @@ void AMyCharacter::Landed(const FHitResult& Hit)
 	UpdateGroundState();
 }
 
-void AMyCharacter::SetCurrentWeapon(AWeaponBase* NewWeapon)
+void AMyCharacter::OnInteractBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    CurrentWeapon = NewWeapon;
+    if (OtherActor && OtherActor != this && OtherActor->Implements<UItemInterface>())
+    {
+        OverlappingItems.Add(OtherActor);
+        UE_LOG(LogTemp, Log, TEXT("[Character]Overlapping Items: %d"), OverlappingItems.Num());
+    }
+}
+
+void AMyCharacter::OnInteractEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
+    UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+    if (OtherActor && OtherActor != this && OtherActor->Implements<UItemInterface>())
+    {
+        OverlappingItems.Remove(OtherActor);
+        UE_LOG(LogTemp, Log, TEXT("[Character]Overlapping Items: %d"), OverlappingItems.Num());
+    }
+}
+
+void AMyCharacter::Interact()
+{
+    if (OverlappingItems.IsEmpty())
+    {
+        return;
+    }
+
+    AActor* InteractingItem = OverlappingItems[0];
+    if (InteractingItem && InteractingItem->Implements<UItemInterface>())
+    {
+        UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+        if (AnimInstance)
+        {
+            AnimInstance->Montage_Play(InteractMontage, 1.4f);
+        }
+        PickupWeapon(ERangeType::Pistol);   // 테스트
+        InteractingItem->Destroy();         // 테스트
+    }
+}
+
+void AMyCharacter::PickupWeapon(ERangeType RangeTypeToPickup)
+{
+    if (WeaponInventory.Contains(RangeTypeToPickup))
+    {
+        // To Do: 이미 가지고 있는 RangeType (AmmoAmount만 증가)
+        return;
+    }
+
+    if (WeaponDataTable)
+    {
+        const FName RowName = GetWeaponRowNameFromType(RangeTypeToPickup);
+        FWeaponData* Data = WeaponDataTable->FindRow<FWeaponData>(RowName, TEXT(""));
+
+        if (Data)
+        {
+            WeaponInventory.Add(RangeTypeToPickup, *Data);
+            UE_LOG(LogTemp, Warning, TEXT("Pickup New Weapon: %s"), *RowName.ToString());
+
+            EquipWeapon(RangeTypeToPickup);
+        }
+    }
+}
+
+void AMyCharacter::OnDeath()
+{
+    
 }
 
 void AMyCharacter::Move(const FInputActionValue& Value)
@@ -246,6 +328,11 @@ void AMyCharacter::UpdateCrouch(float Value)
 	GetCapsuleComponent()->SetCapsuleHalfHeight(NewHalfHeight);
 }
 
+void AMyCharacter::UpdateRecoil(float Value)
+{
+    CurrentRecoilPitch = Value;
+}
+
 void AMyCharacter::ToggleCrouch()
 {
 	if (bIsCrouching)
@@ -314,9 +401,26 @@ void AMyCharacter::StopJump()
 	StopJumping();
 }
 
+bool AMyCharacter::CanShoot()
+{
+    if (CurrentState == ECharacterState::Sprinting || bIsReloading)
+    {
+        return false;
+    }
+    
+    ARangeWeapon* RangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
+    if (RangeWeapon)
+    {
+        if (RangeWeapon->GetLoadedAmmoAmount() <= 0)
+        {
+            return false;
+        }
+    }
+    return true;   
+}
 void AMyCharacter::StartShoot()
 {
-	if (CurrentState == ECharacterState::Sprinting || bIsReloading)
+	if (!CanShoot())
 	{
 		return;
 	}
@@ -324,8 +428,22 @@ void AMyCharacter::StartShoot()
     if (CurrentWeapon)
     {
         CurrentWeapon->StartFire();
-    }
+        bIsFiring = true;
 
+        if (RecoilTimeline)
+        {
+            RecoilTimeline->PlayFromStart();
+        }
+        
+        if (FireCameraShakeClass)
+        {
+            APlayerController* PlayerController = Cast<APlayerController>(GetController());
+            if (PlayerController)
+            {
+                PlayerController->ClientStartCameraShake(FireCameraShakeClass);
+            }
+        }
+    }
 }
 
 void AMyCharacter::StopShoot()
@@ -333,6 +451,7 @@ void AMyCharacter::StopShoot()
     if (CurrentWeapon)
     {
         CurrentWeapon->StopFire();
+        bIsFiring = false;
     }
 }
 
@@ -354,21 +473,45 @@ void AMyCharacter::StopZoom()
 
 void AMyCharacter::Reload()
 {
-	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped)
+	if (CurrentState == ECharacterState::Sprinting || bIsReloading || !bEquipped || AmmoAmount <= 0)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Reload is not allowed!"));
 		return;
 	}
-	if (!ReloadMontage)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Reload Montage is not set!"));
-		return;
-	}
+    
+    ARangeWeapon* RangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
+    if (RangeWeapon)
+    {
+        int32 LoadAmmo = RangeWeapon->GetLoadedAmmoAmount();
+        int32 MaxAmmo = RangeWeapon->GetMaxAmmoAmount();
+        if (MaxAmmo <= LoadAmmo)
+        {
+            return;
+        }
+    }
+    
+    UAnimMontage* MontageToPlay = nullptr;
+    const FName WeaponRowName = GetWeaponRowNameFromType(CurrentRangeType);
+    
+    if (WeaponRowName != NAME_None)
+    {
+        const FWeaponData* WeaponData = WeaponDataTable->FindRow<FWeaponData>(WeaponRowName, TEXT(""));
+        if (WeaponData)
+        {
+            if (RangeWeapon->GetLoadedAmmoAmount() > 0)
+            {
+                MontageToPlay = WeaponData->ReloadTacMontage; 
+            }
+            else
+            {
+                MontageToPlay = WeaponData->ReloadEmptyMontage;
+            }
+        }
+    }
 
 	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
 	if (AnimInstance)
 	{
-		AnimInstance->Montage_Play(ReloadMontage, 1.f);
+		AnimInstance->Montage_Play(MontageToPlay, 1.f);
 	}
 	
 	StopZoom();
@@ -380,14 +523,17 @@ void AMyCharacter::Reload()
 
 void AMyCharacter::FinishReload()
 {
+    ARangeWeapon* RangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
+    if (RangeWeapon)
+    {
+        RangeWeapon->Reload(this);
+    }
 	bIsReloading = false;
 	UE_LOG(LogTemp, Log, TEXT("Reload Finished"));
 }
 
 void AMyCharacter::ToggleFlashlight()
 {
-    UE_LOG(LogTemp, Warning, TEXT("ToggleFlashlight function called!")); // 디버깅 로그
-
 	if (Flashlight)
 	{
 		Flashlight->ToggleVisibility();
@@ -411,27 +557,46 @@ void AMyCharacter::ToggleFlashlight()
 
 void AMyCharacter::EquipPistol()
 {
-    EquipWeapon(EWeaponDataType::Pistol);
+    if (WeaponInventory.Contains(ERangeType::Pistol))
+    {
+        EquipWeapon(ERangeType::Pistol);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Pistol is not in inventory!"));
+    }
 }
 
 void AMyCharacter::EquipRifle()
 {
-    EquipWeapon(EWeaponDataType::Rifle);
+    if (WeaponInventory.Contains(ERangeType::Rifle))
+    {
+        EquipWeapon(ERangeType::Rifle);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Rifle is not in inventory!"));
+    }
 }
 
 void AMyCharacter::EquipShotgun()
 {
-    EquipWeapon(EWeaponDataType::Shotgun);
+    if (WeaponInventory.Contains(ERangeType::Shotgun))
+    {
+        EquipWeapon(ERangeType::Shotgun);
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Shotgun is not in inventory!"));
+    }
 }
 
-void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
+void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
 {
-    /*
-    if (CurrentWeapon && CurrentWeapon->GetWeaponType() == WeaponToEquip)
+    if (CurrentWeapon && CurrentRangeType == WeaponToEquip)
     {
         return;
     }
-    */
     
 	if (CurrentWeapon)
 	{
@@ -440,6 +605,7 @@ void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
 
     if (WeaponInventory.Contains(WeaponToEquip))
     {
+        CurrentRangeType = WeaponToEquip;
         const FWeaponData& NewWeaponData = WeaponInventory[WeaponToEquip];
 
         CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(NewWeaponData.WeaponClass);
@@ -448,6 +614,7 @@ void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
             //CurrentWeapon->SetCurrentAmmo(NewWeaponData.CurrentAmmo);
             //CurrentWeapon->SetMaxAmmo(NewWeaponData.MaxAmmo);
 
+            CurrentWeapon->SetOwner(this);
             CurrentWeapon->EquipmentWeapon(this);
             
             UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
@@ -459,50 +626,30 @@ void AMyCharacter::EquipWeapon(EWeaponDataType WeaponToEquip)
             bEquipped = true;
             CharacterArms->SetVisibility(true);
             CurrentWeapon->SetActorHiddenInGame(false);
+            
         }
     }
 }
 
 void AMyCharacter::UnEquipWeapon()
 {
-	if (!bEquipped || !CurrentWeapon)
-	{
-		return;
-	}
-
-    /*
-    EWeaponDataType OldWeaponType = CurrentWeapon->GetWeaponType();
-    if (WeaponInventory.Contains(OldWeaponType))
+    if (CurrentWeapon)
     {
-        //WeaponInventory[OldWeaponType].CurrentAmmo = CurrentWeapon->GetCurrentAmmo();
-        //WeaponInventory[OldWeaponType].CurrentAmmo = CurrentWeapon->GetMaxAmmo();
+        CurrentWeapon->Destroy();
+        CurrentWeapon = nullptr;
+    
+        bEquipped = false;
+        CharacterArms->SetVisibility(false);
     }
-    */
-    float MontagePlaytime = 0.f;
-	UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
-	if (AnimInstance)
-	{
-		MontagePlaytime = AnimInstance->Montage_Play(UnEquipMontage, 1.f);
-	}
-    
-    FTimerHandle DestroyTimer;
-    GetWorld()->GetTimerManager().SetTimer(
-        DestroyTimer, 
-        this, 
-        &AMyCharacter::FinishUnEquip,
-        MontagePlaytime, 
-        false);
-    
 }
-void AMyCharacter::FinishUnEquip()
+
+void AMyCharacter::SwitchFireMode()
 {
-    UE_LOG(LogTemp, Warning, TEXT("FinishUnEquip function called!"));
-    
-    CurrentWeapon->Destroy();
-    CurrentWeapon = nullptr;
-    
-    bEquipped = false;
-    CharacterArms->SetVisibility(false);
+    ARangeWeapon* RangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
+    if (RangeWeapon)
+    {
+        RangeWeapon->SwitchFireType();
+    }
 }
 
 void AMyCharacter::SetCharacterState(ECharacterState NewState)
@@ -592,6 +739,35 @@ void AMyCharacter::StopSprintFOV()
 ECharacterState AMyCharacter::GetCurrentState() const
 {
 	return CurrentState;
+}
+
+ERangeType AMyCharacter::GetRangeType() const
+{
+    return CurrentRangeType;
+}
+FName AMyCharacter::GetWeaponRowNameFromType(ERangeType WeaponType) const
+{
+    switch (WeaponType)
+    {
+    case ERangeType::Pistol:
+        return FName("Pistol");
+    case ERangeType::Rifle:
+        return FName("Rifle");
+    case ERangeType::Shotgun:
+        return FName("Shotgun");
+    default:
+        return NAME_None;
+    }
+}
+
+void AMyCharacter::SetCurrentWeapon(AWeaponBase* NewWeapon)
+{
+    CurrentWeapon = NewWeapon;
+}
+
+void AMyCharacter::SetAmmoAmount(int NewAmmoAmount)
+{
+    AmmoAmount = NewAmmoAmount;
 }
 
 void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
@@ -733,6 +909,21 @@ void AMyCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompone
 				this,
 				&AMyCharacter::UnEquipWeapon
 			);
+		    
+		    EnhancedInputComponent->BindAction(
+                PlayerController->InteractAction,
+                ETriggerEvent::Started,
+                this,
+                &AMyCharacter::Interact
+            );
+            
+		    EnhancedInputComponent->BindAction(
+                PlayerController->KeyTabAction,
+                ETriggerEvent::Started,
+                this,
+                &AMyCharacter::SwitchFireMode
+            );
+		    
 		}
 	}
 }

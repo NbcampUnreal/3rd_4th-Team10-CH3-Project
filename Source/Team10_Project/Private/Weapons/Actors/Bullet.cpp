@@ -5,9 +5,17 @@
 ABullet::ABullet()
 {
 	WeaponName = "Bullet";
-	ProjectileSpeed = 50.0f;
+	ProjectileSpeed = 8500.0f;
 	ProjectileRange = 8000.0f;
 	Power = 10;
+    bIsVisible = true;
+}
+
+void ABullet::BeginPlay()
+{
+    Super::BeginPlay();
+    InVisibleItem();
+    SetActorTickEnabled(true);
 }
 
 void ABullet::ProjectileMovement()

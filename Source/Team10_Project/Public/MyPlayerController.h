@@ -58,7 +58,13 @@ public:
     UInputAction* Key3Action;
     
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
-	UInputAction* KeyQAction;
+    UInputAction* KeyQAction;
+    
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+    UInputAction* KeyTabAction;
+    
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input)
+    UInputAction* InteractAction;
 protected:
 	virtual void BeginPlay() override;
 	

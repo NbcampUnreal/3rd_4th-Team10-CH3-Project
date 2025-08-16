@@ -5,30 +5,12 @@
 
 #include "MyCharacter.h"
 ARangeWeapon::ARangeWeapon()
-	:LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
-	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
+	:RangeType(ERangeType::None), LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
+	FireSpeed(0), MaxBulletAmount(0), LoadAmmoAmount(0), ConsumeAmmoAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator), FireCount(1), RemainingFireCount(0)
 {
 	WeaponType = EWeaponType::Range;
 
 	WeaponStaticMesh->SetupAttachment(Scene);
-}
-
-void ARangeWeapon::BeginPlay()
-{
-	Super::BeginPlay();
-
-	if (LeverType == ERangeLeverType::Single)
-	{
-		FireType = ERangeFireType::SingleShot;
-	}
-	if (LeverType == ERangeLeverType::Point)
-	{
-		FireType = ERangeFireType::PointFire;
-	}
-	if (LeverType == ERangeLeverType::Repeatedly)
-	{
-		FireType = ERangeFireType::Repeatedly;
-	}
 }
 
 void ARangeWeapon::Attack(AActor* Activator)
@@ -38,14 +20,14 @@ void ARangeWeapon::Attack(AActor* Activator)
 	if (bIsFire && FireState == ERangeFireState::Load)
 	{
 		UE_LOG(LogTemp, Warning, (TEXT("Fire")));
+		FireState = ERangeFireState::Fire;
 
 		FTransform SocketWorldTransform = WeaponStaticMesh->GetSocketTransform(TEXT("MuzzleSocket"), RTS_World);
 
+		FVector FireDirection = SocketWorldTransform.GetRotation().GetForwardVector().GetSafeNormal();
 		MuzzleLocation = SocketWorldTransform.GetLocation();
-		FVector FireDirection = SocketWorldTransform.GetRotation().GetForwardVector();
 		MuzzleRotate = FireDirection.Rotation();
 
-		FireState = ERangeFireState::Fire;
         AObjectPoolManager* Pool = nullptr;
         for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
         {
@@ -62,10 +44,18 @@ void ARangeWeapon::Attack(AActor* Activator)
 			false
 		);
 
-		CurBulletAmount--;
+        RemainingFireCount--;
+        LoadAmmoAmount -= ConsumeAmmoAmount;
+        UE_LOG(LogTemp, Warning, TEXT("LoadAmmo Amount: %d"), LoadAmmoAmount);
+
+        if (RemainingFireCount == 0)
+        {
+            StopFire();
+        }
 		//장전된 총알이 다 떨어졌으면
-		if (CurBulletAmount == 0)
+		if (LoadAmmoAmount == 0)
 		{
+            StopFire();
 			bIsFire = false;
 			FireState = ERangeFireState::Idle;
 		}
@@ -73,49 +63,57 @@ void ARangeWeapon::Attack(AActor* Activator)
 }
 void ARangeWeapon::StartFire()
 {
+    if (FireType == ERangeFireType::SingleShot)
+    {
+        FireCount = 1;
+    }
+    else if (FireType == ERangeFireType::PointFire)
+    {
+        FireCount = 3;
+    }
+    else if (FireType == ERangeFireType::Repeatedly)
+    {
+        FireCount = 99;
+    }
 }
 
 void ARangeWeapon::StopFire()
 {
+    GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
 }
-
-//class AIneventory;
 
 void ARangeWeapon::Reload(AActor* Activator)
 {
 	if (!Activator) return;
 
 	FireState = ERangeFireState::Reload;
-	int32 RemainingBullet = 10;
-	//AIneventory* Inven = CreateDefaultSubobject<AIneventory>(TEXT("AIneventory"));
-	if (RemainingBullet > 10/*Inven = Cast<AIneventory>(Activator)*/)
-	{
-		//int32 RemainingBullet = Inven->GetRaminingBullet();
-		if (RemainingBullet > 0 && MaxBulletAmount > CurBulletAmount)
-		{
-			int32 NeedBullet = MaxBulletAmount - CurBulletAmount;
-			if (RemainingBullet >= NeedBullet)
-			{
-				CurBulletAmount += NeedBullet;
-				//Inven->SetRemainingBullet(-NeedBullet);
-			}
-			else if (RemainingBullet < NeedBullet)
-			{
-				CurBulletAmount += RemainingBullet;
-				//Inven->SetRemainingBullet(-RemainingBullet);
-			}
-			bIsFire = true;
-			FireState = ERangeFireState::Load;
-		}
-	}
+    AMyCharacter* Character = Cast<AMyCharacter>(Activator);
+
+    int32 RemainingBullet = Character->GetAmmoAmount();
+    if (RemainingBullet > 0 && MaxBulletAmount > LoadAmmoAmount)
+    {
+        int32 NeedAmmo = MaxBulletAmount - LoadAmmoAmount;
+        if (RemainingBullet >= NeedAmmo)
+        {
+            LoadAmmoAmount += NeedAmmo;
+            Character->SetAmmoAmount(-NeedAmmo);
+        }
+        else if (RemainingBullet < NeedAmmo)
+        {
+            LoadAmmoAmount += RemainingBullet;
+            Character->SetAmmoAmount(-RemainingBullet);
+        }
+        bIsFire = true;
+        FireState = ERangeFireState::Load;
+    }
 }
 
-ERangeLeverType ARangeWeapon::GetRangeLeverType()
+ERangeLeverType ARangeWeapon::GetRangeLeverType() const
 {
 	return LeverType;
 }
 
-ERangeFireType ARangeWeapon::GetAttackType()
+ERangeFireType ARangeWeapon::GetFireType() const
 {
 	return FireType;
 }
@@ -129,34 +127,64 @@ void ARangeWeapon::SetFireState()
 {
 	FireState = ERangeFireState::Load;
 
-    AMyCharacter* Pool = nullptr;
+    /*AMyCharacter* Character = nullptr;
     for (TActorIterator<AMyCharacter> It(GetWorld()); It; ++It)
     {
-        Pool = *It;
+        Character = *It;
         break;
     }
-    EquipmentWeapon(Pool);
+    EquipmentWeapon(Character);*/
 }
 
+DEFINE_LOG_CATEGORY_STATIC(LogRangeWeapon, Log, All);
+
+static FORCEINLINE FString EnumNameString(ERangeFireType V)
+{
+    return StaticEnum<ERangeFireType>()->GetNameStringByValue(static_cast<int64>(V));
+}
+
+static FORCEINLINE FString EnumDisplayString(ERangeFireType V)
+{
+    return StaticEnum<ERangeFireType>()->GetDisplayNameTextByValue(static_cast<int64>(V)).ToString();
+}
 void ARangeWeapon::SwitchFireType()
 {
-	if (FireType == ERangeFireType::SingleShot)
-	{
-		if (LeverType == ERangeLeverType::Point)
-		{
-			FireType = ERangeFireType::PointFire;
-		}
-		if (LeverType == ERangeLeverType::Repeatedly)
-		{
-			FireType = ERangeFireType::Repeatedly;
-		}
-	}
-	else if (FireType == ERangeFireType::PointFire)
-	{
-		FireType = ERangeFireType::SingleShot;
-	}
-	else if (FireType == ERangeFireType::Repeatedly)
-	{
-		FireType = ERangeFireType::SingleShot;
-	}
+    UE_LOG(LogTemp, Warning, TEXT("Switch Fire Type"));
+    if (FireType == ERangeFireType::SingleShot)
+    {
+        if (LeverType == ERangeLeverType::Single)
+        {
+            return;
+        }
+        else if (LeverType == ERangeLeverType::Point)
+        {
+            FireType = ERangeFireType::PointFire;
+        }
+        else if (LeverType == ERangeLeverType::Repeatedly)
+        {
+            FireType = ERangeFireType::Repeatedly;
+        }
+    }
+    else if (FireType == ERangeFireType::PointFire)
+    {
+        FireType = ERangeFireType::SingleShot;
+    }
+    else if (FireType == ERangeFireType::Repeatedly)
+    {
+        FireType = ERangeFireType::SingleShot;
+    }
+
+    UE_LOG(LogRangeWeapon, Log, TEXT("FireType: %s (%s)"),
+        *EnumNameString(GetFireType()),
+        *EnumDisplayString(GetFireType()));
+}
+
+int ARangeWeapon::GetLoadedAmmoAmount() const
+{
+	return LoadAmmoAmount;
+}
+
+int ARangeWeapon::GetMaxAmmoAmount() const
+{
+    return MaxBulletAmount;
 }
