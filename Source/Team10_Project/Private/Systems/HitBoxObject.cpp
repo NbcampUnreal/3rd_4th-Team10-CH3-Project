@@ -3,9 +3,12 @@
 #include "Weapons/Actors/ProjectileBase.h"
 #include "Weapons/Actors/WeaponBase.h"
 #include "Systems/ObjectPoolManager.h"
+#include "Ai/Character_Monster.h"
+
 #include "EngineUtils.h"
 
 AHitBoxObject::AHitBoxObject()
+    : Damage(0)
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -84,10 +87,20 @@ void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* Ot
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
 		//HitObjectSet
-		//Cast<ACharacter_Monster>(CollisionActor)->TakeDamage(TotalDamage);
+		Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(Damage);
 	}
 
 	//Pool->ReturnObject(this);
+}
+
+void AHitBoxObject::SetDamage(int32 WPower)
+{
+    Damage = WPower;
+}
+
+int AHitBoxObject::GetDamage() const
+{
+    return Damage;
 }
 
 void AHitBoxObject::SetActive_Implementation(bool Active)

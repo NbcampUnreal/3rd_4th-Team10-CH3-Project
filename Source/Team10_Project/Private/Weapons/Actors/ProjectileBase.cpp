@@ -101,11 +101,11 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
     }
 	AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
 	HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime, Only);
+    HitBox->SetDamage(TotalDamage);
 
 	if (OtherActor->ActorHasTag("Enemy"))
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
-        Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(TotalDamage);
 	}
 
 	Pool->ReturnObject(this);

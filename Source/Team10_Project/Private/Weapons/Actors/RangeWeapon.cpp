@@ -49,6 +49,8 @@ void ARangeWeapon::Attack(AActor* Activator)
             break;
         }
 		AProjectileBase* Projectile = Pool->GetObject<ABullet>();
+        Projectile->SetOwner(Activator);
+        Projectile->SetInstigator(Cast<AMyCharacter>(Activator->GetOwner()));
 		Projectile->Activate(this, MuzzleLocation, MuzzleRotate, FireDirection);
 		GetWorld()->GetTimerManager().SetTimer(
 			FireTimerHandle,
