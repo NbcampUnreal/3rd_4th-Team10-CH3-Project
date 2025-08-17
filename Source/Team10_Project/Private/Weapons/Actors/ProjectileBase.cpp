@@ -100,8 +100,8 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
         break;
     }
 	AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
-	HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime, Only);
     HitBox->SetDamage(TotalDamage);
+	HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime, Only);
 
 	if (OtherActor->ActorHasTag("Enemy"))
 	{
