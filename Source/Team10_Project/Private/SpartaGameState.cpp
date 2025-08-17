@@ -14,3 +14,8 @@ void ASpartaGameState::SetDisplayCountdown(float TimeLeft)
 {
     DisplayCountdown = TimeLeft;
 }
+
+void ASpartaGameState::SetWaitingWave(bool bWaiting)
+{
+    bWaitingWave = bWaiting;
+}

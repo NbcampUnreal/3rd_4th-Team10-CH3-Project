@@ -24,6 +24,9 @@ public:
     // 인터웨이브 카운트다운 설정
     void SetDisplayCountdown(float TimeLeft);
 
+    // 웨이브 대기시간 bool 설정
+    void SetWaitingWave(bool bWaiting);
+
     // Getter 함수들 (UI 바인딩용으로 사용 가능)
     int32 GetDisplayWave() const { return DisplayWave; }
     int32 GetDisplayEnemiesRemaining() const { return DisplayEnemiesRemaining; }
@@ -38,4 +41,7 @@ protected:
 
     UPROPERTY(BlueprintReadOnly, Category = "Wave|Display")
     float DisplayCountdown;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Wave|Display")
+    bool bWaitingWave;
 };

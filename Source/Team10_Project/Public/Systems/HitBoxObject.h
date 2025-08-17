@@ -43,6 +43,7 @@ public:
 		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	void HitBoxLifeTime(float Time);
     void SetDamage(int32 NewDamage);
+    UFUNCTION(BlueprintPure, Category = "HitComponentData")
     int32 GetDamage() const;
 
 	virtual void SetActive_Implementation(bool Active) override;
