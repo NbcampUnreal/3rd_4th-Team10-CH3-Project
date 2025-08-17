@@ -1,5 +1,13 @@
 ﻿#include "SpartaGameState.h"
 
+ASpartaGameState::ASpartaGameState()
+{
+    DisplayWave = 0;
+    DisplayEnemiesRemaining = 0;
+    DisplayCountdown = 0.0f;
+    bWaitingWave = false;
+}
+
 void ASpartaGameState::SetDisplayWave(int32 NewWave)
 {
     DisplayWave = NewWave;
