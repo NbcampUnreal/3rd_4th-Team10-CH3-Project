@@ -112,18 +112,18 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
 
     FName GripSocketName = Character->GetWeaponSocketName();
 
-    FTransform ArmGripsSocket = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
-    FTransform WeaponGripSocket = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), RTS_Component);;
-
-    FTransform Offset = ArmGripsSocket * WeaponGripSocket.Inverse();
-    Offset.SetScale3D(WeaponStaticMesh->GetRelativeScale3D());
-    
     WeaponStaticMesh->AttachToComponent(
         Character->GetCharacterArms(),
         FAttachmentTransformRules::SnapToTargetNotIncludingScale,
         GripSocketName);
 
-    //WeaponStaticMesh->SetRelativeTransform(Offset, false, nullptr, ETeleportType::TeleportPhysics);
+    FTransform ArmGripsSocket = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
+    FTransform WeaponGripSocket = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), RTS_Component);;
+
+    FTransform Offset = ArmGripsSocket * WeaponGripSocket.Inverse();
+    Offset.SetScale3D(WeaponStaticMesh->GetRelativeScale3D());    
+
+    WeaponStaticMesh->SetRelativeTransform(Offset, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 void AWeaponBase::Attack(AActor* Activator)

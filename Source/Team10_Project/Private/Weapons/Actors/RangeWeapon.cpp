@@ -28,6 +28,20 @@ void ARangeWeapon::Attack(AActor* Activator)
 		MuzzleLocation = SocketWorldTransform.GetLocation();
 		MuzzleRotate = FireDirection.Rotation();
 
+        if (FireCameraShakeClass)
+        {
+            if (AMyCharacter* Player = Cast<AMyCharacter>(Activator->GetOwner()))
+            {
+                if (APlayerController* PlayerController = Cast<APlayerController>(Player->GetController()))
+                {
+                    if (PlayerController)
+                    {
+                        PlayerController->ClientStartCameraShake(FireCameraShakeClass);
+                    }
+                }
+            }
+        }
+
         AObjectPoolManager* Pool = nullptr;
         for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
         {
@@ -35,6 +49,8 @@ void ARangeWeapon::Attack(AActor* Activator)
             break;
         }
 		AProjectileBase* Projectile = Pool->GetObject<ABullet>();
+        Projectile->SetOwner(Activator);
+        Projectile->SetInstigator(Cast<AMyCharacter>(Activator->GetOwner()));
 		Projectile->Activate(this, MuzzleLocation, MuzzleRotate, FireDirection);
 		GetWorld()->GetTimerManager().SetTimer(
 			FireTimerHandle,
@@ -87,22 +103,21 @@ void ARangeWeapon::Reload(AActor* Activator)
 	if (!Activator) return;
 
 	FireState = ERangeFireState::Reload;
-	int32 RemainingAmmo = 10;
     AMyCharacter* Character = Cast<AMyCharacter>(Activator);
 
     int32 RemainingBullet = Character->GetAmmoAmount();
-    if (RemainingAmmo > 0 && MaxBulletAmount > LoadAmmoAmount)
+    if (RemainingBullet > 0 && MaxBulletAmount > LoadAmmoAmount)
     {
         int32 NeedAmmo = MaxBulletAmount - LoadAmmoAmount;
-        if (RemainingAmmo >= NeedAmmo)
+        if (RemainingBullet >= NeedAmmo)
         {
             LoadAmmoAmount += NeedAmmo;
             Character->SetAmmoAmount(-NeedAmmo);
         }
-        else if (RemainingAmmo < NeedAmmo)
+        else if (RemainingBullet < NeedAmmo)
         {
-            LoadAmmoAmount += RemainingAmmo;
-            Character->SetAmmoAmount(-RemainingAmmo);
+            LoadAmmoAmount += RemainingBullet;
+            Character->SetAmmoAmount(-RemainingBullet);
         }
         bIsFire = true;
         FireState = ERangeFireState::Load;
@@ -150,6 +165,7 @@ static FORCEINLINE FString EnumDisplayString(ERangeFireType V)
 }
 void ARangeWeapon::SwitchFireType()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Switch Fire Type"));
     if (FireType == ERangeFireType::SingleShot)
     {
         if (LeverType == ERangeLeverType::Single)

@@ -14,6 +14,9 @@ public:
 
 protected:
 
+    UPROPERTY(EditDefaultsOnly, Category = "Effects|Camera")
+    TSubclassOf<UCameraShakeBase> FireCameraShakeClass;
+
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
     ERangeType RangeType;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
