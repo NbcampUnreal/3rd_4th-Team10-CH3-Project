@@ -19,7 +19,6 @@ void ARangeWeapon::Attack(AActor* Activator)
 
 	if (bIsFire && FireState == ERangeFireState::Load && RemainingFireCount > 0)
 	{
-		UE_LOG(LogTemp, Warning, (TEXT("Fire")));
 		FireState = ERangeFireState::Fire;
         bIsFire = false;
 
@@ -63,7 +62,7 @@ void ARangeWeapon::Attack(AActor* Activator)
 
         RemainingFireCount--;
         LoadAmmoAmount -= ConsumeAmmoAmount;
-        UE_LOG(LogTemp, Warning, TEXT("LoadAmmo Amount: %d"), LoadAmmoAmount);
+        UE_LOG(LogTemp, Warning, TEXT("LoadAmmo Amount: %d"), GetLoadedAmmoAmount());
 
         if (RemainingFireCount == 0)
         {
@@ -128,6 +127,7 @@ void ARangeWeapon::Reload(AActor* Activator)
         bIsFire = true;
         FireState = ERangeFireState::Load;
     }
+    UE_LOG(LogTemp, Warning, TEXT("GetAmmo %d"), Character->GetAmmoAmount());
 }
 
 ERangeType ARangeWeapon::GetRangeType() const
@@ -181,8 +181,6 @@ void ARangeWeapon::SwitchFireType()
     {
         FireType = ERangeFireType::SingleShot;
     }
-
-    UE_LOG(LogTemp, Warning, TEXT("Switch Fire Type: %s"), *GetFireTypeString());
 }
 
 FString ARangeWeapon::GetFireTypeString()

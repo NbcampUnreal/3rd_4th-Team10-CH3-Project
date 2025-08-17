@@ -34,8 +34,6 @@ void AWeaponBase::BeginPlay()
 void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    UE_LOG(LogTemp, Warning, TEXT("OnOverlap Item"));
-    UE_LOG(LogTemp, Warning, TEXT("OverlapActor : %s"), *OtherActor->GetName());
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
         if (AMyCharacter* MyChar = Cast<AMyCharacter>(OtherActor))
@@ -59,7 +57,6 @@ void AWeaponBase::OnItemEndOverlap(
     UPrimitiveComponent* OtherComp,
     int32 OtherBodyIndex)
 {
-    UE_LOG(LogTemp, Warning, TEXT("EndOverlap Item"));
     if (OtherActor && OtherActor->ActorHasTag("Player"))
     {
         if (AMyCharacter* MyChar = Cast<AMyCharacter>(OtherActor))
@@ -107,7 +104,6 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
 {
     if (!Player) return;
 
-    UE_LOG(LogTemp, Warning, TEXT("Equip"));
     AMyCharacter* Character = Cast<AMyCharacter>(Player);
 
     if (Character)
