@@ -645,7 +645,6 @@ void AMyCharacter::UnEquipWeapon()
 
 void AMyCharacter::SwitchFireMode()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Switch Fire Mode"));
     ARangeWeapon* RangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
     if (RangeWeapon)
     {
