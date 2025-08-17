@@ -115,26 +115,21 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
         FName GripSocketName = Character->GetWeaponSocketName();
 
         FTransform ArmGripsSocket = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
-        FTransform WeaponGripSocket = GetGripTransform(RTS_World);
+        FTransform WeaponGripSocketW = GetGripTransform(RTS_World);
 
-        FVector PivotToGrip = WeaponStaticMesh->GetComponentLocation() - WeaponGripSocket.GetLocation();
+        FVector PivotToGrip = WeaponStaticMesh->GetComponentLocation() - WeaponGripSocketW.GetLocation();
         FVector DesiredLocation = ArmGripsSocket.GetLocation() + PivotToGrip;
-
-
         WeaponStaticMesh->SetWorldLocation(DesiredLocation, false, nullptr, ETeleportType::TeleportPhysics);
-        //FQuat DeltaRot = Character->GetCharacterArms()->GetComponentQuat();// *WeaponGripSocket.GetRotation().Inverse();
-        //
-        //FTransform Offset;
-        //Offset.SetLocation(DesiredLocation);
-        //Offset.SetRotation(DeltaRot);
 
+        FRotator ArmRotate = Character->GetCharacterArms()->GetRelativeRotation();
+        FRotator WeaponGripRotate = GetGripTransform(RTS_Component).Rotator();
+        FQuat SkeletalQuat = ArmGripsSocket.GetRotation() * WeaponGripSocketW.GetRotation().Inverse() * ArmRotate.Quaternion();
+        WeaponStaticMesh->AddWorldRotation(SkeletalQuat);
 
         WeaponStaticMesh->AttachToComponent(
             Character->GetCharacterArms(),
             FAttachmentTransformRules::KeepWorldTransform,
             GripSocketName);
-
-        //WeaponStaticMesh->SetRelativeTransform(Offset, false, nullptr, ETeleportType::TeleportPhysics);
     }
 }
 
