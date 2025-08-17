@@ -110,32 +110,20 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
     UE_LOG(LogTemp, Warning, TEXT("Equip"));
     AMyCharacter* Character = Cast<AMyCharacter>(Player);
 
-    if (Character)
-    {
-        FName GripSocketName = Character->GetWeaponSocketName();
+    FName GripSocketName = Character->GetWeaponSocketName();
 
-        FTransform ArmGripsSocket = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
-        FTransform WeaponGripSocket = GetGripTransform(RTS_World);
+    WeaponStaticMesh->AttachToComponent(
+        Character->GetCharacterArms(),
+        FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+        GripSocketName);
 
-        FVector PivotToGrip = WeaponStaticMesh->GetComponentLocation() - WeaponGripSocket.GetLocation();
-        FVector DesiredLocation = ArmGripsSocket.GetLocation() + PivotToGrip;
+    FTransform ArmGripsSocket = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
+    FTransform WeaponGripSocket = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), RTS_Component);;
 
+    FTransform Offset = ArmGripsSocket * WeaponGripSocket.Inverse();
+    Offset.SetScale3D(WeaponStaticMesh->GetRelativeScale3D());    
 
-        WeaponStaticMesh->SetWorldLocation(DesiredLocation, false, nullptr, ETeleportType::TeleportPhysics);
-        //FQuat DeltaRot = Character->GetCharacterArms()->GetComponentQuat();// *WeaponGripSocket.GetRotation().Inverse();
-        //
-        //FTransform Offset;
-        //Offset.SetLocation(DesiredLocation);
-        //Offset.SetRotation(DeltaRot);
-
-
-        WeaponStaticMesh->AttachToComponent(
-            Character->GetCharacterArms(),
-            FAttachmentTransformRules::KeepWorldTransform,
-            GripSocketName);
-
-        //WeaponStaticMesh->SetRelativeTransform(Offset, false, nullptr, ETeleportType::TeleportPhysics);
-    }
+    WeaponStaticMesh->SetRelativeTransform(Offset, false, nullptr, ETeleportType::TeleportPhysics);
 }
 
 void AWeaponBase::Attack(AActor* Activator)
@@ -156,9 +144,9 @@ FVector AWeaponBase::SetHitScale()
 	return FVector::ZeroVector;
 }
 
-FTransform AWeaponBase::GetGripTransform(ERelativeTransformSpace TransformSpace) const
+FTransform AWeaponBase::GetGripTransform() const
 {
-    FTransform GripTransform = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), TransformSpace);
+    FTransform GripTransform = WeaponStaticMesh->GetSocketTransform(TEXT("GripSocket"), RTS_Component);
     return GripTransform;
 }
 

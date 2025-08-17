@@ -22,6 +22,8 @@ private:
 	FTimerHandle HitBoxTimerHandle;
 	float LifeTime;
 
+protected:
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
     int32 Damage;
 
 public:

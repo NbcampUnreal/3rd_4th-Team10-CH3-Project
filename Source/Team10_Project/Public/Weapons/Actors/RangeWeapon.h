@@ -39,6 +39,8 @@ protected:
 	FRotator MuzzleRotate;
 
     virtual void Attack(AActor* Activator) override;
+	ERangeLeverType GetRangeLeverType() const;
+	ERangeFireType GetFireType() const;
 
     int32 FireCount;
     int32 RemainingFireCount;
@@ -49,17 +51,11 @@ protected:
 public:
     virtual void StartFire() override;
     virtual void StopFire() override;
-
-    ERangeType GetRangeType() const;
-	ERangeLeverType GetRangeLeverType() const;
-	ERangeFireType GetFireType() const;
-
-	float GetFireSpeed();
 	void Reload(AActor* Activator);
+	float GetFireSpeed();
 	void SetFireState();
 	void SwitchFireType();
 
-    FString GetFireTypeString();
     int GetLoadedAmmoAmount() const;
     int GetMaxAmmoAmount() const;
 
