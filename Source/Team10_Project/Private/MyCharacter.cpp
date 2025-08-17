@@ -228,6 +228,7 @@ void AMyCharacter::Interact()
             AnimInstance->Montage_Play(InteractMontage, 1.4f);
         }
         PickupWeapon(ERangeType::Pistol);   // 테스트
+        PickupWeapon(ERangeType::Rifle);   // 테스트
         InteractingItem->Destroy();         // 테스트
     }
 }
