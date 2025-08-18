@@ -80,6 +80,7 @@ void AWeaponBase::InteractiveItem(AActor* Player)
     if (Character && GetItemType() == EItemType::Weapon)
     {
         Character->PickupWeapon(this);
+        InVisibleItem();
     }
 }
 
@@ -94,6 +95,10 @@ void AWeaponBase::InVisibleItem()
 {
     GetCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     GetCollision->Deactivate();
+
+    SetActorHiddenInGame(true);
+    SetActorEnableCollision(false);
+    SetActorTickEnabled(false);
 }
 
 void AWeaponBase::UseWeapon()

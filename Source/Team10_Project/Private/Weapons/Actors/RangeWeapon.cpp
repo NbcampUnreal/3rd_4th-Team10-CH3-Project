@@ -103,7 +103,7 @@ void ARangeWeapon::StartFire()
     }
     else if (FireType == ERangeFireType::Repeatedly)
     {
-        FireCount = MaxBulletAmount;
+        FireCount = GetLoadedAmmoAmount();
     }
 }
 
@@ -111,7 +111,10 @@ void ARangeWeapon::StopFire()
 {
     if (FireState == ERangeFireState::Fire)
     {
+        GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
         GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
+        FireTimerHandle.Invalidate();
+        FireCountHandle.Invalidate();
         SetFireState(true, ERangeFireState::Load);
     }
 }
@@ -120,7 +123,7 @@ void ARangeWeapon::Reload(AActor* Activator)
 {
 	if (!Activator) return;
 
-	FireState = ERangeFireState::Reload;
+    SetFireState(false, ERangeFireState::Reload);
     AMyCharacter* Character = Cast<AMyCharacter>(Activator);
 
     int32 RemainingBullet = Character->GetAmmoAmount();
