@@ -274,9 +274,9 @@ void AMyCharacter::OnDeath()
     {
         DisableInput(PlayerController);
     }
-    
-    GetMesh()->SetCollisionProfileName(TEXT("Ragdoll"));
-    GetMesh()->SetSimulatePhysics(true);
+
+    CharacterArms->SetCollisionProfileName(TEXT("Ragdoll"));
+    CharacterArms->SetSimulatePhysics(true);
 }
 
 void AMyCharacter::Move(const FInputActionValue& Value)
