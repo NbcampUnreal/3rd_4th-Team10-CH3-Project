@@ -32,6 +32,6 @@ void APistol::StartFire()
         FireCountHandle,
         Delegate,
         RateOfFire,
-        true
+        false
     );
 }

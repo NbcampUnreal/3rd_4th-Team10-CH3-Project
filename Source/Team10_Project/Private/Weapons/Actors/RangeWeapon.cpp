@@ -109,14 +109,11 @@ void ARangeWeapon::StartFire()
 
 void ARangeWeapon::StopFire()
 {
-    if (FireState == ERangeFireState::Fire)
-    {
-        GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
-        GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
-        FireTimerHandle.Invalidate();
-        FireCountHandle.Invalidate();
-        SetFireState(true, ERangeFireState::Load);
-    }
+    GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
+    FireTimerHandle.Invalidate();
+    FireCountHandle.Invalidate();
+    SetFireState(true, ERangeFireState::Load);
 }
 
 void ARangeWeapon::Reload(AActor* Activator)
