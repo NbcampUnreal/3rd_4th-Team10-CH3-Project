@@ -44,7 +44,28 @@ void ARangeWeapon::Attack(AActor* Activator)
         Projectile->SetOwner(Activator);
         Projectile->SetInstigator(Cast<AMyCharacter>(Activator->GetOwner()));
 		Projectile->Activate(this, MuzzleLocation, MuzzleRotate, FireDirection);
+	    
+	    if (FireSound)
+	    {
+	        UGameplayStatics::PlaySoundAtLocation(this,FireSound,MuzzleLocation);
+	    }
 
+	    if (MuzzleFlashFX)
+	    {
+	        const FVector ParticleScale = FVector(0.08f);
+	        
+	        UGameplayStatics::SpawnEmitterAttached(
+                MuzzleFlashFX,
+                WeaponStaticMesh,
+                FName("MuzzleSocket"),
+                FVector::ZeroVector,
+                FRotator::ZeroRotator,
+                ParticleScale,
+                EAttachLocation::KeepRelativeOffset,
+                true
+            );
+	    }
+	    
         if (FireCameraShakeClass)
         {
             if (AMyCharacter* Player = Cast<AMyCharacter>(Activator->GetOwner()))
@@ -75,7 +96,7 @@ void ARangeWeapon::Attack(AActor* Activator)
         {
             StopFire();
         }
-		//ÀåÀüµÈ ÃÑ¾ËÀÌ ´Ù ¶³¾îÁ³À¸¸é
+		//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ñ¾ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 		if (LoadAmmoAmount == 0)
 		{
             StopFire();
@@ -118,7 +139,7 @@ void ARangeWeapon::StopFire()
 void ARangeWeapon::Reload(AActor* Activator)
 {
 	if (!Activator) return;
-
+    
     SetFireState(false, ERangeFireState::Reload);
     AMyCharacter* Character = Cast<AMyCharacter>(Activator);
 
