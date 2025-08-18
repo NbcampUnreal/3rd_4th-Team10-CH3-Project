@@ -4,6 +4,7 @@
 #include "Weapons/Actors/WeaponBase.h"
 #include "Systems/ObjectPoolManager.h"
 #include "Ai/Character_Monster.h"
+#include "MyCharacter.h"
 
 #include "EngineUtils.h"
 
@@ -74,8 +75,6 @@ void AHitBoxObject::HitBoxLifeTime(float Time)
 void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Hit HitBox"));
-    UE_LOG(LogTemp, Warning, TEXT("OnHit Actor : %s"), *OtherActor->GetName());
     AObjectPoolManager* Pool = nullptr;
     for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
     {
@@ -83,14 +82,18 @@ void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* Ot
         break;
     }
 
-	if (OtherActor->ActorHasTag("Enemy"))
+    AActor* ObjOwner = this->GetOwner();
+	if (Cast<AWeaponBase>(ObjOwner) && OtherActor->ActorHasTag("Enemy"))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
 		//HitObjectSet
 		Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(Damage);
 	}
+    else if (Cast<ACharacter_Monster>(ObjOwner) && OtherActor->ActorHasTag("Player"))
+    {
+        Cast<AMyCharacter>(OtherActor)->GetAttributeComponent()->SetHealth(Damage);
+    }
 
-	//Pool->ReturnObject(this);
+	Pool->ReturnObject(this);
 }
 
 void AHitBoxObject::SetDamage(int32 WPower)

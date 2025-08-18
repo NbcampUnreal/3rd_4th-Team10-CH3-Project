@@ -12,6 +12,7 @@ class TEAM10_PROJECT_API ARangeWeapon : public AWeaponBase
 public:
 	ARangeWeapon();
 
+    virtual void BeginPlay() override;
 protected:
 
     UPROPERTY(EditDefaultsOnly, Category = "Effects|Camera")
@@ -56,7 +57,7 @@ public:
 
 	float GetFireSpeed();
 	void Reload(AActor* Activator);
-	void SetFireState();
+	void SetFireState(bool IsFire, ERangeFireState CurFireState);
 	void SwitchFireType();
 
     FString GetFireTypeString();
