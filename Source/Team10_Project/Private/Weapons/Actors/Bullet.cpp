@@ -9,6 +9,7 @@ ABullet::ABullet()
 	ProjectileRange = 8000.0f;
 	Power = 10;
     bIsVisible = true;
+    Only = true;
 }
 
 void ABullet::BeginPlay()

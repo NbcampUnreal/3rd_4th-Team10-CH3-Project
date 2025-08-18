@@ -25,13 +25,23 @@ void ARifle::StartFire()
     Super::StartFire();
 
     RemainingFireCount = FireCount;
-    FTimerDelegate Delegate;
-    Delegate.BindUObject(this, &AWeaponBase::Attack, Cast<AActor>(this));
 
-    GetWorld()->GetTimerManager().SetTimer(
-        FireCountHandle,
-        Delegate,
-        RateOfFire,
-        true
-    );
+    if (FireType == ERangeFireType::SingleShot)
+    {
+        Attack(this);
+    }
+    else
+    {
+        Attack(this);
+
+        FTimerDelegate Delegate;
+        Delegate.BindUObject(this, &AWeaponBase::Attack, Cast<AActor>(this));
+
+        GetWorld()->GetTimerManager().SetTimer(
+            FireCountHandle,
+            Delegate,
+            RateOfFire,
+            true
+        );
+    }
 }

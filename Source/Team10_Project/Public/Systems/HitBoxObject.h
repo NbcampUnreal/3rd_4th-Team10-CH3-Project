@@ -24,6 +24,8 @@ private:
 
     int32 Damage;
 
+    TSet<AActor*> HitObject;
+
 public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "HitComponentData")
 	USceneComponent* Scene;
