@@ -72,6 +72,8 @@ void ARangeWeapon::Attack(AActor* Activator)
         LoadAmmoAmount -= ConsumeAmmoAmount;
         UE_LOG(LogTemp, Warning, TEXT("LoadAmmo Amount: %d"), GetLoadedAmmoAmount());
 
+        UE_LOG(LogTemp, Warning, TEXT("bIsFire: %s"), bIsFire ? TEXT("True") : TEXT("False"));
+        UE_LOG(LogTemp, Warning, TEXT("FireState: %d"), static_cast<int32>(FireState));
         if (RemainingFireCount == 0)
         {
             StopFire();
@@ -89,6 +91,9 @@ void ARangeWeapon::SetFireState(bool IsFire, ERangeFireState CurFireState)
 {
     bIsFire = IsFire;
     FireState = CurFireState;
+
+    UE_LOG(LogTemp, Warning, TEXT("bIsFire: %s"), bIsFire ? TEXT("True") : TEXT("False"));
+    UE_LOG(LogTemp, Warning, TEXT("FireState: %d"), static_cast<int32>(FireState));
 }
 
 void ARangeWeapon::StartFire()
@@ -103,7 +108,7 @@ void ARangeWeapon::StartFire()
     }
     else if (FireType == ERangeFireType::Repeatedly)
     {
-        FireCount = MaxBulletAmount;
+        FireCount = GetLoadedAmmoAmount();
     }
 }
 
@@ -120,7 +125,7 @@ void ARangeWeapon::Reload(AActor* Activator)
 {
 	if (!Activator) return;
 
-	FireState = ERangeFireState::Reload;
+    SetFireState(false, ERangeFireState::Reload);
     AMyCharacter* Character = Cast<AMyCharacter>(Activator);
 
     int32 RemainingBullet = Character->GetAmmoAmount();
