@@ -257,7 +257,7 @@ void AMyCharacter::PickupWeapon(AWeaponBase* WeaponToPickup)
             }
         }
     }
-    WeaponToPickup->Destroy();
+    WeaponToPickup->InVisibleItem();
 }
 
 void AMyCharacter::OnDeath()
@@ -636,6 +636,7 @@ void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
             //CurrentWeapon->SetMaxAmmo(NewWeaponData.MaxAmmo);
 
             CurrentWeapon->SetOwner(this);
+            CurrentWeapon->VisibleItem();
             CurrentWeapon->EquipmentWeapon(this);
             
             UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
@@ -666,9 +667,11 @@ void AMyCharacter::UnEquipWeapon()
                 WeaponDataInInventory.CurrentAmmo = CurrentRangeWeapon->GetLoadedAmmoAmount();
             }
         }
-        CurrentWeapon->Destroy();
+        CurrentWeapon->InVisibleItem();
+        
+        CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
         CurrentWeapon = nullptr;
-    
         bEquipped = false;
         CharacterArms->SetVisibility(false);
     }
