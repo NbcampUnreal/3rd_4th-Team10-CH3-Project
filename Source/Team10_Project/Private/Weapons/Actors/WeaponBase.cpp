@@ -76,9 +76,10 @@ void AWeaponBase::OnItemEndOverlap(
 
 void AWeaponBase::InteractiveItem(AActor* Player)
 {
-    if (GetItemType() == EItemType::Weapon)
+    AMyCharacter* Character = Cast<AMyCharacter>(Player);
+    if (Character && GetItemType() == EItemType::Weapon)
     {
-
+        //Character->PickupWeapon(this);
     }
 }
 

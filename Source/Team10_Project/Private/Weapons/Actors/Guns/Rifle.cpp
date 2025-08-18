@@ -18,11 +18,6 @@ ARifle::ARifle()
 void ARifle::BeginPlay()
 {
     Super::BeginPlay();
-    bIsVisible = true;
-    SetActorHiddenInGame(false);
-    SetActorTickEnabled(false);
-
-    SetFireState();
 }
 
 void ARifle::StartFire()

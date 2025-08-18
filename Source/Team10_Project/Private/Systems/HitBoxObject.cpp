@@ -4,6 +4,7 @@
 #include "Weapons/Actors/WeaponBase.h"
 #include "Systems/ObjectPoolManager.h"
 #include "Ai/Character_Monster.h"
+#include "MyCharacter.h"
 
 #include "EngineUtils.h"
 
@@ -81,11 +82,16 @@ void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* Ot
         break;
     }
 
-	if (OtherActor->ActorHasTag("Enemy"))
+    AActor* ObjOwner = this->GetOwner();
+	if (Cast<AWeaponBase>(ObjOwner) && OtherActor->ActorHasTag("Enemy"))
 	{
 		//HitObjectSet
 		Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(Damage);
 	}
+    else if (Cast<ACharacter_Monster>(ObjOwner) && OtherActor->ActorHasTag("Player"))
+    {
+        Cast<AMyCharacter>(OtherActor)->GetAttributeComponent()->SetHealth(Damage);
+    }
 
 	Pool->ReturnObject(this);
 }

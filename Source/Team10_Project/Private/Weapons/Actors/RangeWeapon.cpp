@@ -13,6 +13,14 @@ ARangeWeapon::ARangeWeapon()
 	WeaponStaticMesh->SetupAttachment(Scene);
 }
 
+void ARangeWeapon::BeginPlay()
+{
+    bIsVisible = true;
+    SetActorHiddenInGame(false);
+    SetActorTickEnabled(false);
+    SetFireState(true, ERangeFireState::Load);
+}
+
 void ARangeWeapon::Attack(AActor* Activator)
 {
 	Super::Attack(Activator);
@@ -23,10 +31,20 @@ void ARangeWeapon::Attack(AActor* Activator)
         bIsFire = false;
 
 		FTransform SocketWorldTransform = GetGripTransform(RTS_World);
-
 		FVector FireDirection = SocketWorldTransform.GetRotation().GetForwardVector().GetSafeNormal();
 		MuzzleLocation = SocketWorldTransform.GetLocation();
 		MuzzleRotate = FireDirection.Rotation();
+
+        AObjectPoolManager* Pool = nullptr;
+        for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
+        {
+            Pool = *It;
+            break;
+        }
+		AProjectileBase* Projectile = Pool->GetObject<ABullet>();
+        Projectile->SetOwner(Activator);
+        Projectile->SetInstigator(Cast<AMyCharacter>(Activator->GetOwner()));
+		Projectile->Activate(this, MuzzleLocation, MuzzleRotate, FireDirection);
 
         if (FireCameraShakeClass)
         {
@@ -42,23 +60,14 @@ void ARangeWeapon::Attack(AActor* Activator)
             }
         }
 
-        AObjectPoolManager* Pool = nullptr;
-        for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
-        {
-            Pool = *It;
-            break;
-        }
-		AProjectileBase* Projectile = Pool->GetObject<ABullet>();
-        Projectile->SetOwner(Activator);
-        Projectile->SetInstigator(Cast<AMyCharacter>(Activator->GetOwner()));
-		Projectile->Activate(this, MuzzleLocation, MuzzleRotate, FireDirection);
-		GetWorld()->GetTimerManager().SetTimer(
-			FireTimerHandle,
-			this,
-			&ARangeWeapon::SetFireState,
-			RateOfFire,
-			false
-		);
+        FTimerDelegate Delegate;
+        Delegate.BindUObject(this, &ARangeWeapon::SetFireState, true, ERangeFireState::Load);
+        GetWorld()->GetTimerManager().SetTimer(
+            FireTimerHandle,
+            Delegate,
+            RateOfFire,
+            false
+        );
 
         RemainingFireCount--;
         LoadAmmoAmount -= ConsumeAmmoAmount;
@@ -72,11 +81,17 @@ void ARangeWeapon::Attack(AActor* Activator)
 		if (LoadAmmoAmount == 0)
 		{
             StopFire();
-            bIsFire = false;
-			FireState = ERangeFireState::Idle;
+            SetFireState(false, ERangeFireState::Idle);
 		}
 	}
 }
+
+void ARangeWeapon::SetFireState(bool IsFire, ERangeFireState CurFireState)
+{
+    bIsFire = IsFire;
+    FireState = CurFireState;
+}
+
 void ARangeWeapon::StartFire()
 {
     if (FireType == ERangeFireType::SingleShot)
@@ -97,9 +112,8 @@ void ARangeWeapon::StopFire()
 {
     if (FireState == ERangeFireState::Fire)
     {
-        bIsFire = true;
-        FireState = ERangeFireState::Load;
         GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
+        SetFireState(true, ERangeFireState::Load);
     }
 }
 
@@ -124,8 +138,8 @@ void ARangeWeapon::Reload(AActor* Activator)
             LoadAmmoAmount += RemainingBullet;
             Character->SetAmmoAmount(-RemainingBullet);
         }
-        bIsFire = true;
-        FireState = ERangeFireState::Load;
+
+        SetFireState(true, ERangeFireState::Load);
     }
     UE_LOG(LogTemp, Warning, TEXT("GetAmmo %d"), Character->GetAmmoAmount());
 }
@@ -148,12 +162,6 @@ ERangeFireType ARangeWeapon::GetFireType() const
 float ARangeWeapon::GetFireSpeed()
 {
 	return FireSpeed;
-}
-
-void ARangeWeapon::SetFireState()
-{
-    bIsFire = true;
-	FireState = ERangeFireState::Load;
 }
 
 void ARangeWeapon::SwitchFireType()

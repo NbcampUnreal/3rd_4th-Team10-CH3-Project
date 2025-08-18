@@ -97,6 +97,7 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
     }
 	AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
     HitBox->SetDamage(TotalDamage);
+    HitBox->SetOwner(this->GetOwner());
 	HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime, Only);
 
 	Pool->ReturnObject(this);
