@@ -11,11 +11,11 @@ ASpartaGameMode::ASpartaGameMode()
     bWaitingForNextWave = false;
     EnemiesRemaining = 0;
     InterWaveCountdown = 0.0f;
+    Score = 0;
 }
 
 void ASpartaGameMode::BeginPlay()
 {
-
     Super::BeginPlay();
 
     SpawnManagerRef = Cast<ASpartaSpawnManager>(
@@ -48,6 +48,7 @@ void ASpartaGameMode::StartWave()
     {
         GS->SetDisplayWave(WaveCounter);
         GS->SetDisplayEnemiesRemaining(EnemiesRemaining);
+        GS->SetDisplayScore(Score); // GameState에 현재 스코어 업데이트
     }
 
     if (SpawnManagerRef)
@@ -60,10 +61,12 @@ void ASpartaGameMode::StartWave()
 void ASpartaGameMode::OnEnemyKilled(AActor* DestroyedActor)
 {
     EnemiesRemaining--;
+    Score += 10; // 점수 10점 추가
 
     if (ASpartaGameState* GS = GetGameState<ASpartaGameState>())
     {
         GS->SetDisplayEnemiesRemaining(EnemiesRemaining);
+        GS->SetDisplayScore(Score); // GameState에 스코어 업데이트
     }
 
     if (EnemiesRemaining <= 0)

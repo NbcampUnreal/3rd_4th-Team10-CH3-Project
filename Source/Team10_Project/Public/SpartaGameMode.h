@@ -55,6 +55,10 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave|Runtime")
     bool bWaitingForNextWave;
 
+    /** 현재 게임 스코어 */
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game")
+    int32 Score;
+
     /** 웨이브 데이터 에셋 */
     UPROPERTY(VisibleAnywhere, Category = "Wave|Settings")
     UWaveDataAsset* WaveData;
