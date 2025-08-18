@@ -6,16 +6,17 @@
 #include "ProjectileBase.generated.h"
 
 class ARangeWeapon;
-class UProjectileMovementComponent;
 
 UCLASS()
 class TEAM10_PROJECT_API AProjectileBase : public AWeaponBase, public IPoolObjectInterface
 {
 	GENERATED_BODY()
+
 public:
 	AProjectileBase();
     virtual void BeginPlay() override;
 	virtual void Tick(float Time)override;
+
 private:
 	FTimerHandle ProjectileTimerHandle;
 	int32 WeaponPower;
@@ -28,8 +29,6 @@ public:
 	UBoxComponent* ProjectileCollision;
 
 protected:
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|FireData")
-	UProjectileMovementComponent* ProjectileMovementComp;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|FireData")
 	FVector ProjectileLocation;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Projectile|FireData")

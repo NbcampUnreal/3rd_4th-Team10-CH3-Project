@@ -53,8 +53,8 @@ void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, flo
 	if (Weapon->GetWeaponType() == EWeaponType::Projectile)
 	{
 		AProjectileBase* Projectile = Cast<AProjectileBase>(Weapon);
-		HitBoxCollision->SetRelativeLocation(Projectile->ProjectileCollision->GetComponentLocation());
-		HitBoxCollision->SetRelativeRotation(Projectile->ProjectileCollision->GetComponentRotation());
+		HitBoxCollision->SetWorldLocation(Projectile->ProjectileCollision->GetComponentLocation());
+		HitBoxCollision->SetWorldRotation(Projectile->ProjectileCollision->GetComponentRotation());
 
 		HitBoxLifeTime(Time);
 	}
@@ -86,22 +86,23 @@ void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* Ot
 
     if (!HitObject.Contains(OtherActor))
     {
-        UE_LOG(LogTemp, Warning, TEXT("Hit Actor!!!!!!!!!: %s"), *OtherActor->GetName());
+        UE_LOG(LogTemp, Warning, TEXT("Contain Actor!!!!!!!!!: %s"), *OtherActor->GetName());
         HitObject.Add(OtherActor);
     }
 
-    AActor* ObjOwner = this->GetOwner();
+    AActor* ObjInstigator = this->GetInstigator();
     if (Only)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Only Hit!!!!!!!!!"));
-        if (HitObject.Num() == 1)
+        if (HitObject.Num() >= 0)
         {
-            if (Cast<AWeaponBase>(ObjOwner) && OtherActor->ActorHasTag("Enemy"))
+            UE_LOG(LogTemp, Warning, TEXT("In Hit Object"));
+            UE_LOG(LogTemp, Error, TEXT("In Hit Object %s"), *GetInstigator()->GetName());
+            if (Cast<AMyCharacter>(ObjInstigator) && OtherActor->ActorHasTag("Enemy"))
             {
                 Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(Damage);
-                UE_LOG(LogTemp, Error, TEXT("Hit Enemy from Hit Box!!!!!!!!!"));
+                UE_LOG(LogTemp, Warning, TEXT("Hit Enemy from Hit Box!!!!!!!!!"));
             }
-            else if (Cast<ACharacter_Monster>(ObjOwner) && OtherActor->ActorHasTag("Player"))
+            else if (Cast<ACharacter_Monster>(ObjInstigator) && OtherActor->ActorHasTag("Player"))
             {
                 Cast<AMyCharacter>(OtherActor)->GetAttributeComponent()->SetHealth(Damage);
             }
@@ -111,11 +112,11 @@ void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* Ot
     {
         for (AActor* HitObj : HitObject)
         {
-            if (Cast<AWeaponBase>(ObjOwner) && HitObj->ActorHasTag("Enemy"))
+            if (Cast<AMyCharacter>(ObjInstigator) && HitObj->ActorHasTag("Enemy"))
             {
                 Cast<ACharacter_Monster>(HitObj)->ApplyCustomDamage(Damage);
             }
-            else if (Cast<ACharacter_Monster>(ObjOwner) && HitObj->ActorHasTag("Player"))
+            else if (Cast<ACharacter_Monster>(ObjInstigator) && HitObj->ActorHasTag("Player"))
             {
                 Cast<AMyCharacter>(HitObj)->GetAttributeComponent()->SetHealth(Damage);
             }
@@ -170,6 +171,10 @@ void AHitBoxObject::DeActiveObject_Implementation()
 		HitBoxCollision->SetNotifyRigidBodyCollision(false);
 		HitBoxCollision->Deactivate();
 
+        /*Scene->SetWorldLocation(FVector::ZeroVector);
+        HitBoxCollision->SetWorldLocation(FVector::ZeroVector);*/
+
+        //SetActorLocation(FVector::ZeroVector);
         HitObject.Empty();
 	}
 }
