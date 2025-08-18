@@ -56,12 +56,15 @@ protected:
     bool bWaitingForNextWave;
 
     /** 웨이브 데이터 에셋 */
-    UPROPERTY(EditDefaultsOnly, Category = "Wave|Settings")
+    UPROPERTY(VisibleAnywhere, Category = "Wave|Settings")
     UWaveDataAsset* WaveData;
 
     /** 스폰 매니저 참조 (월드에서 설정) */
-    UPROPERTY(EditInstanceOnly, Category = "Wave|Settings")
+    UPROPERTY(VisibleAnywhere, Category = "Wave|Settings")
     ASpartaSpawnManager* SpawnManagerRef;
+
+    UPROPERTY(VisibleAnywhere, Category = "Wave|Settings")
+    TSubclassOf<ASpartaSpawnManager> SpawnManagerClass;
 
     /** 대기 시간용 타이머 핸들 */
     FTimerHandle InterWaveTickHandle;
