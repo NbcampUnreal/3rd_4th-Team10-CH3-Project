@@ -274,9 +274,38 @@ void AMyCharacter::OnDeath()
     {
         DisableInput(PlayerController);
     }
+    GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    GetCharacterMovement()->DisableMovement();
 
     CharacterArms->SetCollisionProfileName(TEXT("Ragdoll"));
     CharacterArms->SetSimulatePhysics(true);
+}
+
+int AMyCharacter::GetCurrentWeaponMaxAmmo() const
+{
+    if (ARangeWeapon* RW = Cast<ARangeWeapon>(CurrentWeapon))
+    {
+        return RW->GetMaxAmmoAmount();
+    }
+    return 0;
+}
+
+int AMyCharacter::GetLoadedAmmo() const
+{
+    if (ARangeWeapon* RW = Cast<ARangeWeapon>(CurrentWeapon))
+    {
+        return RW->GetLoadedAmmoAmount();
+    }
+    return 0;
+}
+
+FString AMyCharacter::GetFireType() const
+{
+    if (ARangeWeapon* RW = Cast<ARangeWeapon>(CurrentWeapon))
+    {
+        return RW->GetFireTypeString();
+    }
+    return FString();
 }
 
 void AMyCharacter::Move(const FInputActionValue& Value)

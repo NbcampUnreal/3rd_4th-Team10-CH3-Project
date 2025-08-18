@@ -76,7 +76,7 @@ public:
     void ModifyAmmoAmount(int Amount);
 
     // -----------------------
-    
+    UFUNCTION(BlueprintCallable, Category = "OnDeath")
     void OnDeath();
     void PickupWeapon(AWeaponBase* WeaponToPickup);
 
@@ -128,6 +128,13 @@ protected:
 
     UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Weapon|Ammo")
     int AmmoAmount;
+
+    UFUNCTION(BlueprintPure, Category="Weapon|Ammo")
+    int GetCurrentWeaponMaxAmmo() const;
+    UFUNCTION(BlueprintPure, Category = "Weapon|Ammo")
+    int GetLoadedAmmo() const;
+    UFUNCTION(BlueprintPure, Category = "Weapon|Type")
+    FString GetFireType() const;
 
     // -----------------
 
