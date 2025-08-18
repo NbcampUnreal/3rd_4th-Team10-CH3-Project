@@ -36,7 +36,6 @@ void AItemBase::OnItemOverlap(
     bool bFromSweep, 
     const FHitResult& SweepResult)
 {
-    UE_LOG(LogTemp, Warning, TEXT("OnOverlap Item"));
     if (OtherActor && OtherActor->ActorHasTag("Player"))
     {
         if (AMyCharacter* MyChar = Cast<AMyCharacter>(OtherActor))
@@ -64,8 +63,6 @@ void AItemBase::OnItemEndOverlap(
     UPrimitiveComponent* OtherComp,
     int32 OtherBodyIndex)
 {
-    UE_LOG(LogTemp, Warning, TEXT("EndOverlap Item"));
-
     if (OtherActor && OtherActor->ActorHasTag("Player"))
     {
         if (AMyCharacter* MyChar = Cast<AMyCharacter>(OtherActor))
@@ -105,6 +102,11 @@ void AItemBase::InVisibleItem()
     SetActorTickEnabled(false);
 
     OverlappingCharacters.Empty();
+}
+
+void AItemBase::DestoryItem()
+{
+    Destroy();
 }
 
 EItemType AItemBase::GetItemType()

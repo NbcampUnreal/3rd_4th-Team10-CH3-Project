@@ -34,8 +34,6 @@ void AWeaponBase::BeginPlay()
 void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    UE_LOG(LogTemp, Warning, TEXT("OnOverlap Item"));
-    UE_LOG(LogTemp, Warning, TEXT("OverlapActor : %s"), *OtherActor->GetName());
 	if (OtherActor && OtherActor->ActorHasTag("Player"))
 	{
         if (AMyCharacter* MyChar = Cast<AMyCharacter>(OtherActor))
@@ -59,7 +57,6 @@ void AWeaponBase::OnItemEndOverlap(
     UPrimitiveComponent* OtherComp,
     int32 OtherBodyIndex)
 {
-    UE_LOG(LogTemp, Warning, TEXT("EndOverlap Item"));
     if (OtherActor && OtherActor->ActorHasTag("Player"))
     {
         if (AMyCharacter* MyChar = Cast<AMyCharacter>(OtherActor))
@@ -79,9 +76,10 @@ void AWeaponBase::OnItemEndOverlap(
 
 void AWeaponBase::InteractiveItem(AActor* Player)
 {
-    if (GetItemType() == EItemType::Weapon)
+    AMyCharacter* Character = Cast<AMyCharacter>(Player);
+    if (Character && GetItemType() == EItemType::Weapon)
     {
-
+        //Character->PickupWeapon(this);
     }
 }
 
@@ -107,7 +105,6 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
 {
     if (!Player) return;
 
-    UE_LOG(LogTemp, Warning, TEXT("Equip"));
     AMyCharacter* Character = Cast<AMyCharacter>(Player);
 
     if (Character)
@@ -115,26 +112,21 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
         FName GripSocketName = Character->GetWeaponSocketName();
 
         FTransform ArmGripsSocket = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
-        FTransform WeaponGripSocket = GetGripTransform(RTS_World);
+        FTransform WeaponGripSocketW = GetGripTransform(RTS_World);
 
-        FVector PivotToGrip = WeaponStaticMesh->GetComponentLocation() - WeaponGripSocket.GetLocation();
+        FVector PivotToGrip = WeaponStaticMesh->GetComponentLocation() - WeaponGripSocketW.GetLocation();
         FVector DesiredLocation = ArmGripsSocket.GetLocation() + PivotToGrip;
-
-
         WeaponStaticMesh->SetWorldLocation(DesiredLocation, false, nullptr, ETeleportType::TeleportPhysics);
-        //FQuat DeltaRot = Character->GetCharacterArms()->GetComponentQuat();// *WeaponGripSocket.GetRotation().Inverse();
-        //
-        //FTransform Offset;
-        //Offset.SetLocation(DesiredLocation);
-        //Offset.SetRotation(DeltaRot);
 
+        FRotator ArmRotate = Character->GetCharacterArms()->GetRelativeRotation();
+        FRotator WeaponGripRotate = GetGripTransform(RTS_Component).Rotator();
+        FQuat SkeletalQuat = ArmGripsSocket.GetRotation() * WeaponGripSocketW.GetRotation().Inverse() * ArmRotate.Quaternion();
+        WeaponStaticMesh->AddWorldRotation(SkeletalQuat);
 
         WeaponStaticMesh->AttachToComponent(
             Character->GetCharacterArms(),
             FAttachmentTransformRules::KeepWorldTransform,
             GripSocketName);
-
-        //WeaponStaticMesh->SetRelativeTransform(Offset, false, nullptr, ETeleportType::TeleportPhysics);
     }
 }
 
