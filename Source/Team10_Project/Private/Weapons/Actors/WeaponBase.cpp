@@ -116,6 +116,8 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
     {
         FName GripSocketName = Character->GetWeaponSocketName();
 
+        WeaponStaticMesh->SetWorldScale3D(FVector(0.85f));
+
         FTransform ArmGripsSocket = Character->GetCharacterArms()->GetSocketTransform(GripSocketName, RTS_World);
         FTransform WeaponGripSocketW = GetGripTransform(RTS_World);
 
