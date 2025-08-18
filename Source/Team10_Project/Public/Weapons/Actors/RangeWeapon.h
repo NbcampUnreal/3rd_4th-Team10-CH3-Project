@@ -39,6 +39,18 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	FRotator MuzzleRotate;
 
+    UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
+    USoundBase* FireSound;
+
+    UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
+    USoundBase* ReloadTacSound;
+
+    UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
+    USoundBase* ReloadEmptySound;
+    
+    UPROPERTY(EditAnywhere, Category = "Weapon | FX")
+    UParticleSystem* MuzzleFlashFX;
+
     virtual void Attack(AActor* Activator) override;
 
     int32 FireCount;

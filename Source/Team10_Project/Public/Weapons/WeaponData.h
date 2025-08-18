@@ -20,6 +20,9 @@ struct FWeaponData : public FTableRowBase
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int32 MaxAmmo;
     
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 PickupAmmo;
+    
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TObjectPtr<UAnimMontage> ReloadTacMontage;
 

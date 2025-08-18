@@ -5,6 +5,11 @@
 #include "GenericTeamAgentInterface.h"
 #include "Character_Monster.generated.h"
 
+// --- 추가된 부분 ---
+// 공격이 끝났음을 알리는 신호(Delegate)를 선언합니다.
+DECLARE_DELEGATE(FOnAttackFinished);
+// -----------------
+
 UCLASS()
 class TEAM10_PROJECT_API ACharacter_Monster : public ACharacter, public IGenericTeamAgentInterface
 {
@@ -37,7 +42,6 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
     float Stamina;
 
-
     void Die();
 
     // 공격 애니메이션 몽타주
@@ -47,6 +51,11 @@ public:
     // 공격 판정 히트박스
     UPROPERTY(VisibleAnywhere, Category = "Attack")
     TObjectPtr<class UBoxComponent> AttackHitbox;
+
+    // --- 추가된 부분 ---
+    // 선언한 신호를 변수로 가집니다.
+    FOnAttackFinished OnAttackFinished;
+    // -----------------
 
 protected:
     virtual void BeginPlay() override;
