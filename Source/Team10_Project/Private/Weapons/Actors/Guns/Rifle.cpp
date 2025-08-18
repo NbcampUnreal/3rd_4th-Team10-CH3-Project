@@ -26,7 +26,7 @@ void ARifle::StartFire()
 
     RemainingFireCount = FireCount;
     FTimerDelegate Delegate;
-    Delegate.BindUObject(this, &ARifle::Attack, Cast<AActor>(this));
+    Delegate.BindUObject(this, &AWeaponBase::Attack, Cast<AActor>(this));
 
     GetWorld()->GetTimerManager().SetTimer(
         FireCountHandle,
