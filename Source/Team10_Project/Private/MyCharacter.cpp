@@ -278,6 +278,33 @@ void AMyCharacter::OnDeath()
     GetMesh()->SetSimulatePhysics(true);
 }
 
+int AMyCharacter::GetCurrentWeaponMaxAmmo() const
+{
+    if (ARangeWeapon* RW = Cast<ARangeWeapon>(CurrentWeapon))
+    {
+        return RW->GetMaxAmmoAmount();
+    }
+    return 0;
+}
+
+int AMyCharacter::GetLoadedAmmo() const
+{
+    if (ARangeWeapon* RW = Cast<ARangeWeapon>(CurrentWeapon))
+    {
+        return RW->GetLoadedAmmoAmount();
+    }
+    return 0;
+}
+
+FString AMyCharacter::GetFireType() const
+{
+    if (ARangeWeapon* RW = Cast<ARangeWeapon>(CurrentWeapon))
+    {
+        return RW->GetFireTypeString();
+    }
+    return FString();
+}
+
 void AMyCharacter::Move(const FInputActionValue& Value)
 {
 	FVector2D MovementVector = Value.Get<FVector2D>();
