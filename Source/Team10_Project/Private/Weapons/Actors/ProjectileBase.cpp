@@ -88,19 +88,23 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
 {
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 
-    SetHitScale();
     AObjectPoolManager* Pool = nullptr;
     for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
     {
         Pool = *It;
         break;
     }
-	AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
-    HitBox->SetDamage(TotalDamage);
-    HitBox->SetOwner(this->GetOwner());
-	HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime, Only);
 
-	Pool->ReturnObject(this);
+    if (OtherActor->ActorHasTag("Enemy"))
+    {
+        SetHitScale();
+        AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
+        HitBox->SetDamage(TotalDamage);
+        HitBox->SetOwner(this->GetOwner());
+        HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime, Only);
+    }
+
+    Pool->ReturnObject(this);
 }
 
 void AProjectileBase::SetDamage(int32 WPower)
@@ -146,12 +150,13 @@ bool AProjectileBase::GetIsActive_Implementation()
 void AProjectileBase::ActiveObject_Implementation()
 {
 	bIsActive = true;
-	this->SetActorHiddenInGame(false);
+	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
 	SetActorTickEnabled(true);
     
 	ProjectileCollision->Activate();
 	ProjectileCollision->SetNotifyRigidBodyCollision(true);
+    ProjectileCollision->SetSimulatePhysics(true);
 
     ProjectileMovementComp->InitialSpeed = ProjectileSpeed;
     ProjectileMovementComp->MaxSpeed = ProjectileSpeed;
@@ -167,6 +172,9 @@ void AProjectileBase::DeActiveObject_Implementation()
 
 	if (bIsActive)
 	{
+        ProjectileCollision->SetPhysicsLinearVelocity(FVector::ZeroVector);
+        ProjectileCollision->SetSimulatePhysics(false);
+
 		bIsActive = false;
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
@@ -185,6 +193,7 @@ void AProjectileBase::DeActiveObject_Implementation()
         WeaponStaticMesh->SetRelativeLocation(FVector::ZeroVector);
 
         SetActorLocation(FVector::ZeroVector);
+        CollisionObject.Empty();
 	}
 }
 
