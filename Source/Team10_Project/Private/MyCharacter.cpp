@@ -253,7 +253,7 @@ void AMyCharacter::PickupWeapon(AWeaponBase* WeaponToPickup)
                 WeaponInventory.Add(PickedUpType, *Data);
                 UE_LOG(LogTemp, Warning, TEXT("Picked up new weapon: %s"), *RowName.ToString());
 
-                EquipWeapon(PickedUpType);
+                //EquipWeapon(PickedUpType);
             }
         }
     }
