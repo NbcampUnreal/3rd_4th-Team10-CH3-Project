@@ -70,7 +70,6 @@ void ARangeWeapon::Attack(AActor* Activator)
 
         RemainingFireCount--;
         LoadAmmoAmount -= ConsumeAmmoAmount;
-        UE_LOG(LogTemp, Warning, TEXT("LoadAmmo Amount: %d"), GetLoadedAmmoAmount());
 
         if (RemainingFireCount == 0)
         {
@@ -109,14 +108,11 @@ void ARangeWeapon::StartFire()
 
 void ARangeWeapon::StopFire()
 {
-    if (FireState == ERangeFireState::Fire)
-    {
-        GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
-        GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
-        FireTimerHandle.Invalidate();
-        FireCountHandle.Invalidate();
-        SetFireState(true, ERangeFireState::Load);
-    }
+    GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
+    FireTimerHandle.Invalidate();
+    FireCountHandle.Invalidate();
+    SetFireState(true, ERangeFireState::Load);
 }
 
 void ARangeWeapon::Reload(AActor* Activator)
@@ -143,7 +139,6 @@ void ARangeWeapon::Reload(AActor* Activator)
 
         SetFireState(true, ERangeFireState::Load);
     }
-    UE_LOG(LogTemp, Warning, TEXT("GetAmmo %d"), Character->GetAmmoAmount());
 }
 
 ERangeType ARangeWeapon::GetRangeType() const

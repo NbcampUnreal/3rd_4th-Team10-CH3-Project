@@ -60,8 +60,10 @@ public:
 	void SetFireState(bool IsFire, ERangeFireState CurFireState);
 	void SwitchFireType();
 
+    UFUNCTION(VisibleAnywhere, BlueprintCallable, Category = "RangeWeaponData")
     FString GetFireTypeString();
+    UFUNCTION(VisibleAnywhere, BlueprintCallable, Category = "RangeWeaponData")
     int GetLoadedAmmoAmount() const;
+    UFUNCTION(VisibleAnywhere, BlueprintCallable, Category = "RangeWeaponData")
     int GetMaxAmmoAmount() const;
-
 };

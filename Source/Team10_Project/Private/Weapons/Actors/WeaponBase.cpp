@@ -167,13 +167,9 @@ void AWeaponBase::OnHit(UPrimitiveComponent* HitComp,
 {
 	if (!OtherActor) return;
 
-	if (OtherActor->ActorHasTag("Enemy"))
+	if (!CollisionObject.Contains(OtherActor))
 	{
-		CollisionObject.Add(OtherActor);
-	}
-	else
-	{
-		//Enemy�� ������ �繰 ������Ʈ ex).��, ��, ���๰
+        CollisionObject.Add(OtherActor);
 	}
 }
 
