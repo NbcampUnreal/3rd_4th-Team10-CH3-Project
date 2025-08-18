@@ -1,6 +1,6 @@
 #include "AttributeComponent.h"
 #include "MyCharacter.h"
-#include "Engine/Engine.h" // GEngine->AddOnScreenDebugMessage¸¦ À§ÇØ Ãß°¡
+#include "Engine/Engine.h" // GEngine->AddOnScreenDebugMessageï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
 
 UAttributeComponent::UAttributeComponent()
 {
@@ -80,23 +80,23 @@ void UAttributeComponent::SetStamina(float NewStamina)
 
 void UAttributeComponent::ModityHealth(float Amount)
 {
-    // --- Á¦°¡ Ãß°¡ÇÑ ºÎºÐ ½ÃÀÛ ---
-    // Amount°¡ À½¼ö(-) °ªÀ¸·Î µé¾î¿Ã ¶§°¡ ¹Ù·Î ´ë¹ÌÁö¸¦ ¹Þ´Â °æ¿ìÀÔ´Ï´Ù.
+    // --- ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ï¿½ï¿½ ---
+    // Amountï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½(-) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Þ´ï¿½ ï¿½ï¿½ï¿½ï¿½Ô´Ï´ï¿½.
     if (Amount < 0.f)
     {
-        // FMath::Abs()¸¦ »ç¿ëÇØ À½¼ö¸¦ ¾ç¼ö·Î ¹Ù²ã¼­ º¸±â ÁÁ°Ô Ãâ·ÂÇÕ´Ï´Ù.
+        // FMath::Abs()ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ù²ã¼­ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         const float DamageTaken = FMath::Abs(Amount);
 
-        // Ãâ·Â ·Î±× Ã¢¿¡ »¡°£»ö(Error)À¸·Î ·Î±×¸¦ Ç¥½ÃÇÕ´Ï´Ù.
+        // ï¿½ï¿½ï¿½ ï¿½Î±ï¿½ Ã¢ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½(Error)ï¿½ï¿½ï¿½ï¿½ ï¿½Î±×¸ï¿½ Ç¥ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         UE_LOG(LogTemp, Error, TEXT("takedameg: %f"), DamageTaken);
 
-        // °ÔÀÓ È­¸é ÁÂÃø »ó´Ü¿¡ 5ÃÊ µ¿¾È »¡°£»öÀ¸·Î ¹ÞÀº ´ë¹ÌÁö¸¦ Ç¥½ÃÇÕ´Ï´Ù.
+        // ï¿½ï¿½ï¿½ï¿½ È­ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ü¿ï¿½ 5ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ç¥ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
         if (GEngine)
         {
-            GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("¹ÞÀº ´ë¹ÌÁö: %.2f"), DamageTaken));
+            GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½: %.2f"), DamageTaken));
         }
     }
-    // --- Á¦°¡ Ãß°¡ÇÑ ºÎºÐ ³¡ ---
+    // --- ï¿½ï¿½ï¿½ï¿½ ï¿½ß°ï¿½ï¿½ï¿½ ï¿½Îºï¿½ ï¿½ï¿½ ---
 
     float NewHealth = FMath::Clamp(Health + Amount, 0.f, MaxHealth);
     SetHealth(NewHealth);
