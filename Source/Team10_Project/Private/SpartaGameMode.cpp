@@ -15,7 +15,13 @@ ASpartaGameMode::ASpartaGameMode()
 
 void ASpartaGameMode::BeginPlay()
 {
+
     Super::BeginPlay();
+
+    SpawnManagerRef = Cast<ASpartaSpawnManager>(
+        UGameplayStatics::GetActorOfClass(GetWorld(), ASpartaSpawnManager::StaticClass())
+    );
+
     StartWave();
 }
 
@@ -46,6 +52,7 @@ void ASpartaGameMode::StartWave()
 
     if (SpawnManagerRef)
     {
+        UE_LOG(LogTemp, Error, TEXT("Spawning %d enemies for wave %d"), EnemiesRemaining, WaveCounter);
         SpawnManagerRef->StartSpawning(CurrentWave);
     }
 }
