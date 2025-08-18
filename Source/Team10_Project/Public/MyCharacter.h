@@ -78,6 +78,10 @@ public:
     // -----------------------
     UFUNCTION(BlueprintCallable, Category = "OnDeath")
     void OnDeath();
+    UPROPERTY(EditDefaultsOnly, Category = "UI")
+    TSubclassOf<UUserWidget> GameOverWidgetClass;
+    UPROPERTY()
+    UUserWidget* GameOverWidgetInstance;
     void PickupWeapon(AWeaponBase* WeaponToPickup);
 
 protected:
