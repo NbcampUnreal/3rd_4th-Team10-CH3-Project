@@ -9,18 +9,20 @@
 #include "Animation/AnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
+// --- 헤더 파일 ---
+#include "MyCharacter.h"
+#include "AttributeComponent.h"
+// ----------------
+
 ACharacter_Monster::ACharacter_Monster()
 {
     AutoPossessAI = EAutoPossessAI::PlacedInWorldOrSpawned;
-
     TeamId = FGenericTeamId(1);
-
     MaxHealth = 100;
     Health = MaxHealth;
     Defence = 5;
     MaxStamina = 100.0f;
     Stamina = MaxStamina;
-
     AttackHitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackHitbox"));
     AttackHitbox->SetupAttachment(GetMesh(), FName("WeaponSocket"));
     AttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -46,6 +48,8 @@ void ACharacter_Monster::Attack()
         MoveComp->DisableMovement();
     }
 
+    AttackHitbox->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
+
     if (AttackAnimMontage)
     {
         if (auto* AnimInstance = GetMesh()->GetAnimInstance())
@@ -53,9 +57,7 @@ void ACharacter_Monster::Attack()
             if (!AnimInstance->Montage_IsPlaying(AttackAnimMontage))
             {
                 AnimInstance->Montage_Play(AttackAnimMontage, 1.0f);
-
                 float Duration = AttackAnimMontage->GetPlayLength();
-
                 GetWorld()->GetTimerManager().SetTimer(
                     TimerHandle_AttackEnd,
                     this,
@@ -70,23 +72,27 @@ void ACharacter_Monster::Attack()
 
 void ACharacter_Monster::OnAttackEnd()
 {
+    AttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
     if (auto* MoveComp = GetCharacterMovement())
     {
         MoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
     }
+
+    // --- 추가된 부분 ---
+    // 공격이 끝났다고 AI(BTT_Attack)에 신호를 보냅니다.
+    OnAttackFinished.ExecuteIfBound();
+    // -------------------
 }
 
 void ACharacter_Monster::ApplyCustomDamage(int32 DamageAmount)
 {
     const int32 FinalDamage = FMath::Max(0, DamageAmount - Defence);
-
     if (FinalDamage <= 0 || Health <= 0)
     {
         return;
     }
-
     Health -= FinalDamage;
-
     if (Health <= 0)
     {
         Die();
@@ -105,7 +111,6 @@ void ACharacter_Monster::Die()
             AIController->BrainComponent->StopLogic("Death");
         }
     }
-
     SetLifeSpan(0.1f);
 }
 
@@ -114,15 +119,16 @@ void ACharacter_Monster::OnAttackHitboxOverlapBegin(UPrimitiveComponent* Overlap
 {
     if (OtherActor && OtherActor != this)
     {
-        if (auto* PlayerCharacter = Cast<ACharacter>(OtherActor))
+        AMyCharacter* MyPlayer = Cast<AMyCharacter>(OtherActor);
+        if (MyPlayer)
         {
-            if (PlayerCharacter->IsPlayerControlled())
+            UAttributeComponent* PlayerAttributes = MyPlayer->FindComponentByClass<UAttributeComponent>();
+            if (PlayerAttributes)
             {
-
-                UGameplayStatics::ApplyDamage(PlayerCharacter, 10.0f, GetController(), this, nullptr);
-
-                AttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+                float MonsterAttackDamage = -25.0f;
+                PlayerAttributes->ModityHealth(MonsterAttackDamage);
             }
+            AttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
         }
     }
 }
