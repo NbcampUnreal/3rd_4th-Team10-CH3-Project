@@ -47,6 +47,9 @@ protected:
 
     UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
     USoundBase* ReloadEmptySound;
+    
+    UPROPERTY(EditAnywhere, Category = "Weapon | FX")
+    UParticleSystem* MuzzleFlashFX;
 
     virtual void Attack(AActor* Activator) override;
 
