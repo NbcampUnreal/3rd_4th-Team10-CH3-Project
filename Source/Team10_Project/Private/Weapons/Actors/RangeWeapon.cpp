@@ -48,7 +48,23 @@ void ARangeWeapon::Attack(AActor* Activator)
 	    if (FireSound)
 	    {
 	        UGameplayStatics::PlaySoundAtLocation(this,FireSound,MuzzleLocation);
-	    }   
+	    }
+
+	    if (MuzzleFlashFX)
+	    {
+	        const FVector ParticleScale = FVector(0.08f);
+	        
+	        UGameplayStatics::SpawnEmitterAttached(
+                MuzzleFlashFX,
+                WeaponStaticMesh,
+                FName("MuzzleSocket"),
+                FVector::ZeroVector,
+                FRotator::ZeroRotator,
+                ParticleScale,
+                EAttachLocation::KeepRelativeOffset,
+                true
+            );
+	    }
 	    
         if (FireCameraShakeClass)
         {
@@ -123,21 +139,6 @@ void ARangeWeapon::StopFire()
 void ARangeWeapon::Reload(AActor* Activator)
 {
 	if (!Activator) return;
-    
-    if (LoadAmmoAmount > 0)
-    {
-        if (ReloadTacSound)
-        {
-	        UGameplayStatics::PlaySoundAtLocation(this,ReloadTacSound,MuzzleLocation);
-        }
-    }
-    else
-    {
-        if (ReloadEmptySound)
-        {
-	        UGameplayStatics::PlaySoundAtLocation(this,ReloadEmptySound,MuzzleLocation);
-        }
-    }
     
     SetFireState(false, ERangeFireState::Reload);
     AMyCharacter* Character = Cast<AMyCharacter>(Activator);
