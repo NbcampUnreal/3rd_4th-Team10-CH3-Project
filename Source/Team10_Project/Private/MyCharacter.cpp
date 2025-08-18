@@ -274,6 +274,8 @@ void AMyCharacter::OnDeath()
     {
         DisableInput(PlayerController);
     }
+    GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    GetCharacterMovement()->DisableMovement();
 
     CharacterArms->SetCollisionProfileName(TEXT("Ragdoll"));
     CharacterArms->SetSimulatePhysics(true);
