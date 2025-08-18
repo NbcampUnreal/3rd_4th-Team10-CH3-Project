@@ -114,7 +114,7 @@ void AProjectileBase::SetDamage(int32 WPower)
 
 void AProjectileBase::ProjectileLifeTime()
 {
-	LifeTime = ProjectileRange / ProjectileSpeed;
+    LifeTime = 99;//ProjectileRange / ProjectileSpeed;
 
 	GetWorld()->GetTimerManager().SetTimer(
 		ProjectileTimerHandle,

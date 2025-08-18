@@ -70,7 +70,6 @@ void ARangeWeapon::Attack(AActor* Activator)
 
         RemainingFireCount--;
         LoadAmmoAmount -= ConsumeAmmoAmount;
-        UE_LOG(LogTemp, Warning, TEXT("LoadAmmo Amount: %d"), GetLoadedAmmoAmount());
 
         if (RemainingFireCount == 0)
         {
@@ -140,7 +139,6 @@ void ARangeWeapon::Reload(AActor* Activator)
 
         SetFireState(true, ERangeFireState::Load);
     }
-    UE_LOG(LogTemp, Warning, TEXT("GetAmmo %d"), Character->GetAmmoAmount());
 }
 
 ERangeType ARangeWeapon::GetRangeType() const

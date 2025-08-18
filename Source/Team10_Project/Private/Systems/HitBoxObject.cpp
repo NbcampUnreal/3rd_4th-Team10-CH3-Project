@@ -76,6 +76,7 @@ void AHitBoxObject::HitBoxLifeTime(float Time)
 void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
+    UE_LOG(LogTemp, Warning, TEXT("Hit Actor!!!!!!!!!: %s"), *OtherActor->GetName());
     AObjectPoolManager* Pool = nullptr;
     for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
     {
@@ -85,17 +86,20 @@ void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* Ot
 
     if (!HitObject.Contains(OtherActor))
     {
+        UE_LOG(LogTemp, Warning, TEXT("Hit Actor!!!!!!!!!: %s"), *OtherActor->GetName());
         HitObject.Add(OtherActor);
     }
 
     AActor* ObjOwner = this->GetOwner();
     if (Only)
     {
+        UE_LOG(LogTemp, Warning, TEXT("Only Hit!!!!!!!!!"));
         if (HitObject.Num() == 1)
         {
             if (Cast<AWeaponBase>(ObjOwner) && OtherActor->ActorHasTag("Enemy"))
             {
                 Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(Damage);
+                UE_LOG(LogTemp, Error, TEXT("Hit Enemy from Hit Box!!!!!!!!!"));
             }
             else if (Cast<ACharacter_Monster>(ObjOwner) && OtherActor->ActorHasTag("Player"))
             {
