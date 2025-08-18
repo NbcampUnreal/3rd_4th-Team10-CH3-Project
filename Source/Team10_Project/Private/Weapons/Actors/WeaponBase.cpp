@@ -79,7 +79,7 @@ void AWeaponBase::InteractiveItem(AActor* Player)
     AMyCharacter* Character = Cast<AMyCharacter>(Player);
     if (Character && GetItemType() == EItemType::Weapon)
     {
-        //Character->PickupWeapon(this);
+        Character->PickupWeapon(this);
     }
 }
 
