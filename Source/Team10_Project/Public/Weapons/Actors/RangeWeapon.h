@@ -11,9 +11,15 @@ class TEAM10_PROJECT_API ARangeWeapon : public AWeaponBase
 
 public:
 	ARangeWeapon();
-protected:
-	virtual void BeginPlay() override;
 
+    virtual void BeginPlay() override;
+protected:
+
+    UPROPERTY(EditDefaultsOnly, Category = "Effects|Camera")
+    TSubclassOf<UCameraShakeBase> FireCameraShakeClass;
+
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
+    ERangeType RangeType;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	ERangeLeverType LeverType;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
@@ -23,7 +29,9 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	int32 MaxBulletAmount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
-	int32 CurBulletAmount;
+	int32 LoadAmmoAmount;
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
+    int32 ConsumeAmmoAmount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	bool bIsFire;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
@@ -31,16 +39,43 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	FRotator MuzzleRotate;
 
-	ERangeLeverType GetRangeLeverType();
-	ERangeFireType GetAttackType();
+    UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
+    USoundBase* FireSound;
 
+    UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
+    USoundBase* ReloadTacSound;
+
+    UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
+    USoundBase* ReloadEmptySound;
+    
+    UPROPERTY(EditAnywhere, Category = "Weapon | FX")
+    UParticleSystem* MuzzleFlashFX;
+
+    virtual void Attack(AActor* Activator) override;
+
+    int32 FireCount;
+    int32 RemainingFireCount;
+    FTimerHandle FireCountHandle;
 	FTimerHandle FireTimerHandle;
 	FTimerDelegate TimerDel;
-public:
-	virtual void Attack(AActor* Activator) override;
 
-	void Reload(AActor* Activator);
+public:
+    virtual void StartFire() override;
+    virtual void StopFire() override;
+
+    ERangeType GetRangeType() const;
+	ERangeLeverType GetRangeLeverType() const;
+	ERangeFireType GetFireType() const;
+
 	float GetFireSpeed();
-	void SetFireState();
+	void Reload(AActor* Activator);
+	void SetFireState(bool IsFire, ERangeFireState CurFireState);
 	void SwitchFireType();
+
+    UFUNCTION(BlueprintCallable, Category = "RangeWeaponData")
+    FString GetFireTypeString();
+    UFUNCTION(BlueprintCallable, Category = "RangeWeaponData")
+    int GetLoadedAmmoAmount() const;
+    UFUNCTION(BlueprintCallable, Category = "RangeWeaponData")
+    int GetMaxAmmoAmount() const;
 };

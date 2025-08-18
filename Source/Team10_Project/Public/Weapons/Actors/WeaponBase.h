@@ -4,10 +4,10 @@
 #include "GameFramework/Actor.h"
 #include "Weapons/Interface/WeaponInterface.h"
 #include "Items/ItemInterface.h"
-#include "Items/ItemTypes.h"
 #include "WeaponBase.generated.h"
 
 class UBoxComponent;
+class AMyPlayerController;
 UCLASS()
 class TEAM10_PROJECT_API AWeaponBase : public AActor, public IWeaponInterface, public IItemInterface
 {
@@ -16,36 +16,46 @@ class TEAM10_PROJECT_API AWeaponBase : public AActor, public IWeaponInterface, p
 public:	
 	AWeaponBase();
 
+private:
+    bool bOverlappingItem;
+    TArray<AMyPlayerController*> OverlappingCharacters;
+
 protected:
 	virtual void BeginPlay() override;
 
 public:	
-	virtual void Tick(float DeltaTime) override;
 
 	bool bIsEquip;
 	bool bIsAttack;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
-	UStaticMeshComponent* WeaponStaticMesh;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
-	USkeletalMeshComponent* WeaponSkeletalMesh;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "RangeState")
 	ERangeFireState FireState;
 
 protected:
+    bool bIsVisible;
 	TSet<AActor*> CollisionObject;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
-	FVector Origin;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
+	UStaticMeshComponent* WeaponStaticMesh;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	FVector BoxExtent;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
-	FVector MeshSize;
+	FVector CollisionSize;
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
+    EItemType ItemType;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	EWeaponType WeaponType;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	FName WeaponName;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	int32 Power;
+	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	float RateOfFire;
 
@@ -58,25 +68,46 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
 	USceneComponent* Scene;
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|Component")
 	UBoxComponent* GetCollision;
 
-	virtual void OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
-		UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
-		bool bFromSweep, const FHitResult& SweepResult) override;
-	virtual void GetItem() override;
+    // Overlap Hit Event
+    virtual void OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
+        UPrimitiveComponent* OtherComp, int32 OtherBodyIndex,
+        bool bFromSweep, const FHitResult& SweepResult) override;
+    virtual void OnItemEndOverlap(
+        UPrimitiveComponent* OverlappedComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        int32 OtherBodyIndex) override;
+    virtual void OnHit(UPrimitiveComponent* HitComp,
+        AActor* OtherActor,
+        UPrimitiveComponent* OtherComp,
+        FVector NormalImpulse,
+        const FHitResult& Hit) override;
+
+
+    //Weapon
 	virtual void UseWeapon() override;
-	virtual void EquipmentWeapon(AActor* Player) override;
-	virtual void UnEquipmentWeapon(AActor* Player) override;
-	virtual void Attack(AActor* Activator) override;
-	virtual void OnHit(UPrimitiveComponent* HitComp,
-		AActor* OtherActor,
-		UPrimitiveComponent* OtherComp,
-		FVector NormalImpulse,
-		const FHitResult& Hit) override;
+    virtual FVector SetHitScale() override;
+    FTransform GetGripTransform(ERelativeTransformSpace TransformSpace) const;
 
 public:
+    //WeaponInterface
+	virtual void EquipmentWeapon(AActor* Player) override;
+	virtual void Attack(AActor* Activator) override;
+    virtual void StartFire() override;
+    virtual void StopFire() override;
+
 	EWeaponType GetWeaponType() const;
 	FName GetWeaponName() const;
 	int32 GetPower() const;
+
+    //ItemInterface
+    virtual void VisibleItem() override;
+    virtual void InVisibleItem() override;
+    virtual EItemType GetItemType() override;
+    virtual void InteractiveItem(AActor* Player) override;
+    virtual bool GetItemOverlapState() override;
 };

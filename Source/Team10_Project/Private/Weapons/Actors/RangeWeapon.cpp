@@ -1,108 +1,178 @@
 #include "Weapons/Actors/RangeWeapon.h"
 #include "Weapons/Actors/ProjectileBase.h"
 #include "Systems/ObjectPoolManager.h"
+#include "EngineUtils.h"
 
+#include "MyCharacter.h"
 ARangeWeapon::ARangeWeapon()
-	:LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
-	FireSpeed(0), MaxBulletAmount(0), CurBulletAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator)
+	:RangeType(ERangeType::None), LeverType(ERangeLeverType::Single), FireType(ERangeFireType::SingleShot),
+	FireSpeed(0), MaxBulletAmount(0), LoadAmmoAmount(0), ConsumeAmmoAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator), FireCount(1), RemainingFireCount(0)
 {
 	WeaponType = EWeaponType::Range;
 
-	WeaponStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("StaticMesh"));
 	WeaponStaticMesh->SetupAttachment(Scene);
 }
 
 void ARangeWeapon::BeginPlay()
 {
-	Super::BeginPlay();
-
-	if (LeverType == ERangeLeverType::Single)
-	{
-		FireType = ERangeFireType::SingleShot;
-	}
-	if (LeverType == ERangeLeverType::Point)
-	{
-		FireType = ERangeFireType::PointFire;
-	}
-	if (LeverType == ERangeLeverType::Repeatedly)
-	{
-		FireType = ERangeFireType::Repeatedly;
-	}
+    bIsVisible = true;
+    SetActorHiddenInGame(false);
+    SetActorTickEnabled(false);
+    SetFireState(true, ERangeFireState::Load);
 }
+
 void ARangeWeapon::Attack(AActor* Activator)
 {
 	Super::Attack(Activator);
 
-	if (bIsFire && FireState == ERangeFireState::Load)
+	if (bIsFire && FireState == ERangeFireState::Load && RemainingFireCount > 0)
 	{
-		UE_LOG(LogTemp, Warning, (TEXT("Fire")));
+        SetFireState(false, ERangeFireState::Fire);
 
-		FTransform SocketWorldTransform = WeaponStaticMesh->GetSocketTransform(TEXT("MuzzleSocket"), RTS_World);
-
+		FTransform SocketWorldTransform = GetGripTransform(RTS_World);
+		FVector FireDirection = SocketWorldTransform.GetRotation().GetForwardVector().GetSafeNormal();
 		MuzzleLocation = SocketWorldTransform.GetLocation();
-		FVector FireDirection = SocketWorldTransform.GetRotation().GetForwardVector();
 		MuzzleRotate = FireDirection.Rotation();
 
-		FireState = ERangeFireState::Fire;
-		UObjectPoolManager* Pool = GetGameInstance()->GetSubsystem<UObjectPoolManager>();
-		AProjectileBase* Projectile = Pool->GetObject<AProjectileBase>();
+        AObjectPoolManager* Pool = nullptr;
+        for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
+        {
+            Pool = *It;
+            break;
+        }
+		AProjectileBase* Projectile = Pool->GetObject<ABullet>();
+        Projectile->SetOwner(Activator);
+        Projectile->SetInstigator(Cast<AMyCharacter>(Activator->GetOwner()));
 		Projectile->Activate(this, MuzzleLocation, MuzzleRotate, FireDirection);
-		GetWorld()->GetTimerManager().SetTimer(
-			FireTimerHandle,
-			this,
-			&ARangeWeapon::SetFireState,
-			RateOfFire,
-			false
-		);
+	    
+	    if (FireSound)
+	    {
+	        UGameplayStatics::PlaySoundAtLocation(this,FireSound,MuzzleLocation);
+	    }
 
-		CurBulletAmount--;
-		//¿Â¿¸µ» √—æÀ¿Ã ¥Ÿ ∂≥æÓ¡≥¿∏∏È
-		if (CurBulletAmount == 0)
+	    if (MuzzleFlashFX)
+	    {
+	        const FVector ParticleScale = FVector(0.08f);
+	        
+	        UGameplayStatics::SpawnEmitterAttached(
+                MuzzleFlashFX,
+                WeaponStaticMesh,
+                FName("MuzzleSocket"),
+                FVector::ZeroVector,
+                FRotator::ZeroRotator,
+                ParticleScale,
+                EAttachLocation::KeepRelativeOffset,
+                true
+            );
+	    }
+	    
+        if (FireCameraShakeClass)
+        {
+            if (AMyCharacter* Player = Cast<AMyCharacter>(Activator->GetOwner()))
+            {
+                if (APlayerController* PlayerController = Cast<APlayerController>(Player->GetController()))
+                {
+                    if (PlayerController)
+                    {
+                        PlayerController->ClientStartCameraShake(FireCameraShakeClass);
+                    }
+                }
+            }
+        }
+
+        FTimerDelegate Delegate;
+        Delegate.BindUObject(this, &ARangeWeapon::SetFireState, true, ERangeFireState::Load);
+        GetWorld()->GetTimerManager().SetTimer(
+            FireTimerHandle,
+            Delegate,
+            RateOfFire,
+            false
+        );
+
+        RemainingFireCount--;
+        LoadAmmoAmount -= ConsumeAmmoAmount;
+
+        if (RemainingFireCount == 0)
+        {
+            StopFire();
+        }
+		//ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ ÔøΩ—æÔøΩÔøΩÔøΩ ÔøΩÔøΩ ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩ
+		if (LoadAmmoAmount == 0)
 		{
-			bIsFire = false;
-			FireState = ERangeFireState::Idle;
+            StopFire();
+            SetFireState(false, ERangeFireState::Idle);
 		}
 	}
 }
 
+void ARangeWeapon::SetFireState(bool IsFire, ERangeFireState CurFireState)
+{
+    bIsFire = IsFire;
+    FireState = CurFireState;
+}
 
-//class AIneventory;
+void ARangeWeapon::StartFire()
+{
+    if (FireType == ERangeFireType::SingleShot)
+    {
+        FireCount = 1;
+    }
+    else if (FireType == ERangeFireType::PointFire)
+    {
+        FireCount = 3;
+    }
+    else if (FireType == ERangeFireType::Repeatedly)
+    {
+        FireCount = GetLoadedAmmoAmount();
+    }
+}
+
+void ARangeWeapon::StopFire()
+{
+    GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
+    GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
+    FireTimerHandle.Invalidate();
+    FireCountHandle.Invalidate();
+    SetFireState(true, ERangeFireState::Load);
+}
 
 void ARangeWeapon::Reload(AActor* Activator)
 {
 	if (!Activator) return;
+    
+    SetFireState(false, ERangeFireState::Reload);
+    AMyCharacter* Character = Cast<AMyCharacter>(Activator);
 
-	FireState = ERangeFireState::Reload;
-	int32 RemainingBullet = 10;
-	//AIneventory* Inven = CreateDefaultSubobject<AIneventory>(TEXT("AIneventory"));
-	if (RemainingBullet > 10/*Inven = Cast<AIneventory>(Activator)*/)
-	{
-		//int32 RemainingBullet = Inven->GetRaminingBullet();
-		if (RemainingBullet > 0 && MaxBulletAmount > CurBulletAmount)
-		{
-			int32 NeedBullet = MaxBulletAmount - CurBulletAmount;
-			if (RemainingBullet >= NeedBullet)
-			{
-				CurBulletAmount += NeedBullet;
-				//Inven->SetRemainingBullet(-NeedBullet);
-			}
-			else if (RemainingBullet < NeedBullet)
-			{
-				CurBulletAmount += RemainingBullet;
-				//Inven->SetRemainingBullet(-RemainingBullet);
-			}
-			bIsFire = true;
-			FireState = ERangeFireState::Load;
-		}
-	}
+    int32 RemainingBullet = Character->GetAmmoAmount();
+    if (RemainingBullet > 0 && MaxBulletAmount > LoadAmmoAmount)
+    {
+        int32 NeedAmmo = MaxBulletAmount - LoadAmmoAmount;
+        if (RemainingBullet >= NeedAmmo)
+        {
+            LoadAmmoAmount += NeedAmmo;
+            Character->SetAmmoAmount(-NeedAmmo);
+        }
+        else if (RemainingBullet < NeedAmmo)
+        {
+            LoadAmmoAmount += RemainingBullet;
+            Character->SetAmmoAmount(-RemainingBullet);
+        }
+
+        SetFireState(true, ERangeFireState::Load);
+    }
 }
 
-ERangeLeverType ARangeWeapon::GetRangeLeverType()
+ERangeType ARangeWeapon::GetRangeType() const
+{
+    return RangeType;
+}
+
+ERangeLeverType ARangeWeapon::GetRangeLeverType() const
 {
 	return LeverType;
 }
 
-ERangeFireType ARangeWeapon::GetAttackType()
+ERangeFireType ARangeWeapon::GetFireType() const
 {
 	return FireType;
 }
@@ -112,30 +182,59 @@ float ARangeWeapon::GetFireSpeed()
 	return FireSpeed;
 }
 
-void ARangeWeapon::SetFireState()
-{
-	FireState = ERangeFireState::Load;
-}
-
 void ARangeWeapon::SwitchFireType()
 {
-	if (FireType == ERangeFireType::SingleShot)
-	{
-		if (LeverType == ERangeLeverType::Point)
-		{
-			FireType = ERangeFireType::PointFire;
-		}
-		if (LeverType == ERangeLeverType::Repeatedly)
-		{
-			FireType = ERangeFireType::Repeatedly;
-		}
-	}
-	else if (FireType == ERangeFireType::PointFire)
-	{
-		FireType = ERangeFireType::SingleShot;
-	}
-	else if (FireType == ERangeFireType::Repeatedly)
-	{
-		FireType = ERangeFireType::SingleShot;
-	}
+    if (FireType == ERangeFireType::SingleShot)
+    {
+        if (LeverType == ERangeLeverType::Single)
+        {
+            return;
+        }
+        else if (LeverType == ERangeLeverType::Point)
+        {
+            FireType = ERangeFireType::PointFire;
+        }
+        else if (LeverType == ERangeLeverType::Repeatedly)
+        {
+            FireType = ERangeFireType::Repeatedly;
+        }
+    }
+    else if (FireType == ERangeFireType::PointFire)
+    {
+        FireType = ERangeFireType::SingleShot;
+    }
+    else if (FireType == ERangeFireType::Repeatedly)
+    {
+        FireType = ERangeFireType::SingleShot;
+    }
+}
+
+FString ARangeWeapon::GetFireTypeString()
+{
+    FString FireTypeString;
+    
+    if (FireType == ERangeFireType::SingleShot)
+    {
+        FireTypeString = TEXT("Single Shot");
+    }
+    else if (FireType == ERangeFireType::PointFire)
+    {
+        FireTypeString = TEXT("Point Fire");
+    }
+    else if (FireType == ERangeFireType::Repeatedly)
+    {
+        FireTypeString = TEXT("Repeatedly");
+    }
+
+    return FireTypeString;
+}
+
+int ARangeWeapon::GetLoadedAmmoAmount() const
+{
+	return LoadAmmoAmount;
+}
+
+int ARangeWeapon::GetMaxAmmoAmount() const
+{
+    return MaxBulletAmount;
 }

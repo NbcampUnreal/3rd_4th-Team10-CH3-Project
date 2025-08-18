@@ -81,6 +81,11 @@ void ASpartaGameMode::StartInterWaveDelay(float InDelay)
     bWaitingForNextWave = true;
     InterWaveCountdown = InDelay;
 
+    if (ASpartaGameState* GS = GetGameState<ASpartaGameState>())
+    {
+        GS->SetWaitingWave(bWaitingForNextWave);
+    }
+
     TickInterWaveDelay();
 
     GetWorldTimerManager().SetTimer(
@@ -100,6 +105,10 @@ void ASpartaGameMode::TickInterWaveDelay()
     {
         GetWorldTimerManager().ClearTimer(InterWaveTickHandle);
         bWaitingForNextWave = false;
+        if (ASpartaGameState* GS = GetGameState<ASpartaGameState>())
+        {
+            GS->SetWaitingWave(bWaitingForNextWave);
+        }
         StartWave();
     }
 }

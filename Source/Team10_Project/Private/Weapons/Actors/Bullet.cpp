@@ -5,26 +5,21 @@
 ABullet::ABullet()
 {
 	WeaponName = "Bullet";
-	ProjectileSpeed = 50.0f;
+	ProjectileSpeed = 200.0f;
 	ProjectileRange = 8000.0f;
 	Power = 10;
+    bIsVisible = true;
+    Only = true;
+}
 
-	WeaponStaticMesh->GetLocalBounds(Origin, BoxExtent);
-	MeshSize = BoxExtent * 2.f;
-	Height = MeshSize.Z;
-	Width = MeshSize.X;
-	Vertical = MeshSize.Y;
+void ABullet::BeginPlay()
+{
+    Super::BeginPlay();
+    InVisibleItem();
+    SetActorTickEnabled(true);
 }
 
 void ABullet::ProjectileMovement()
 {
 	Super::ProjectileMovement();
-
-	UE_LOG(LogTemp, Warning, TEXT("Move"));
-
-	ProjectileMovementComp->Velocity = ProjectileDir * ProjectileSpeed;
-	ProjectileCollision->Activate();
-	ProjectileMovementComp->Activate(true);
-
-	ProjectileLifeTime();
 }

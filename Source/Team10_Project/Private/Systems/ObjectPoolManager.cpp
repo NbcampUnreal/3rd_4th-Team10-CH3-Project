@@ -1,7 +1,7 @@
 #include "Systems/ObjectPoolManager.h"
 #include "Systems/PoolObjectDataAsset.h"
 
-UObjectPoolManager::UObjectPoolManager()
+AObjectPoolManager::AObjectPoolManager()
 {
 	PoolSize = 10;
 	static ConstructorHelpers::FObjectFinder<UPoolObjectDataAsset> PoolAsset(TEXT("/Game/DataAsset/PoolingObjectDataAsset.PoolingObjectDataAsset"));
@@ -10,10 +10,12 @@ UObjectPoolManager::UObjectPoolManager()
 		PoolObjectData = PoolAsset.Object->PoolClasses;
 	}
 }
-
-void UObjectPoolManager::Initialize(FSubsystemCollectionBase& Collection)
+void AObjectPoolManager::PostInitializeComponents()
 {
-	Super::Initialize(Collection);
-	
-	InitPool();
+    Super::PostInitializeComponents();
+    InitPool();
+}
+void AObjectPoolManager::BeginPlay()
+{
+    Super::BeginPlay();
 }
