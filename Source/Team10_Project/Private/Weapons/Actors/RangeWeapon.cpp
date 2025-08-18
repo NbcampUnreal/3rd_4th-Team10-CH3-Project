@@ -27,8 +27,7 @@ void ARangeWeapon::Attack(AActor* Activator)
 
 	if (bIsFire && FireState == ERangeFireState::Load && RemainingFireCount > 0)
 	{
-		FireState = ERangeFireState::Fire;
-        bIsFire = false;
+        SetFireState(false, ERangeFireState::Fire);
 
 		FTransform SocketWorldTransform = GetGripTransform(RTS_World);
 		FVector FireDirection = SocketWorldTransform.GetRotation().GetForwardVector().GetSafeNormal();
