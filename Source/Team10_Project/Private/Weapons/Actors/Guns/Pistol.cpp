@@ -18,11 +18,6 @@ APistol::APistol()
 void APistol::BeginPlay()
 {
 	Super::BeginPlay();
-    bIsVisible = true;
-    SetActorHiddenInGame(false);
-    SetActorTickEnabled(false);
-
-    SetFireState();
 }
 
 void APistol::StartFire()
@@ -37,6 +32,6 @@ void APistol::StartFire()
         FireCountHandle,
         Delegate,
         RateOfFire,
-        true
+        false
     );
 }

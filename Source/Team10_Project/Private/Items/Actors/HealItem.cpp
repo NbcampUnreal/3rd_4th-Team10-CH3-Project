@@ -16,7 +16,10 @@ void AHealItem::ImmediatelyItem(AActor* Activate)
     Super::ImmediatelyItem(Activate);
 
     AMyCharacter* Character = Cast<AMyCharacter>(Activate);
-    Character->GetAttributeComponent()->ModityHealth(HealAmount);
+    if (Character)
+    {
+        Character->GetAttributeComponent()->ModityHealth(HealAmount);
 
-    InVisibleItem();
+        DestoryItem();
+    }
 }

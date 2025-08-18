@@ -25,7 +25,8 @@ enum class ECharacterState : uint8
 	Idle	UMETA(DisplayName = "Idle"),
 	Walking UMETA(DisplayName = "Walking"),
 	Sprinting UMETA(DisplayName = "Sprinting"),
-	Jumping UMETA(DisplayName = "Jumping")
+	Jumping UMETA(DisplayName = "Jumping"),
+    Dead UMETA(DisplayName = "Dead")
 };
 UCLASS()
 class TEAM10_PROJECT_API AMyCharacter : public ACharacter, public IGenericTeamAgentInterface
@@ -71,9 +72,13 @@ public:
     UFUNCTION(BlueprintCallable, Category = "Weapon|Ammo")
     void SetAmmoAmount(int NewAmmoAmount);
 
+    UFUNCTION(BlueprintCallable, Category = "Weapon|Ammo")
+    void ModifyAmmoAmount(int Amount);
+
     // -----------------------
     
     void OnDeath();
+    void PickupWeapon(AWeaponBase* WeaponToPickup);
 
 protected:
 
@@ -104,8 +109,6 @@ protected:
         int32 OtherBodyIndex);
 
     void Interact();
-
-    void PickupWeapon(ERangeType RangeTypeToPickup);
     
     // -------------------------
 

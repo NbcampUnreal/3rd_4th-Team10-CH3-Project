@@ -18,11 +18,6 @@ ARifle::ARifle()
 void ARifle::BeginPlay()
 {
     Super::BeginPlay();
-    bIsVisible = true;
-    SetActorHiddenInGame(false);
-    SetActorTickEnabled(false);
-
-    SetFireState();
 }
 
 void ARifle::StartFire()
@@ -30,13 +25,23 @@ void ARifle::StartFire()
     Super::StartFire();
 
     RemainingFireCount = FireCount;
-    FTimerDelegate Delegate;
-    Delegate.BindUObject(this, &ARifle::Attack, Cast<AActor>(this));
 
-    GetWorld()->GetTimerManager().SetTimer(
-        FireCountHandle,
-        Delegate,
-        RateOfFire,
-        true
-    );
+    if (FireType == ERangeFireType::SingleShot)
+    {
+        Attack(this);
+    }
+    else
+    {
+        Attack(this);
+
+        FTimerDelegate Delegate;
+        Delegate.BindUObject(this, &AWeaponBase::Attack, Cast<AActor>(this));
+
+        GetWorld()->GetTimerManager().SetTimer(
+            FireCountHandle,
+            Delegate,
+            RateOfFire,
+            true
+        );
+    }
 }

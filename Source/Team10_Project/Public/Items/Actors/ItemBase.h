@@ -50,6 +50,7 @@ protected:
     virtual void InteractiveItem(AActor*) override;
     virtual void VisibleItem() override;
     virtual void InVisibleItem() override;
+    virtual void DestoryItem();
     virtual EItemType GetItemType() override;
     virtual bool GetItemOverlapState() override;
 };

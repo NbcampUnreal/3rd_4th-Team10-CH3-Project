@@ -12,6 +12,7 @@ class TEAM10_PROJECT_API ARangeWeapon : public AWeaponBase
 public:
 	ARangeWeapon();
 
+    virtual void BeginPlay() override;
 protected:
 
     UPROPERTY(EditDefaultsOnly, Category = "Effects|Camera")
@@ -38,6 +39,18 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	FRotator MuzzleRotate;
 
+    UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
+    USoundBase* FireSound;
+
+    UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
+    USoundBase* ReloadTacSound;
+
+    UPROPERTY(EditAnywhere, Category = "Weapon | Audio")
+    USoundBase* ReloadEmptySound;
+    
+    UPROPERTY(EditAnywhere, Category = "Weapon | FX")
+    UParticleSystem* MuzzleFlashFX;
+
     virtual void Attack(AActor* Activator) override;
 
     int32 FireCount;
@@ -56,11 +69,13 @@ public:
 
 	float GetFireSpeed();
 	void Reload(AActor* Activator);
-	void SetFireState();
+	void SetFireState(bool IsFire, ERangeFireState CurFireState);
 	void SwitchFireType();
 
+    UFUNCTION(BlueprintCallable, Category = "RangeWeaponData")
     FString GetFireTypeString();
+    UFUNCTION(BlueprintCallable, Category = "RangeWeaponData")
     int GetLoadedAmmoAmount() const;
+    UFUNCTION(BlueprintCallable, Category = "RangeWeaponData")
     int GetMaxAmmoAmount() const;
-
 };

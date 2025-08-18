@@ -4,6 +4,7 @@
 #include "Weapons/Actors/WeaponBase.h"
 #include "Systems/ObjectPoolManager.h"
 #include "Ai/Character_Monster.h"
+#include "MyCharacter.h"
 
 #include "EngineUtils.h"
 
@@ -45,6 +46,7 @@ void AHitBoxObject::Tick(float Time)
 
 void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time, bool OnlyOne)
 {
+    Only = OnlyOne;
 	HitBoxCollision->SetBoxExtent(FVector(Width, Vertical, Height));
 
 	AWeaponBase* Weapon  = Cast<AWeaponBase>(Activator);
@@ -74,8 +76,7 @@ void AHitBoxObject::HitBoxLifeTime(float Time)
 void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Hit HitBox"));
-    UE_LOG(LogTemp, Warning, TEXT("OnHit Actor : %s"), *OtherActor->GetName());
+    UE_LOG(LogTemp, Warning, TEXT("Hit Actor!!!!!!!!!: %s"), *OtherActor->GetName());
     AObjectPoolManager* Pool = nullptr;
     for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
     {
@@ -83,14 +84,45 @@ void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* Ot
         break;
     }
 
-	if (OtherActor->ActorHasTag("Enemy"))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
-		//HitObjectSet
-		Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(Damage);
-	}
+    if (!HitObject.Contains(OtherActor))
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Hit Actor!!!!!!!!!: %s"), *OtherActor->GetName());
+        HitObject.Add(OtherActor);
+    }
 
-	//Pool->ReturnObject(this);
+    AActor* ObjOwner = this->GetOwner();
+    if (Only)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Only Hit!!!!!!!!!"));
+        if (HitObject.Num() == 1)
+        {
+            if (Cast<AWeaponBase>(ObjOwner) && OtherActor->ActorHasTag("Enemy"))
+            {
+                Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(Damage);
+                UE_LOG(LogTemp, Error, TEXT("Hit Enemy from Hit Box!!!!!!!!!"));
+            }
+            else if (Cast<ACharacter_Monster>(ObjOwner) && OtherActor->ActorHasTag("Player"))
+            {
+                Cast<AMyCharacter>(OtherActor)->GetAttributeComponent()->SetHealth(Damage);
+            }
+        }
+    }
+    else if (!Only)
+    {
+        for (AActor* HitObj : HitObject)
+        {
+            if (Cast<AWeaponBase>(ObjOwner) && HitObj->ActorHasTag("Enemy"))
+            {
+                Cast<ACharacter_Monster>(HitObj)->ApplyCustomDamage(Damage);
+            }
+            else if (Cast<ACharacter_Monster>(ObjOwner) && HitObj->ActorHasTag("Player"))
+            {
+                Cast<AMyCharacter>(HitObj)->GetAttributeComponent()->SetHealth(Damage);
+            }
+        }
+    }
+
+	Pool->ReturnObject(this);
 }
 
 void AHitBoxObject::SetDamage(int32 WPower)
@@ -137,5 +169,7 @@ void AHitBoxObject::DeActiveObject_Implementation()
 
 		HitBoxCollision->SetNotifyRigidBodyCollision(false);
 		HitBoxCollision->Deactivate();
+
+        HitObject.Empty();
 	}
 }

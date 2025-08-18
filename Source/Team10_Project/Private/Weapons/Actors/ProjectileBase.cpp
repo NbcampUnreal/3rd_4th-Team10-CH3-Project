@@ -59,7 +59,6 @@ void AProjectileBase::Tick(float Time)
 
 void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector ProjectileLoc, FRotator ProjectileRotate, FVector FireDir)
 {
-	UE_LOG(LogTemp, Warning, TEXT("Active"));
     ProjectileCollision->SetRelativeLocation(FVector::ZeroVector);
     WeaponStaticMesh->SetRelativeLocation(FVector::ZeroVector);
 
@@ -77,8 +76,6 @@ void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector ProjectileLoc
 
 void AProjectileBase::ProjectileMovement()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Move"));
-
     ProjectileCollision->SetPhysicsLinearVelocity(ProjectileDir * ProjectileSpeed);
 	ProjectileLifeTime();
 }
@@ -91,24 +88,23 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
 {
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 
-	UE_LOG(LogTemp, Warning, TEXT("OnHit"));
-    SetHitScale();
     AObjectPoolManager* Pool = nullptr;
     for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
     {
         Pool = *It;
         break;
     }
-	AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
-    HitBox->SetDamage(TotalDamage);
-	HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime, Only);
 
-	if (OtherActor->ActorHasTag("Enemy"))
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Hit Enemy"));
-	}
+    if (OtherActor->ActorHasTag("Enemy"))
+    {
+        SetHitScale();
+        AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
+        HitBox->SetDamage(TotalDamage);
+        HitBox->SetOwner(this->GetOwner());
+        HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime, Only);
+    }
 
-	Pool->ReturnObject(this);
+    Pool->ReturnObject(this);
 }
 
 void AProjectileBase::SetDamage(int32 WPower)
@@ -118,7 +114,7 @@ void AProjectileBase::SetDamage(int32 WPower)
 
 void AProjectileBase::ProjectileLifeTime()
 {
-	LifeTime = ProjectileRange / ProjectileSpeed;
+    LifeTime = 99;//ProjectileRange / ProjectileSpeed;
 
 	GetWorld()->GetTimerManager().SetTimer(
 		ProjectileTimerHandle,
@@ -154,12 +150,13 @@ bool AProjectileBase::GetIsActive_Implementation()
 void AProjectileBase::ActiveObject_Implementation()
 {
 	bIsActive = true;
-	this->SetActorHiddenInGame(false);
+	SetActorHiddenInGame(false);
 	SetActorEnableCollision(true);
 	SetActorTickEnabled(true);
     
 	ProjectileCollision->Activate();
 	ProjectileCollision->SetNotifyRigidBodyCollision(true);
+    ProjectileCollision->SetSimulatePhysics(true);
 
     ProjectileMovementComp->InitialSpeed = ProjectileSpeed;
     ProjectileMovementComp->MaxSpeed = ProjectileSpeed;
@@ -175,7 +172,9 @@ void AProjectileBase::DeActiveObject_Implementation()
 
 	if (bIsActive)
 	{
-		UE_LOG(LogTemp, Warning, (TEXT("RETURN")));
+        ProjectileCollision->SetPhysicsLinearVelocity(FVector::ZeroVector);
+        ProjectileCollision->SetSimulatePhysics(false);
+
 		bIsActive = false;
 		SetActorHiddenInGame(true);
 		SetActorEnableCollision(false);
@@ -194,6 +193,7 @@ void AProjectileBase::DeActiveObject_Implementation()
         WeaponStaticMesh->SetRelativeLocation(FVector::ZeroVector);
 
         SetActorLocation(FVector::ZeroVector);
+        CollisionObject.Empty();
 	}
 }
 
