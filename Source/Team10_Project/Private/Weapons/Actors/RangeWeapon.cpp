@@ -72,8 +72,6 @@ void ARangeWeapon::Attack(AActor* Activator)
         LoadAmmoAmount -= ConsumeAmmoAmount;
         UE_LOG(LogTemp, Warning, TEXT("LoadAmmo Amount: %d"), GetLoadedAmmoAmount());
 
-        UE_LOG(LogTemp, Warning, TEXT("bIsFire: %s"), bIsFire ? TEXT("True") : TEXT("False"));
-        UE_LOG(LogTemp, Warning, TEXT("FireState: %d"), static_cast<int32>(FireState));
         if (RemainingFireCount == 0)
         {
             StopFire();
@@ -91,9 +89,6 @@ void ARangeWeapon::SetFireState(bool IsFire, ERangeFireState CurFireState)
 {
     bIsFire = IsFire;
     FireState = CurFireState;
-
-    UE_LOG(LogTemp, Warning, TEXT("bIsFire: %s"), bIsFire ? TEXT("True") : TEXT("False"));
-    UE_LOG(LogTemp, Warning, TEXT("FireState: %d"), static_cast<int32>(FireState));
 }
 
 void ARangeWeapon::StartFire()
@@ -116,7 +111,10 @@ void ARangeWeapon::StopFire()
 {
     if (FireState == ERangeFireState::Fire)
     {
+        GetWorld()->GetTimerManager().ClearTimer(FireTimerHandle);
         GetWorld()->GetTimerManager().ClearTimer(FireCountHandle);
+        FireTimerHandle.Invalidate();
+        FireCountHandle.Invalidate();
         SetFireState(true, ERangeFireState::Load);
     }
 }
