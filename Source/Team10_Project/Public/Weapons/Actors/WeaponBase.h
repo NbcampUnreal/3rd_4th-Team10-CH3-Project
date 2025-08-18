@@ -87,9 +87,6 @@ protected:
         FVector NormalImpulse,
         const FHitResult& Hit) override;
 
-    //ItemInterface
-    virtual void VisibleItem() override;
-    virtual void InVisibleItem() override;
 
     //Weapon
 	virtual void UseWeapon() override;
@@ -108,6 +105,8 @@ public:
 	int32 GetPower() const;
 
     //ItemInterface
+    virtual void VisibleItem() override;
+    virtual void InVisibleItem() override;
     virtual EItemType GetItemType() override;
     virtual void InteractiveItem(AActor* Player) override;
     virtual bool GetItemOverlapState() override;
