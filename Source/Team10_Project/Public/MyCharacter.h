@@ -78,6 +78,7 @@ public:
     // -----------------------
     
     void OnDeath();
+    void PickupWeapon(AWeaponBase* WeaponToPickup);
 
 protected:
 
@@ -108,8 +109,6 @@ protected:
         int32 OtherBodyIndex);
 
     void Interact();
-
-    void PickupWeapon(AWeaponBase* WeaponToPickup);
     
     // -------------------------
 
