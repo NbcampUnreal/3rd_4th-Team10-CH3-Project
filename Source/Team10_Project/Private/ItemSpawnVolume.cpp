@@ -94,7 +94,18 @@ void AItemSpawnVolume::SpawnItems()
 
                     if (bSpawnLocationFound)
                     {
-                        GetWorld()->SpawnActor<AItemBase>(Row->ItemClass, SpawnLocation, FRotator::ZeroRotator);
+                        AItemBase* SpawnedItem = GetWorld()->SpawnActor<AItemBase>(Row->ItemClass, SpawnLocation, FRotator::ZeroRotator);
+
+                        if (SpawnedItem)
+                        {
+                            UPrimitiveComponent* PhysicsComponent = SpawnedItem->FindComponentByClass<UPrimitiveComponent>();
+
+                            if (PhysicsComponent)
+                            {
+                                PhysicsComponent->SetCollisionProfileName(TEXT("Item_Physics"));
+                                PhysicsComponent->SetSimulatePhysics(true);
+                            }
+                        }
                     }
 
                     break; // 다음 아이템 스폰으로

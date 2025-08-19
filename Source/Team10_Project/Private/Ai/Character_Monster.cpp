@@ -109,7 +109,14 @@ void ACharacter_Monster::Die()
             AIController->BrainComponent->StopLogic("Death");
         }
     }
-    SetLifeSpan(0.1f);
+    USkeletalMeshComponent* MeshComp = GetMesh();
+    if (MeshComp)
+    {
+        MeshComp->SetCollisionProfileName(TEXT("Ragdoll"));
+        MeshComp->SetSimulatePhysics(true);
+    }
+
+    SetLifeSpan(1.f);
 }
 
 void ACharacter_Monster::OnAttackHitboxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
