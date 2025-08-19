@@ -7,6 +7,7 @@
 
 class ASpartaSpawnManager;
 class UWaveDataAsset;
+class AItemSpawnVolume;
 
 // [Added] 게임 종료 사유
 UENUM(BlueprintType)
@@ -98,4 +99,6 @@ protected:
 
     // [Added] 종료 UI 중복 표시 방지
     bool bEndScreenShown = false;
+
+    TArray<AItemSpawnVolume*> ItemSpawnVolumes;
 };

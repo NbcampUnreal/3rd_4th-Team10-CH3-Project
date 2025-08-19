@@ -5,6 +5,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Blueprint/UserWidget.h"                 // [Added]
 #include "GameFramework/PlayerController.h"       // [Added]
+#include "Public/ItemSpawnVolume.h"
 
 ASpartaGameMode::ASpartaGameMode()
 {
@@ -21,6 +22,19 @@ ASpartaGameMode::ASpartaGameMode()
 void ASpartaGameMode::BeginPlay()
 {
     Super::BeginPlay();
+    
+    TArray<AActor*> FoundActors;
+    UGameplayStatics::GetAllActorsOfClass(GetWorld(), AItemSpawnVolume::StaticClass(), FoundActors);
+
+    for (AActor* Actor : FoundActors)
+    {
+        AItemSpawnVolume* SpawnVolume = Cast<AItemSpawnVolume>(Actor);
+        if (SpawnVolume)
+        {
+            ItemSpawnVolumes.Add(SpawnVolume);
+        }
+    }
+
     UE_LOG(LogTemp, Error, TEXT("SpartaGameMode C++ BeginPlay IS RUNNING!"));
 
     SpawnManagerRef = Cast<ASpartaSpawnManager>(
@@ -105,6 +119,14 @@ void ASpartaGameMode::OnEnemyKilled(AActor* /*DestroyedActor*/)
 
 void ASpartaGameMode::EndWave()
 {
+    for (AItemSpawnVolume* SpawnVolume : ItemSpawnVolumes)
+    {
+        if (SpawnVolume)
+        {
+            SpawnVolume->SpawnItems();
+        }
+    }
+
     const int32 WaveIndex = WaveCounter - 1;
 
     if (!WaveData || !WaveData->Waves.IsValidIndex(WaveIndex))
