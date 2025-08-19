@@ -255,7 +255,7 @@ void AMyCharacter::PickupWeapon(AWeaponBase* WeaponToPickup)
                 WeaponInventory.Add(PickedUpType, *Data);
                 HeldWeapons.Add(PickedUpType, WeaponToPickup);
 
-                //WeaponToPickup->InVisibleItem();
+                WeaponToPickup->InVisibleItem();
                 WeaponToPickup->SetOwner(this);
                 /*
                 WeaponToPickup->AttachToComponent(
@@ -265,7 +265,7 @@ void AMyCharacter::PickupWeapon(AWeaponBase* WeaponToPickup)
                 );
                 */
 
-                EquipWeapon(PickedUpType);
+                //EquipWeapon(PickedUpType);
             }
         }
     }
