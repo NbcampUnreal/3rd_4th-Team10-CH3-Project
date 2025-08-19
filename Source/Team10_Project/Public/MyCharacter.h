@@ -117,8 +117,14 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon")
     TObjectPtr<AWeaponBase> CurrentWeapon;
 
+    UPROPERTY()
+    TMap<ERangeType, AWeaponBase*> HeldWeapons;
+
     UPROPERTY(EditDefaultsOnly, Category = "Weapon")
     FName WeaponSocketName = TEXT("WeaponSocket");
+
+    UPROPERTY(EditDefaultsOnly, Category = "Weapon")
+    FName WeaponUnequipSocketName = TEXT("spine_05");
 
     UPROPERTY(VisibleAnywhere, Category = "Weapon")
     TMap<ERangeType, FWeaponData> WeaponInventory;

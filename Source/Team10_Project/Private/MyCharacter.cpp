@@ -205,14 +205,13 @@ void AMyCharacter::Interact()
     
     if (ItemInterface)
     {
+        ItemInterface->InteractiveItem(this);
+
         UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
         if (AnimInstance)
         {
             AnimInstance->Montage_Play(InteractMontage, 1.4f);
         }
-        
-        ItemInterface->InteractiveItem(this);
-        InteractingItem->Destroy();
     }
 }
 
@@ -240,6 +239,7 @@ void AMyCharacter::PickupWeapon(AWeaponBase* WeaponToPickup)
         {
             ModifyAmmoAmount(Data->PickupAmmo);
         }
+        WeaponToPickup->Destroy();
     }
     else
     {
@@ -251,13 +251,21 @@ void AMyCharacter::PickupWeapon(AWeaponBase* WeaponToPickup)
             if (Data)
             {
                 WeaponInventory.Add(PickedUpType, *Data);
-                UE_LOG(LogTemp, Warning, TEXT("Picked up new weapon: %s"), *RowName.ToString());
+                HeldWeapons.Add(PickedUpType, WeaponToPickup);
 
-                //EquipWeapon(PickedUpType);
+                WeaponToPickup->InVisibleItem();
+                WeaponToPickup->SetOwner(this);
+
+                WeaponToPickup->AttachToComponent(
+                    CharacterArms,
+                    FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+                    WeaponUnequipSocketName
+                );
+
+                EquipWeapon(PickedUpType);
             }
         }
     }
-    WeaponToPickup->InVisibleItem();
 }
 
 void AMyCharacter::OnDeath()
@@ -483,15 +491,6 @@ void AMyCharacter::StartShoot()
         {
             RecoilTimeline->PlayFromStart();
         }
-        
-        /*if (FireCameraShakeClass)
-        {
-            APlayerController* PlayerController = Cast<APlayerController>(GetController());
-            if (PlayerController)
-            {
-                PlayerController->ClientStartCameraShake(FireCameraShakeClass);
-            }
-        }*/
     }
 }
 
@@ -652,55 +651,41 @@ void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
 	    UnEquipWeapon();
 	}
 
-    if (WeaponInventory.Contains(WeaponToEquip))
+    CurrentWeapon = HeldWeapons[WeaponToEquip];
+    CurrentRangeType = WeaponToEquip;
+
+    if (CurrentWeapon)
     {
-        CurrentRangeType = WeaponToEquip;
-        const FWeaponData& NewWeaponData = WeaponInventory[WeaponToEquip];
+        CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-        CurrentWeapon = GetWorld()->SpawnActor<AWeaponBase>(NewWeaponData.WeaponClass);
-        if (CurrentWeapon)
+        CurrentWeapon->VisibleItem();
+        CurrentWeapon->EquipmentWeapon(this);
+
+        UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
+        if (AnimInstance && EquipMontage)
         {
-            //ARangeWeapon* RangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
-            //RangeWeapon->
-            //CurrentWeapon->SetMaxAmmo(NewWeaponData.MaxAmmo);
-
-            CurrentWeapon->SetOwner(this);
-            CurrentWeapon->VisibleItem();
-            CurrentWeapon->EquipmentWeapon(this);
-            
-            UAnimInstance* AnimInstance = CharacterArms->GetAnimInstance();
-            if (AnimInstance)
-            {
-                AnimInstance->Montage_Play(EquipMontage, 1.f);
-            }
-            
-            bEquipped = true;
-            CharacterArms->SetVisibility(true);
-            CurrentWeapon->SetActorHiddenInGame(false);
-            
+            AnimInstance->Montage_Play(EquipMontage, 1.f);
         }
+
+        bEquipped = true;
+        CharacterArms->SetVisibility(true);
     }
 }
 
 void AMyCharacter::UnEquipWeapon()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Unequip Function"));
     if (CurrentWeapon)
     {
-        if (WeaponInventory.Contains(CurrentRangeType))
-        {
-            ARangeWeapon* CurrentRangeWeapon = Cast<ARangeWeapon>(CurrentWeapon);
-            if (CurrentRangeWeapon)
-            {
-                FWeaponData& WeaponDataInInventory = WeaponInventory[CurrentRangeType];
-                WeaponDataInInventory.CurrentAmmo = CurrentRangeWeapon->GetLoadedAmmoAmount();
-            }
-        }
         CurrentWeapon->InVisibleItem();
-        
-        CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+        CurrentWeapon->AttachToComponent(
+            CharacterArms,
+            FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+            WeaponUnequipSocketName
+        );
 
         CurrentWeapon = nullptr;
+        CurrentRangeType = ERangeType::None;
         bEquipped = false;
         CharacterArms->SetVisibility(false);
     }
