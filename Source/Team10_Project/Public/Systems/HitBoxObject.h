@@ -16,7 +16,6 @@ public:
 	AHitBoxObject();
 
 protected:
-	virtual void Tick(float Time)override;
 
 private:
 	FTimerHandle HitBoxTimerHandle;
