@@ -13,6 +13,8 @@
 #include "Perception/AISense_Sight.h"
 #include "Weapons/Actors/RangeWeapon.h"
 
+#include "Blueprint/UserWidget.h"
+
 AMyCharacter::AMyCharacter()
 {
 	Pivot = CreateDefaultSubobject<USceneComponent>(TEXT("Pivot"));
@@ -273,6 +275,28 @@ void AMyCharacter::OnDeath()
     if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
     {
         DisableInput(PlayerController);
+
+        if (GameOverWidgetClass)
+        {
+            UUserWidget* GameOverWidget = CreateWidget<UUserWidget>(PlayerController, GameOverWidgetClass);
+            if (GameOverWidget)
+            {
+                FTimerHandle TimerHandle;
+                GetWorldTimerManager().SetTimer(
+                    TimerHandle,
+                    FTimerDelegate::CreateLambda([=]()
+                        {
+                            GameOverWidget->AddToViewport();
+
+                            FInputModeUIOnly InputMode;
+                            InputMode.SetWidgetToFocus(GameOverWidget->TakeWidget());
+                            PlayerController->SetInputMode(InputMode);
+                        }),
+                    2.0f,
+                    false
+                );
+            }
+        }
     }
     GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
     GetCharacterMovement()->DisableMovement();
