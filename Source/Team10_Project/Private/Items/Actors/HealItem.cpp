@@ -14,12 +14,23 @@ AHealItem::AHealItem()
 void AHealItem::ImmediatelyItem(AActor* Activate)
 {
     Super::ImmediatelyItem(Activate);
-
+    /*
     AMyCharacter* Character = Cast<AMyCharacter>(Activate);
     if (Character)
     {
         Character->GetAttributeComponent()->ModityHealth(HealAmount);
 
+        DestoryItem();
+    }
+    */
+}
+
+void AHealItem::InteractiveItem(AActor* Actor)
+{
+    AMyCharacter* Character = Cast<AMyCharacter>(Actor);
+    if (Character)
+    {
+        Character->GetAttributeComponent()->ModityHealth(HealAmount);
         DestoryItem();
     }
 }

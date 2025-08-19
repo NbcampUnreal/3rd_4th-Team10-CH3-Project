@@ -70,6 +70,8 @@ AMyCharacter::AMyCharacter()
 		StimuliSource->RegisterWithPerceptionSystem();
 	}
 
+    AmmoAmount = 36;
+
 }
 
 void AMyCharacter::BeginPlay()

@@ -80,24 +80,6 @@ void UAttributeComponent::SetStamina(float NewStamina)
 
 void UAttributeComponent::ModityHealth(float Amount)
 {
-    // --- ���� �߰��� �κ� ���� ---
-    // Amount�� ����(-) ������ ���� ���� �ٷ� ������� �޴� ����Դϴ�.
-    if (Amount < 0.f)
-    {
-        // FMath::Abs()�� ����� ������ ����� �ٲ㼭 ���� ���� ����մϴ�.
-        const float DamageTaken = FMath::Abs(Amount);
-
-        // ��� �α� â�� ������(Error)���� �α׸� ǥ���մϴ�.
-        UE_LOG(LogTemp, Error, TEXT("takedameg: %f"), DamageTaken);
-
-        // ���� ȭ�� ���� ��ܿ� 5�� ���� ���������� ���� ������� ǥ���մϴ�.
-        if (GEngine)
-        {
-            GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("���� �����: %.2f"), DamageTaken));
-        }
-    }
-    // --- ���� �߰��� �κ� �� ---
-
     float NewHealth = FMath::Clamp(Health + Amount, 0.f, MaxHealth);
     SetHealth(NewHealth);
 }

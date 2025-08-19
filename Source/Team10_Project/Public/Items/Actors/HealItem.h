@@ -14,4 +14,5 @@ class TEAM10_PROJECT_API AHealItem : public ABuffItemBase
     int32 HealAmount;
 
     virtual void ImmediatelyItem(AActor* Activate) override;
+    virtual void InteractiveItem(AActor*) override;
 };

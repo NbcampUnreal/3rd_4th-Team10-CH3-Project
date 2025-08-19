@@ -18,15 +18,22 @@ void AMagazine::OnItemOverlap(
     const FHitResult& SweepResult)
 {
     Super::OnItemOverlap(OverlappedComp, OtherActor, OtherComp, OtherBodyIndex, bFromSweep, SweepResult);
-
+    /*
     AMyCharacter* Character = Cast<AMyCharacter>(OtherActor);
     if (Character)
     {
         Character->SetAmmoAmount(MuzzleAmount);
         DestoryItem();
     }
+    */
 }
 
 void AMagazine::InteractiveItem(AActor* Actor)
 {
+    AMyCharacter* Character = Cast<AMyCharacter>(Actor);
+    if (Character)
+    {
+        Character->SetAmmoAmount(MuzzleAmount);
+        DestoryItem();
+    }
 }
