@@ -40,7 +40,7 @@ void ARangeWeapon::Attack(AActor* Activator)
         }
 		AProjectileBase* Projectile = Pool->GetObject<ABullet>();
         Projectile->SetOwner(Activator);
-        Projectile->SetInstigator(Cast<AMyCharacter>(Activator->GetOwner()));
+        Projectile->SetInstigator(GetInstigator());
 		Projectile->Activate(this, MuzzleLocation, MuzzleRotate, FireDirection);
 	    
 	    if (FireSound)
