@@ -15,7 +15,7 @@ AItemBase::AItemBase()
     InteractiveCollision->SetupAttachment(Scene);
 
     ItemStaticMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ItemStaticMesh"));
-    ItemStaticMesh->SetupAttachment(InteractiveCollision);
+    ItemStaticMesh->SetupAttachment(Scene);
     ItemStaticMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
     InteractiveCollision->OnComponentBeginOverlap.AddDynamic(this, &AItemBase::OnItemOverlap);
