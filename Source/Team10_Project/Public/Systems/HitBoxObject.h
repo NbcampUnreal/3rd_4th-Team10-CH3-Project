@@ -14,7 +14,7 @@ class TEAM10_PROJECT_API AHitBoxObject : public AActor, public IPoolObjectInterf
 	
 public:	
 	AHitBoxObject();
-
+	
 private:
 	FTimerHandle HitBoxTimerHandle;
 	float LifeTime;
