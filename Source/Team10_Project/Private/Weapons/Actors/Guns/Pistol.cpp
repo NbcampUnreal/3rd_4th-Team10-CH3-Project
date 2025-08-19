@@ -25,13 +25,6 @@ void APistol::StartFire()
     Super::StartFire();
 
     RemainingFireCount = FireCount;
-    FTimerDelegate Delegate;
-    Delegate.BindUObject(this, &AWeaponBase::Attack, Cast<AActor>(this));
 
-    GetWorld()->GetTimerManager().SetTimer(
-        FireCountHandle,
-        Delegate,
-        RateOfFire,
-        false
-    );
+    Attack(this);
 }
