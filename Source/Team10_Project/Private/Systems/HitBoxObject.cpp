@@ -27,27 +27,13 @@ AHitBoxObject::AHitBoxObject()
 void AHitBoxObject::Tick(float Time)
 {
 	Super::Tick(Time);
-	FVector Center = HitBoxCollision->GetComponentLocation();
-	FVector Extent = HitBoxCollision->GetScaledBoxExtent(); // Scale 반영된 실제 크기
-	FRotator Rotation = HitBoxCollision->GetComponentRotation();
 
-	DrawDebugBox(
-		GetWorld(),
-		Center,
-		Extent,
-		Rotation.Quaternion(),
-		FColor::Red,
-		true,     // 지속 여부
-		2.f,       // 지속 시간 (0이면 한 프레임만)
-		0,         // Depth Priority
-		3.f        // 선 굵기
-	);
 }
 
 void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time, bool OnlyOne)
 {
     Only = OnlyOne;
-	HitBoxCollision->SetBoxExtent(FVector(Width, Vertical, Height));
+	HitBoxCollision->SetBoxExtent(FVector(Width * 2, Vertical * 2, Height * 2));
 
 	AWeaponBase* Weapon  = Cast<AWeaponBase>(Activator);
 	if (Weapon->GetWeaponType() == EWeaponType::Projectile)
@@ -76,7 +62,6 @@ void AHitBoxObject::HitBoxLifeTime(float Time)
 void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* OtherActor,
 	UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-    UE_LOG(LogTemp, Warning, TEXT("Hit Actor!!!!!!!!!: %s"), *OtherActor->GetName());
     AObjectPoolManager* Pool = nullptr;
     for (TActorIterator<AObjectPoolManager> It(GetWorld()); It; ++It)
     {
@@ -84,23 +69,31 @@ void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* Ot
         break;
     }
 
-    if (!HitObject.Contains(OtherActor))
+    if (OtherActor != GetInstigator() || OtherActor->GetOwner() != GetOwner()
+        || OtherActor->GetOwner() != GetInstigator() || OtherActor->GetInstigator() != GetOwner())
     {
-        UE_LOG(LogTemp, Warning, TEXT("Contain Actor!!!!!!!!!: %s"), *OtherActor->GetName());
-        HitObject.Add(OtherActor);
+        if (!HitObject.Contains(OtherActor))
+        {
+            HitObject.Add(OtherActor);
+        }
     }
 
     AActor* ObjInstigator = this->GetInstigator();
     if (Only)
     {
-        if (HitObject.Num() >= 0)
+        if (!HitObject.IsEmpty())
         {
-            UE_LOG(LogTemp, Warning, TEXT("In Hit Object"));
-            UE_LOG(LogTemp, Error, TEXT("In Hit Object %s"), *GetInstigator()->GetName());
             if (Cast<AMyCharacter>(ObjInstigator) && OtherActor->ActorHasTag("Enemy"))
             {
-                Cast<ACharacter_Monster>(OtherActor)->ApplyCustomDamage(Damage);
-                UE_LOG(LogTemp, Warning, TEXT("Hit Enemy from Hit Box!!!!!!!!!"));
+                for (AActor* Enemy : HitObject)
+                {
+                    ACharacter_Monster* Monster = Cast<ACharacter_Monster>(Enemy);
+                    if (Monster)
+                    {
+                        UE_LOG(LogTemp, Error, TEXT("Hit Enemy from Hit Box!!!!!!!!!"));
+                        Monster->ApplyCustomDamage(Damage);
+                    }
+                }
             }
             else if (Cast<ACharacter_Monster>(ObjInstigator) && OtherActor->ActorHasTag("Player"))
             {

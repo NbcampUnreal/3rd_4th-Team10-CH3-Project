@@ -15,7 +15,6 @@ class TEAM10_PROJECT_API IWeaponInterface
 	GENERATED_BODY()
 
 public:
-	virtual void UseWeapon() = 0;
 	virtual void EquipmentWeapon(AActor* Player) = 0;
 	virtual void Attack(AActor* Activator) = 0;
     virtual void StartFire() = 0;

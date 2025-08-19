@@ -15,8 +15,8 @@ ABullet::ABullet()
 void ABullet::BeginPlay()
 {
     Super::BeginPlay();
-    InVisibleItem();
-    SetActorTickEnabled(true);
+    GetCollision->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    GetCollision->Deactivate();
 }
 
 void ABullet::ProjectileMovement()

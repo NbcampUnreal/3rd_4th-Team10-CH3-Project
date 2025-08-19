@@ -92,7 +92,6 @@ protected:
 
 
     //Weapon
-	virtual void UseWeapon() override;
     virtual FVector SetHitScale() override;
     FTransform GetGripTransform(ERelativeTransformSpace TransformSpace) const;
 

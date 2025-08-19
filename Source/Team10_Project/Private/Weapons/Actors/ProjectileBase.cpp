@@ -84,7 +84,8 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
 {
 	Super::OnHit(HitComp, OtherActor, OtherComp, NormalImpulse, Hit);
 
-    if (OtherActor->ActorHasTag("Player") && Cast<AMyCharacter>(GetInstigator()) || !OtherActor->ActorHasTag("Enemy"))
+    if (OtherActor == GetInstigator() || OtherActor->GetOwner() == GetOwner() 
+        || OtherActor->GetOwner() == GetInstigator() || OtherActor->GetInstigator() == GetOwner())
     {
         return;
     }
@@ -101,8 +102,8 @@ void AProjectileBase::OnHit(UPrimitiveComponent* HitComp,
         SetHitScale();
         AHitBoxObject* HitBox = Pool->GetObject<AHitBoxObject>();
         HitBox->SetDamage(TotalDamage);
-        HitBox->SetOwner(this->GetOwner());
-        HitBox->SetInstigator(this->GetInstigator());
+        HitBox->SetOwner(GetOwner());
+        HitBox->SetInstigator(GetInstigator());
         HitBox->HitBoxComp(this, Height, Width, Vertical, LifeTime, Only);
     }
 
