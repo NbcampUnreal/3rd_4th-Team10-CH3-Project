@@ -11,7 +11,7 @@
 AHitBoxObject::AHitBoxObject()
     : Damage(0)
 {
-	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bCanEverTick = false;
 
 	Scene = CreateDefaultSubobject<USceneComponent>(TEXT("Scene"));
 	SetRootComponent(Scene);
@@ -22,12 +22,6 @@ AHitBoxObject::AHitBoxObject()
 
 	HitBoxCollision->SetGenerateOverlapEvents(true);
 	HitBoxCollision->OnComponentBeginOverlap.AddDynamic(this, &AHitBoxObject::OnOverlapHit);
-}
-
-void AHitBoxObject::Tick(float Time)
-{
-	Super::Tick(Time);
-
 }
 
 void AHitBoxObject::HitBoxComp(AActor* Activator, float Height, float Width, float Vertical, float Time, bool OnlyOne)
@@ -90,7 +84,6 @@ void AHitBoxObject::OnOverlapHit(UPrimitiveComponent* OverlappedComp, AActor* Ot
                     ACharacter_Monster* Monster = Cast<ACharacter_Monster>(Enemy);
                     if (Monster)
                     {
-                        UE_LOG(LogTemp, Error, TEXT("Hit Enemy from Hit Box!!!!!!!!!"));
                         Monster->ApplyCustomDamage(Damage);
                     }
                 }
