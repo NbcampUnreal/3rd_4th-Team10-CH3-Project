@@ -33,8 +33,7 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
     int32 Health;
 
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
-    int32 Defence;
+   
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Status")
     float MaxStamina;

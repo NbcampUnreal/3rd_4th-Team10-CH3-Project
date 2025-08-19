@@ -20,7 +20,6 @@ ACharacter_Monster::ACharacter_Monster()
     TeamId = FGenericTeamId(1);
     MaxHealth = 100;
     Health = MaxHealth;
-    Defence = 5;
     MaxStamina = 100.0f;
     Stamina = MaxStamina;
     AttackHitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackHitbox"));
@@ -79,15 +78,14 @@ void ACharacter_Monster::OnAttackEnd()
         MoveComp->SetMovementMode(EMovementMode::MOVE_Walking);
     }
 
-    // --- 추가된 부분 ---
-    // 공격이 끝났다고 AI(BTT_Attack)에 신호를 보냅니다.
+    
     OnAttackFinished.ExecuteIfBound();
-    // -------------------
+   
 }
 
 void ACharacter_Monster::ApplyCustomDamage(int32 DamageAmount)
 {
-    const int32 FinalDamage = FMath::Max(0, DamageAmount - Defence);
+    const int32 FinalDamage = FMath::Max(0, DamageAmount); // Defence 제거됨
     if (FinalDamage <= 0 || Health <= 0)
     {
         return;
