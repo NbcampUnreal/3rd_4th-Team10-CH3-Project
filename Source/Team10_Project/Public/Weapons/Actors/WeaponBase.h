@@ -44,6 +44,9 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
 	FVector CollisionSize;
 
+    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Weapon|FireData")
+    FRotator WeaponRotate;
+
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "WeaponData")
     EItemType ItemType;
 	

@@ -34,7 +34,7 @@ protected:
     int32 ConsumeAmmoAmount;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	bool bIsFire;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	FVector MuzzleLocation;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Weapon|FireData")
 	FRotator MuzzleRotate;
