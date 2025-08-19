@@ -29,6 +29,9 @@ public:
     // 웨이브 대기시간 bool 설정
     void SetWaitingWave(bool bWaiting);
 
+    // 스코어 설정
+    void SetDisplayScore(int32 NewScore);
+
     // Getter 함수들 (UI 바인딩용으로 사용 가능)
     UFUNCTION(BlueprintPure, Category = "Wave|Display")
     int32 GetDisplayWave() const { return DisplayWave; }
@@ -38,6 +41,8 @@ public:
     float GetDisplayCountdown() const { return DisplayCountdown; }
     UFUNCTION(BlueprintPure, Category = "Wave|Display")
     bool IsWaitingForNextWave() const { return bWaitingWave; }
+    UFUNCTION(BlueprintPure, Category = "Game")
+    int32 GetDisplayScore() const { return DisplayScore; }
 
 protected:
     UPROPERTY(BlueprintReadOnly, Category = "Wave|Display")
@@ -51,4 +56,7 @@ protected:
 
     UPROPERTY(BlueprintReadOnly, Category = "Wave|Display")
     bool bWaitingWave;
+
+    UPROPERTY(BlueprintReadOnly, Category = "Game")
+    int32 DisplayScore;
 };

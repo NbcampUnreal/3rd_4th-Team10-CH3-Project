@@ -55,13 +55,24 @@ protected:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Wave|Runtime")
     bool bWaitingForNextWave;
 
-    /** 웨이브 데이터 에셋 */
-    UPROPERTY(EditDefaultsOnly, Category = "Wave|Settings")
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Game")
+    int32 Score;
+
+    // ==========================================================
+    // 이 부분이 역할에 맞게 정리되었습니다. 👇
+    // ==========================================================
+
+    /** 웨이브 정보를 담고 있는 데이터 에셋 (블루프린트 디폴트에서 설정) */
+    UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Wave|Settings")
     UWaveDataAsset* WaveData;
 
-    /** 스폰 매니저 참조 (월드에서 설정) */
-    UPROPERTY(EditInstanceOnly, Category = "Wave|Settings")
+    /** 월드에 배치된 스폰 매니저에 대한 참조 (BeginPlay에서 자동으로 찾음) */
+    UPROPERTY(VisibleInstanceOnly, BlueprintReadOnly, Category = "Wave|Runtime")
     ASpartaSpawnManager* SpawnManagerRef;
+
+    // ==========================================================
+    // 사용하지 않는 SpawnManagerClass 변수는 삭제했습니다.
+    // ==========================================================
 
     /** 대기 시간용 타이머 핸들 */
     FTimerHandle InterWaveTickHandle;

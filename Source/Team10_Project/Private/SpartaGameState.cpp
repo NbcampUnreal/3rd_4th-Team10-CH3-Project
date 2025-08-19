@@ -6,6 +6,7 @@ ASpartaGameState::ASpartaGameState()
     DisplayEnemiesRemaining = 0;
     DisplayCountdown = 0.0f;
     bWaitingWave = false;
+    DisplayScore = 0;
 }
 
 void ASpartaGameState::SetDisplayWave(int32 NewWave)
@@ -26,4 +27,9 @@ void ASpartaGameState::SetDisplayCountdown(float TimeLeft)
 void ASpartaGameState::SetWaitingWave(bool bWaiting)
 {
     bWaitingWave = bWaiting;
+}
+
+void ASpartaGameState::SetDisplayScore(int32 NewScore)
+{
+    DisplayScore = NewScore;
 }
