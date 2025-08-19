@@ -189,10 +189,6 @@ void ASpartaGameMode::OnGameCleared()
             if (CW)
             {
                 CW->AddToViewport(100);
-
-                FInputModeUIOnly Mode;
-                Mode.SetWidgetToFocus(CW->TakeWidget());
-                PC->SetInputMode(Mode);
             }
         }
     }
