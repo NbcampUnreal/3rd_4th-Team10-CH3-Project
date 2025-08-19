@@ -158,6 +158,22 @@ void ASpartaGameMode::OnGameCleared()
 
     OnGameEnded.Broadcast(EEndReason::Cleared);   // [Added] HUD 훅
     ShowEndScreen(EEndReason::Cleared);           // [Added] 기본 위젯 표시
+
+    if (GameClearedWidgetClass)
+    {
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+        {
+            UUserWidget* CW = CreateWidget<UUserWidget>(PC, GameClearedWidgetClass);
+            if (CW)
+            {
+                CW->AddToViewport(100);
+
+                FInputModeUIOnly Mode;
+                Mode.SetWidgetToFocus(CW->TakeWidget());
+                PC->SetInputMode(Mode);
+            }
+        }
+    }
 }
 
 void ASpartaGameMode::OnPlayerDied()
