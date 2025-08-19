@@ -680,7 +680,7 @@ void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
 
     if (CurrentWeapon)
     {
-        CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+        //CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
         CurrentWeapon->VisibleItem();
         CurrentWeapon->EquipmentWeapon(this);
@@ -702,11 +702,11 @@ void AMyCharacter::UnEquipWeapon()
     {
         CurrentWeapon->InVisibleItem();
 
-        CurrentWeapon->AttachToComponent(
+        /*CurrentWeapon->AttachToComponent(
             CharacterArms,
-            FAttachmentTransformRules::SnapToTargetNotIncludingScale,
+            FAttachmentTransformRules::KeepRelativeTransform,
             WeaponUnequipSocketName
-        );
+        );*/
 
         CurrentWeapon = nullptr;
         CurrentRangeType = ERangeType::None;

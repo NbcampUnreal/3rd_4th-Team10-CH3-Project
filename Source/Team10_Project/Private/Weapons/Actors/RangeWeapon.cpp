@@ -9,8 +9,6 @@ ARangeWeapon::ARangeWeapon()
 	FireSpeed(0), MaxBulletAmount(0), LoadAmmoAmount(0), ConsumeAmmoAmount(0), bIsFire(true), MuzzleLocation(FVector::ZeroVector), MuzzleRotate(FRotator::ZeroRotator), FireCount(1), RemainingFireCount(0)
 {
 	WeaponType = EWeaponType::Range;
-
-	WeaponStaticMesh->SetupAttachment(Scene);
 }
 
 void ARangeWeapon::BeginPlay()
