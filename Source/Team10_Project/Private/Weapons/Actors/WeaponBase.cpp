@@ -4,7 +4,7 @@
 #include "MyPlayerController.h"
 
 AWeaponBase::AWeaponBase()
-	:bIsVisible(false), FireState(ERangeFireState::Idle), BoxExtent(FVector::ZeroVector), CollisionSize(FVector::ZeroVector),
+	:bIsVisible(false), FireState(ERangeFireState::Idle), BoxExtent(FVector::ZeroVector), CollisionSize(FVector::ZeroVector), WeaponRotate(FRotator::ZeroRotator),
     ItemType(EItemType::Weapon), WeaponType(), WeaponName(""), Power(0), RateOfFire(0.0f),
 	Height(0.0f), Width(0.0f), Vertical(0.0f), bIsEquip(false)
 {
@@ -29,6 +29,7 @@ void AWeaponBase::BeginPlay()
 {
 	Super::BeginPlay();
 
+    WeaponRotate = WeaponStaticMesh->GetRelativeRotation();
 }
 
 void AWeaponBase::OnItemOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, 
@@ -125,15 +126,14 @@ void AWeaponBase::EquipmentWeapon(AActor* Player)
         FVector DesiredLocation = ArmGripsSocket.GetLocation() + PivotToGrip;
         WeaponStaticMesh->SetWorldLocation(DesiredLocation, false, nullptr, ETeleportType::TeleportPhysics);
 
-        FRotator ArmRotate = Character->GetCharacterArms()->GetRelativeRotation();
-        FRotator WeaponGripRotate = GetGripTransform(RTS_Component).Rotator();
-        FQuat SkeletalQuat = ArmGripsSocket.GetRotation() * WeaponGripSocketW.GetRotation().Inverse() * ArmRotate.Quaternion();
-        WeaponStaticMesh->AddWorldRotation(SkeletalQuat);
-
         WeaponStaticMesh->AttachToComponent(
             Character->GetCharacterArms(),
-            FAttachmentTransformRules::KeepWorldTransform,
+            FAttachmentTransformRules::SnapToTargetNotIncludingScale,
             GripSocketName);
+
+        FRotator ArmRotate = Character->GetCharacterArms()->GetRelativeRotation();
+        FRotator SkeletalRot = WeaponRotate + ArmRotate;
+        WeaponStaticMesh->SetRelativeRotation(SkeletalRot);
     }
 }
 
