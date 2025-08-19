@@ -14,8 +14,6 @@ class TEAM10_PROJECT_API AProjectileBase : public AWeaponBase, public IPoolObjec
 
 public:
 	AProjectileBase();
-    virtual void BeginPlay() override;
-	virtual void Tick(float Time)override;
 
 private:
 	FTimerHandle ProjectileTimerHandle;
