@@ -8,6 +8,7 @@ ASpartaGameMode::ASpartaGameMode()
 {
     PrimaryActorTick.bCanEverTick = false;
     WaveCounter = 0;
+    UE_LOG(LogTemp, Error, TEXT("SpartaGameMode C++ CONSTRUCTOR IS RUNNING!"));
     bWaitingForNextWave = false;
     EnemiesRemaining = 0;
     InterWaveCountdown = 0.0f;
@@ -15,15 +16,16 @@ ASpartaGameMode::ASpartaGameMode()
 
 void ASpartaGameMode::BeginPlay()
 {
-
     Super::BeginPlay();
-
+    UE_LOG(LogTemp, Error, TEXT("SpartaGameMode C++ BeginPlay IS RUNNING!"));
     SpawnManagerRef = Cast<ASpartaSpawnManager>(
         UGameplayStatics::GetActorOfClass(GetWorld(), ASpartaSpawnManager::StaticClass())
     );
 
+   
     StartWave();
 }
+
 
 void ASpartaGameMode::StartWave()
 {
@@ -52,8 +54,37 @@ void ASpartaGameMode::StartWave()
 
     if (SpawnManagerRef)
     {
-        UE_LOG(LogTemp, Error, TEXT("Spawning %d enemies for wave %d"), EnemiesRemaining, WaveCounter);
-        SpawnManagerRef->StartSpawning(CurrentWave);
+        // 1. 웨이브 데이터에서 사용할 '태그'를 가져옵니다.
+        FName DesiredTag = CurrentWave.SpawnPointTag;
+
+        AActor* FoundSpawnPoint = nullptr;
+
+        // 태그가 비어있지 않은지 확인합니다.
+        if (!DesiredTag.IsNone())
+        {
+            // 2. 월드에서 해당 태그를 가진 모든 액터를 찾습니다.
+            TArray<AActor*> ActorsWithTag;
+            UGameplayStatics::GetAllActorsWithTag(GetWorld(), DesiredTag, ActorsWithTag);
+
+            if (ActorsWithTag.Num() > 0)
+            {
+                // 3. 태그를 가진 액터를 찾았다면, 첫 번째 액터를 스폰 위치로 지정합니다.
+                FoundSpawnPoint = ActorsWithTag[0];
+            }
+        }
+
+        // 4. 스폰 위치를 성공적으로 찾았을 경우에만 스폰을 시작하도록 명령합니다.
+        if (FoundSpawnPoint)
+        {
+            UE_LOG(LogTemp, Log, TEXT("Wave %d starting at spawn point with tag '%s'"), WaveCounter, *DesiredTag.ToString());
+
+            // 수정된 StartSpawning 함수에 두 번째 인수로 찾은 스폰 위치를 함께 전달합니다.
+            SpawnManagerRef->StartSpawning(CurrentWave, FoundSpawnPoint);
+        }
+        else
+        {
+            UE_LOG(LogTemp, Error, TEXT("Could not find Actor with tag '%s' for Wave %d!"), *DesiredTag.ToString(), WaveCounter);
+        }
     }
 }
 

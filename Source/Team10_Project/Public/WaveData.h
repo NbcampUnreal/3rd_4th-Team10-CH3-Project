@@ -32,6 +32,13 @@ struct FWaveData
     /** 이 웨이브 후 다음 웨이브까지의 대기 시간 */
     UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave Data")
     float TimeUntilNextWave = 5.0f;
+
+    // ==========================================================
+    // 이 부분이 추가되었습니다 👇
+    /** 이 웨이브가 사용할 스폰 지점의 '태그' */
+    UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Wave Data")
+    FName SpawnPointTag;
+    // ==========================================================
 };
 
 /** 웨이브 전체를 담는 데이터 애셋 */
