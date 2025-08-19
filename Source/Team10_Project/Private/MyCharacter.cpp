@@ -298,10 +298,6 @@ void AMyCharacter::OnDeath()
                     FTimerDelegate::CreateLambda([=]()
                         {
                             GameOverWidget->AddToViewport();
-
-                            FInputModeUIOnly InputMode;
-                            InputMode.SetWidgetToFocus(GameOverWidget->TakeWidget());
-                            PlayerController->SetInputMode(InputMode);
                         }),
                     2.0f,
                     false
