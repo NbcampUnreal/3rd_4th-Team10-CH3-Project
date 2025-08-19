@@ -41,19 +41,19 @@ protected:
 	// ----- 스태미나 -----
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float MaxStamina = 100.f;
+	float MaxStamina = 120.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
 	float CurrentStamina;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float StaminaRegenRate = 20.f; // 스태미나 회복량
+	float StaminaRegenRate = 40.f; // 스태미나 회복량
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float StaminaComsumeRate = 30.f; // 스태미나 소모량
+	float StaminaComsumeRate = 20.f; // 스태미나 소모량
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float StaminaRegenTimer = 3.f; // 스태미나 회복 딜레이
+	float StaminaRegenTimer = 2.5f; // 스태미나 회복 딜레이
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
 	float MinStamina = 10.f; // 최소 스태미나
