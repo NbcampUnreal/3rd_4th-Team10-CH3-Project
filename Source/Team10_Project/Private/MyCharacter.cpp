@@ -255,14 +255,15 @@ void AMyCharacter::PickupWeapon(AWeaponBase* WeaponToPickup)
                 WeaponInventory.Add(PickedUpType, *Data);
                 HeldWeapons.Add(PickedUpType, WeaponToPickup);
 
-                WeaponToPickup->InVisibleItem();
+                //WeaponToPickup->InVisibleItem();
                 WeaponToPickup->SetOwner(this);
-
+                /*
                 WeaponToPickup->AttachToComponent(
                     CharacterArms,
                     FAttachmentTransformRules::SnapToTargetNotIncludingScale,
                     WeaponUnequipSocketName
                 );
+                */
 
                 EquipWeapon(PickedUpType);
             }
@@ -680,7 +681,7 @@ void AMyCharacter::EquipWeapon(ERangeType WeaponToEquip)
 
     if (CurrentWeapon)
     {
-        CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+        //CurrentWeapon->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
         CurrentWeapon->VisibleItem();
         CurrentWeapon->EquipmentWeapon(this);
