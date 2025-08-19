@@ -8,10 +8,8 @@
 UBTT_Attack::UBTT_Attack()
 {
     NodeName = TEXT("CPP_Attack");
-    // --- 추가된 부분 ---
-    // 비동기(Latent) 작업을 위해 Tick이 필요 없음을 명시합니다.
     bNotifyTick = false;
-    // -----------------
+    
 }
 
 EBTNodeResult::Type UBTT_Attack::ExecuteTask(UBehaviorTreeComponent& OwnerComp, uint8* NodeMemory)
