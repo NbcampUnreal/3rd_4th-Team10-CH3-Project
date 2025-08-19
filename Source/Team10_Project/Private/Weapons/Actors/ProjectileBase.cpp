@@ -19,38 +19,11 @@ AProjectileBase::AProjectileBase()
 	ProjectileCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("ProjectileCollision"));
 	ProjectileCollision->SetCollisionProfileName(TEXT("BlockAllDynamic"));
     SetRootComponent(ProjectileCollision);
-	//ProjectileCollision->SetupAttachment(Scene);
     ProjectileCollision->Deactivate();
 
 	WeaponStaticMesh->SetupAttachment(ProjectileCollision);
 
 	ProjectileCollision->OnComponentHit.AddDynamic(this, &AProjectileBase::OnHit);
-}
-
-void AProjectileBase::BeginPlay()
-{
-    Super::BeginPlay();
-    SetActorTickEnabled(true);
-}
-
-void AProjectileBase::Tick(float Time)
-{
-	Super::Tick(Time);
-
-	FVector Center = ProjectileCollision->GetComponentLocation();
-	FVector Extent = ProjectileCollision->GetScaledBoxExtent(); // Scale 반영된 실제 크기
-	FRotator Rotation = ProjectileCollision->GetComponentRotation();
-	DrawDebugBox(
-		GetWorld(),
-		Center,
-		Extent,
-		Rotation.Quaternion(),
-		FColor::Green,
-		true,     // 지속 여부
-		2.f,       // 지속 시간 (0이면 한 프레임만)
-		0,         // Depth Priority
-		1.f        // 선 굵기
-	);
 }
 
 void AProjectileBase::Activate(ARangeWeapon* ActiveWeapon, FVector ProjectileLoc, FRotator ProjectileRotate, FVector FireDir)
@@ -117,7 +90,7 @@ void AProjectileBase::SetDamage(int32 WPower)
 
 void AProjectileBase::ProjectileLifeTime()
 {
-    LifeTime = 99;//ProjectileRange / ProjectileSpeed;
+    LifeTime = ProjectileRange / ProjectileSpeed;
 
 	GetWorld()->GetTimerManager().SetTimer(
 		ProjectileTimerHandle,
