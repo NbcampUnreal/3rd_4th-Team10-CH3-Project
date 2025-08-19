@@ -9,7 +9,7 @@
 #include "Animation/AnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-// --- Çì´õ ÆÄÀÏ ---
+// --- ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ---
 #include "MyCharacter.h"
 #include "AttributeComponent.h"
 // ----------------
@@ -85,7 +85,7 @@ void ACharacter_Monster::OnAttackEnd()
 
 void ACharacter_Monster::ApplyCustomDamage(int32 DamageAmount)
 {
-    const int32 FinalDamage = FMath::Max(0, DamageAmount); // Defence Á¦°ÅµÊ
+    const int32 FinalDamage = FMath::Max(0, DamageAmount); // Defence ï¿½ï¿½ï¿½Åµï¿½
     if (FinalDamage <= 0 || Health <= 0)
     {
         return;

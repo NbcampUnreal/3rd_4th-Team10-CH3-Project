@@ -31,17 +31,17 @@ protected:
 	float Health;
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float MaxHealth = 100;
+	float MaxHealth = 100.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State")
-	float Defence = 10; // 현재 미사용
+	float Defence = 5.f;
 
 	// --------------------
 
 	// ----- 스태미나 -----
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float MaxStamina = 120.f;
+	float MaxStamina = 100.f;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
 	float CurrentStamina;
@@ -50,10 +50,10 @@ protected:
 	float StaminaRegenRate = 40.f; // 스태미나 회복량
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float StaminaComsumeRate = 20.f; // 스태미나 소모량
+	float StaminaComsumeRate = 9.f; // 스태미나 소모량
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
-	float StaminaRegenTimer = 2.5f; // 스태미나 회복 딜레이
+	float StaminaRegenTimer = 2.f; // 스태미나 회복 딜레이
 	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "State|Stamina")
 	float MinStamina = 10.f; // 최소 스태미나
@@ -122,6 +122,7 @@ public:
 	
 	FORCEINLINE float GetHealth() const { return Health; }
 	FORCEINLINE float GetMaxHealth() const { return MaxHealth; }
+    FORCEINLINE float GetDefence() const { return Defence; }
 	FORCEINLINE float GetStamina() const { return CurrentStamina; }
 	FORCEINLINE float GetMaxStamina() const { return MaxStamina; }
 	FORCEINLINE float GetMinSprintStamina() const { return MinStamina; }

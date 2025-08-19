@@ -41,7 +41,7 @@ void ASpartaGameMode::BeginPlay()
         UGameplayStatics::GetActorOfClass(GetWorld(), ASpartaSpawnManager::StaticClass())
     );
 
-    StartWave();
+    //StartWave();
 }
 
 void ASpartaGameMode::StartWave()

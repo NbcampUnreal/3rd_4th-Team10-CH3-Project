@@ -32,10 +32,12 @@ class TEAM10_PROJECT_API ASpartaGameMode : public AGameModeBase
 public:
     ASpartaGameMode();
 
+    UFUNCTION(BlueprintCallable, Category = "Wave")
+    void StartWave();
+
 protected:
     virtual void BeginPlay() override;
 
-    void StartWave();
     void EndWave();
     void OnGameCleared();
     void OnGameOver();

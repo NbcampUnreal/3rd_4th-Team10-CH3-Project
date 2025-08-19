@@ -53,13 +53,49 @@ void AItemSpawnVolume::SpawnItems()
                 CurrentWeight += Row->SpawnWeight;
                 if (Pick <= CurrentWeight)
                 {
-                    // 스폰 위치 랜덤 결정
                     const FVector SpawnOrigin = SpawnVolume->Bounds.Origin;
                     const FVector SpawnExtent = SpawnVolume->Bounds.BoxExtent;
-                    const FVector SpawnLocation = UKismetMathLibrary::RandomPointInBoundingBox(SpawnOrigin, SpawnExtent);
 
-                    // 아이템 스폰
-                    GetWorld()->SpawnActor<AItemBase>(Row->ItemClass, SpawnLocation, FRotator::ZeroRotator);
+                    FVector SpawnLocation;
+                    bool bSpawnLocationFound = false;
+
+                    constexpr int32 MaxRetries = 20;
+                    int32 RetryCount = 0;
+
+                    while (!bSpawnLocationFound && RetryCount < MaxRetries)
+                    {
+                        FVector RandomPoint = UKismetMathLibrary::RandomPointInBoundingBox(SpawnOrigin, SpawnExtent);
+                        FVector TraceStart(RandomPoint.X, RandomPoint.Y, SpawnOrigin.Z + SpawnExtent.Z);
+                        FVector TraceEnd(RandomPoint.X, RandomPoint.Y, SpawnOrigin.Z - SpawnExtent.Z);
+
+                        FHitResult HitResult;
+                        FCollisionQueryParams CollisionParams;
+                        CollisionParams.AddIgnoredActor(this);
+
+                        bool bHit = GetWorld()->LineTraceSingleByChannel(
+                            HitResult,
+                            TraceStart,
+                            TraceEnd,
+                            ECollisionChannel::ECC_Visibility,
+                            CollisionParams
+                        );
+
+                        if (bHit)
+                        {
+                            SpawnLocation = HitResult.Location;
+                            SpawnLocation.Z += 50.0f;
+                            bSpawnLocationFound = true;
+                        }
+                        else
+                        {
+                            RetryCount++;
+                        }
+                    }
+
+                    if (bSpawnLocationFound)
+                    {
+                        GetWorld()->SpawnActor<AItemBase>(Row->ItemClass, SpawnLocation, FRotator::ZeroRotator);
+                    }
 
                     break; // 다음 아이템 스폰으로
                 }
