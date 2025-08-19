@@ -3,6 +3,8 @@
 #include "SpartaSpawnManager.h"
 #include "WaveData.h"
 #include "Kismet/GameplayStatics.h"
+#include "Blueprint/UserWidget.h"                 // [Added]
+#include "GameFramework/PlayerController.h"       // [Added]
 
 ASpartaGameMode::ASpartaGameMode()
 {
@@ -13,20 +15,20 @@ ASpartaGameMode::ASpartaGameMode()
     EnemiesRemaining = 0;
     InterWaveCountdown = 0.0f;
     Score = 0;
+    bEndScreenShown = false; // [Added]
 }
 
 void ASpartaGameMode::BeginPlay()
 {
     Super::BeginPlay();
     UE_LOG(LogTemp, Error, TEXT("SpartaGameMode C++ BeginPlay IS RUNNING!"));
+
     SpawnManagerRef = Cast<ASpartaSpawnManager>(
         UGameplayStatics::GetActorOfClass(GetWorld(), ASpartaSpawnManager::StaticClass())
     );
 
-   
     StartWave();
 }
-
 
 void ASpartaGameMode::StartWave()
 {
@@ -51,54 +53,48 @@ void ASpartaGameMode::StartWave()
     {
         GS->SetDisplayWave(WaveCounter);
         GS->SetDisplayEnemiesRemaining(EnemiesRemaining);
-        GS->SetDisplayScore(Score); // GameState에 현재 스코어 업데이트
+        GS->SetDisplayScore(Score);
     }
 
     if (SpawnManagerRef)
     {
-        // 1. 웨이브 데이터에서 사용할 '태그'를 가져옵니다.
+        // 태그 기반 스폰 포인트 탐색
         FName DesiredTag = CurrentWave.SpawnPointTag;
-
         AActor* FoundSpawnPoint = nullptr;
 
-        // 태그가 비어있지 않은지 확인합니다.
         if (!DesiredTag.IsNone())
         {
-            // 2. 월드에서 해당 태그를 가진 모든 액터를 찾습니다.
             TArray<AActor*> ActorsWithTag;
             UGameplayStatics::GetAllActorsWithTag(GetWorld(), DesiredTag, ActorsWithTag);
-
             if (ActorsWithTag.Num() > 0)
             {
-                // 3. 태그를 가진 액터를 찾았다면, 첫 번째 액터를 스폰 위치로 지정합니다.
                 FoundSpawnPoint = ActorsWithTag[0];
             }
         }
 
-        // 4. 스폰 위치를 성공적으로 찾았을 경우에만 스폰을 시작하도록 명령합니다.
         if (FoundSpawnPoint)
         {
-            UE_LOG(LogTemp, Log, TEXT("Wave %d starting at spawn point with tag '%s'"), WaveCounter, *DesiredTag.ToString());
-
-            // 수정된 StartSpawning 함수에 두 번째 인수로 찾은 스폰 위치를 함께 전달합니다.
+            UE_LOG(LogTemp, Log, TEXT("Wave %d starting at spawn point with tag '%s'"),
+                WaveCounter, *DesiredTag.ToString());
             SpawnManagerRef->StartSpawning(CurrentWave, FoundSpawnPoint);
         }
         else
         {
-            UE_LOG(LogTemp, Error, TEXT("Could not find Actor with tag '%s' for Wave %d!"), *DesiredTag.ToString(), WaveCounter);
+            UE_LOG(LogTemp, Error, TEXT("Could not find Actor with tag '%s' for Wave %d!"),
+                *DesiredTag.ToString(), WaveCounter);
         }
     }
 }
 
-void ASpartaGameMode::OnEnemyKilled(AActor* DestroyedActor)
+void ASpartaGameMode::OnEnemyKilled(AActor* /*DestroyedActor*/)
 {
     EnemiesRemaining--;
-    Score += 10; // 점수 10점 추가
+    Score += 10; // 기본 가점
 
     if (ASpartaGameState* GS = GetGameState<ASpartaGameState>())
     {
         GS->SetDisplayEnemiesRemaining(EnemiesRemaining);
-        GS->SetDisplayScore(Score); // GameState에 스코어 업데이트
+        GS->SetDisplayScore(Score);
     }
 
     if (EnemiesRemaining <= 0)
@@ -157,7 +153,27 @@ void ASpartaGameMode::TickInterWaveDelay()
 
 void ASpartaGameMode::OnGameCleared()
 {
+    if (bEndScreenShown) return;        // [Added]
     UE_LOG(LogTemp, Warning, TEXT("Game Cleared!"));
+
+    OnGameEnded.Broadcast(EEndReason::Cleared);   // [Added] HUD 훅
+    ShowEndScreen(EEndReason::Cleared);           // [Added] 기본 위젯 표시
+
+    if (GameClearedWidgetClass)
+    {
+        if (APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0))
+        {
+            UUserWidget* CW = CreateWidget<UUserWidget>(PC, GameClearedWidgetClass);
+            if (CW)
+            {
+                CW->AddToViewport(100);
+
+                FInputModeUIOnly Mode;
+                Mode.SetWidgetToFocus(CW->TakeWidget());
+                PC->SetInputMode(Mode);
+            }
+        }
+    }
 }
 
 void ASpartaGameMode::OnPlayerDied()
@@ -168,5 +184,61 @@ void ASpartaGameMode::OnPlayerDied()
 
 void ASpartaGameMode::OnGameOver()
 {
+    if (bEndScreenShown) return;        // [Added]
     UE_LOG(LogTemp, Warning, TEXT("Game Over"));
+
+    OnGameEnded.Broadcast(EEndReason::GameOver);  // [Added]
+    ShowEndScreen(EEndReason::GameOver);          // [Added]
+}
+
+// [Added] 종료 UI 공통 처리
+void ASpartaGameMode::ShowEndScreen(EEndReason Reason)
+{
+    if (bEndScreenShown) return;
+
+    TSubclassOf<UUserWidget> WidgetClassToShow = nullptr;
+
+    switch (Reason)
+    {
+    case EEndReason::Cleared:
+        WidgetClassToShow = GameClearedWidgetClass;
+        break;
+    case EEndReason::GameOver:
+        WidgetClassToShow = GameOverWidgetClass;
+        break;
+    default:
+        break;
+    }
+
+    if (WidgetClassToShow)
+    {
+        ShowWidgetAndFocus(WidgetClassToShow);
+        bEndScreenShown = true;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("End screen widget class not set in GameMode."));
+    }
+
+    // 필요 시 일시정지 적용
+    // APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+    // if (PC) { SetPause(PC); }
+}
+
+// [Added] UI 전용 입력 모드/커서 처리
+void ASpartaGameMode::ShowWidgetAndFocus(TSubclassOf<UUserWidget> WidgetClass)
+{
+    APlayerController* PC = UGameplayStatics::GetPlayerController(this, 0);
+    if (!PC || !WidgetClass) return;
+
+    UUserWidget* Widget = CreateWidget<UUserWidget>(PC, WidgetClass);
+    if (!Widget) return;
+
+    Widget->AddToViewport(100);
+    PC->bShowMouseCursor = true;
+
+    FInputModeUIOnly InputMode;
+    InputMode.SetWidgetToFocus(Widget->TakeWidget());
+    InputMode.SetLockMouseToViewportBehavior(EMouseLockMode::DoNotLock);
+    PC->SetInputMode(InputMode);
 }
