@@ -9,7 +9,7 @@
 #include "Animation/AnimInstance.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
-// --- ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ---
+// --- Çì´õ ÆÄÀÏ ---
 #include "MyCharacter.h"
 #include "AttributeComponent.h"
 // ----------------
@@ -85,17 +85,12 @@ void ACharacter_Monster::OnAttackEnd()
 
 void ACharacter_Monster::ApplyCustomDamage(int32 DamageAmount)
 {
-    const float DamageVariationFactor = FMath::FRandRange(0.9f, 1.1f);
-    const int32 VariedDamage = FMath::RoundToInt(DamageAmount * DamageVariationFactor);
-    const int32 FinalDamage = FMath::Max(0, VariedDamage);
-
+    const int32 FinalDamage = FMath::Max(0, DamageAmount); // Defence Á¦°ÅµÊ
     if (FinalDamage <= 0 || Health <= 0)
     {
         return;
     }
-
     Health -= FinalDamage;
-
     if (Health <= 0)
     {
         Die();
@@ -128,11 +123,7 @@ void ACharacter_Monster::OnAttackHitboxOverlapBegin(UPrimitiveComponent* Overlap
             UAttributeComponent* PlayerAttributes = MyPlayer->FindComponentByClass<UAttributeComponent>();
             if (PlayerAttributes)
             {
-                float BaseAttack = FMath::FRandRange(19.6f, 25.3f);
-                float DefenceFactor = FMath::FRandRange(0.8f, 1.2f);
-                float EffectiveDefence = PlayerAttributes->GetDefence() * DefenceFactor;
-                float MonsterAttackDamage = FMath::Max(0.0f, BaseAttack - EffectiveDefence);
-
+                float MonsterAttackDamage = -25.0f;
                 PlayerAttributes->ModityHealth(MonsterAttackDamage);
             }
             AttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
