@@ -121,7 +121,7 @@ void ACharacter_Monster::Die()
         MeshComp->SetSimulatePhysics(true);
     }
 
-    SetLifeSpan(1.f);
+    SetLifeSpan(0.7f);
 }
 
 void ACharacter_Monster::OnAttackHitboxOverlapBegin(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor,
