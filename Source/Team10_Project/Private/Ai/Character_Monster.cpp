@@ -22,6 +22,7 @@ ACharacter_Monster::ACharacter_Monster()
     Health = MaxHealth;
     MaxStamina = 100.0f;
     Stamina = MaxStamina;
+    bMonsterDead = false;
     AttackHitbox = CreateDefaultSubobject<UBoxComponent>(TEXT("AttackHitbox"));
     AttackHitbox->SetupAttachment(GetMesh(), FName("WeaponSocket"));
     AttackHitbox->SetCollisionEnabled(ECollisionEnabled::NoCollision);
@@ -93,6 +94,8 @@ void ACharacter_Monster::ApplyCustomDamage(int32 DamageAmount)
     Health -= FinalDamage;
     if (Health <= 0)
     {
+        bMonsterDead = true;
+        OnDead();
         Die();
     }
 }
