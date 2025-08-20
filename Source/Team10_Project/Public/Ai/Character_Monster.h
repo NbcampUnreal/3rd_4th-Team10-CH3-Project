@@ -41,6 +41,11 @@ public:
     UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Status")
     float Stamina;
 
+    UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Dead")
+    bool bMonsterDead;
+    UFUNCTION(BlueprintImplementableEvent, Category = "Dead")
+    void OnDead();
+
     void Die();
 
     // 공격 애니메이션 몽타주
