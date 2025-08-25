@@ -15,13 +15,13 @@ struct FWeaponData : public FTableRowBase
     TSubclassOf<AWeaponBase> WeaponClass;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 CurrentAmmo;
+    int32 CurrentAmmo = 0;
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 MaxAmmo;
+    int32 MaxAmmo = 0;
     
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 PickupAmmo;
+    int32 PickupAmmo = 30;
     
     UPROPERTY(EditAnywhere, BlueprintReadOnly)
     TObjectPtr<UAnimMontage> ReloadTacMontage;
